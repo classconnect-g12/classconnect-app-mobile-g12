@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export default function SignUp() {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   button: {
     width: "30%",
     alignItems: "center",
-    backgroundColor: "#2b9dd6",
+    backgroundColor: "#4683a1",
     padding: 10,
     borderRadius: 5,
     marginTop: 10,

@@ -2,12 +2,19 @@ import { Stack } from "expo-router";
 
 export default function SigningLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#327756",
+        },
+        headerTintColor: "white",
+      }}>
       <Stack.Screen
         name="index"
         options={{
           headerTitle: "Home",
           headerLeft: () => <></>, // Hide the back button on the home screen
+          headerShown: false, // Hide the header for the tabs layout
         }}
       />
       <Stack.Screen
