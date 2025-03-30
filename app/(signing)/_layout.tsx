@@ -22,6 +22,12 @@ export default function SigningLayout() {
           headerTitle: "Login",
         }}
       />
+      <Stack.Screen
+        name="register"
+        options={{
+          headerTitle: "Register",
+        }}
+      />
     </Stack>
   );
 }
