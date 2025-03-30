@@ -35,6 +35,12 @@ export default function SigningLayout() {
           headerTitle: "Register",
         }}
       />
+      <Stack.Screen
+        name="forgotPassword"
+        options={{
+          headerTitle: "Register",
+        }}
+      />
     </Stack>
   );
 }

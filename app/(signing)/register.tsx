@@ -33,7 +33,7 @@ export default function SignUp() {
       </TouchableOpacity>
       <Text style={styles.footerText}>
         Already have an account?
-        <Link href="/login">Sign in</Link>
+        <Link href="/login" style={styles.footerLink}>Sign in</Link>
       </Text>
     </View>
   );
@@ -71,6 +71,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 14,
     color: "blue",
+  },
+  footerLink: {
+    color: "#4683a1",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+    marginTop: 20,
+    textAlign: "center",
   },
   button: {
     width: "30%",
