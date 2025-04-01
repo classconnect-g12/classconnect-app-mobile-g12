@@ -32,8 +32,10 @@ export default function SignUp() {
         <Text style={{ color: "#FFF" }}>Sign Up</Text>
       </TouchableOpacity>
       <Text style={styles.footerText}>
-        Already have an account?
-        <Link href="/login" style={styles.footerLink}>Sign in</Link>
+        Already have an account?{" "}
+        <Link href="/login" style={styles.footerLink}>
+          Sign in
+        </Link>
       </Text>
     </View>
   );

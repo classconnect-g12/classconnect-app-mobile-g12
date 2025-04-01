@@ -25,12 +25,17 @@ export default function SignIn() {
       <TouchableOpacity style={styles.button}>
         <Text style={{ color: "#FFF" }}>Sign In</Text>
       </TouchableOpacity>
-      <Text style={styles.footerText}>Forgot Password?
-        <Link href="/forgotPassword" style={styles.footerLink}>Reset Password</Link>
+      <Text style={styles.footerText}>
+        Forgot Password?{" "}
+        <Link href="/forgotPassword" style={styles.footerLink}>
+          Reset Password
+        </Link>
       </Text>
       <Text style={styles.footerText}>
-        Don't have an account?
-        <Link href="/register" style={styles.footerLink}>Sign up</Link>
+        Don't have an account?{" "}
+        <Link href="/register" style={styles.footerLink}>
+          Sign up
+        </Link>
       </Text>
     </View>
   );
