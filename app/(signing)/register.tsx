@@ -1,8 +1,41 @@
+import { register } from "@/services/AuthService";
 import { Link } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export default function SignUp() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  const handleSubmit = async () => {
+    if (!email) {
+      Alert.alert("Error", "Completa el email");
+      return;
+    }
+    if (!password) {
+      Alert.alert("Error", "Completa la contraseña");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Las contraseñas no coinciden");
+      return;
+    }
+
+    try {
+      await register(email, password);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+        return;
+      } else {
+        Alert.alert("Ha ocurrido un error en el servidor");
+        return;
+      }
+    }
+  };
   return (
     <View style={styles.container}>
       {/* <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/> */}
@@ -13,6 +46,8 @@ export default function SignUp() {
         label="Email"
         mode="outlined"
         theme={{ colors: { primary: "#2b9dd6" } }}
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
@@ -20,6 +55,8 @@ export default function SignUp() {
         label="Password"
         mode="outlined"
         theme={{ colors: { primary: "#2b9dd6" } }}
+        value={password}
+        onChangeText={setPassword}
       />
       <TextInput
         style={styles.input}
@@ -27,8 +64,10 @@ export default function SignUp() {
         label="Confirm Password"
         mode="outlined"
         theme={{ colors: { primary: "#2b9dd6" } }}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={{ color: "#FFF" }}>Sign Up</Text>
       </TouchableOpacity>
       <Text style={styles.footerText}>
