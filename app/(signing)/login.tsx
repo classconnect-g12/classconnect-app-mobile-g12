@@ -12,9 +12,11 @@ export default function SignIn() {
   const handleSubmit = async () => {
     if (!email) {
       Alert.alert("Error", "Completa el email");
+      return;
     }
     if (!password) {
       Alert.alert("Error", "Completa la contraseña");
+      return;
     }
 
     try {
@@ -22,8 +24,10 @@ export default function SignIn() {
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert(error.message);
+        return;
       } else {
         Alert.alert("Ha ocurrido un error en el servidor");
+        return;
       }
     }
   };
