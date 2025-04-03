@@ -1,9 +1,33 @@
+import { login } from "@/services/AuthService";
 import { Link } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 import { TextInput } from "react-native-paper";
 
 export default function SignIn() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const handleSubmit = async () => {
+    if (!email) {
+      Alert.alert("Error", "Completa el email");
+    }
+    if (!password) {
+      Alert.alert("Error", "Completa la contraseña");
+    }
+
+    try {
+      await login(email, password);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      } else {
+        Alert.alert("Ha ocurrido un error en el servidor");
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/> */}
@@ -14,6 +38,8 @@ export default function SignIn() {
         label="Email"
         mode="outlined"
         theme={{ colors: { primary: "#2b9dd6" } }}
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
@@ -21,8 +47,10 @@ export default function SignIn() {
         label="Password"
         mode="outlined"
         theme={{ colors: { primary: "#2b9dd6" } }}
+        value={password}
+        onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={{ color: "#FFF" }}>Sign In</Text>
       </TouchableOpacity>
       <Text style={styles.footerText}>
