@@ -1,8 +1,10 @@
 import { View, Text, Image, Button, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 
 export default function ProfileScreen() {
+  const profileId = useLocalSearchParams();
   const [profile, setProfile] = useState({
     name: "Juan Pérez",
     email: "juanperez@example.com",
@@ -20,6 +22,7 @@ export default function ProfileScreen() {
     if (!result.canceled) {
       setProfile({ ...profile, avatar: result.assets[0].uri });
     }
+    console.log(profileId);
   };
 
   return (
