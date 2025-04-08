@@ -1,15 +1,21 @@
 import { register } from "@/services/AuthService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export default function SignUp() {
+  const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const handleSubmit = async () => {
+    if (!username) {
+      Alert.alert("Error", "Completa el email");
+      return;
+    }
     if (!email) {
       Alert.alert("Error", "Completa el email");
       return;
@@ -25,7 +31,7 @@ export default function SignUp() {
     }
 
     try {
-      await register(email, password);
+      await register(username, email, password);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert(error.message);
@@ -41,6 +47,14 @@ export default function SignUp() {
       {/* <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/> */}
       <Text style={styles.title}>Create Account</Text>
       <Text style={styles.subtitle}>Sign up to get started</Text>
+      <TextInput
+        style={styles.input}
+        label="Username"
+        mode="outlined"
+        theme={{ colors: { primary: "#2b9dd6" } }}
+        value={username}
+        onChangeText={setUsername}
+      />
       <TextInput
         style={styles.input}
         label="Email"
