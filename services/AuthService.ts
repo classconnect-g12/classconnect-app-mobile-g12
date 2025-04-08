@@ -1,4 +1,5 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const login = async (email: string, password: string) => {
@@ -9,14 +10,14 @@ const login = async (email: string, password: string) => {
       throw new Error("Error en el servidor: API_URL no está definido");
     }
 
-    const response = await axios.post(`${API_URL}/api/auth/login`, {
+    const response = await axios.post(`${API_URL}/auth/login`, {
       email,
       password,
     });
 
     if (response.status === 200) {
-      console.log("Login exitoso:", response.data);
-      // Guardar el token
+      const token = response.data.token;
+      await AsyncStorage.setItem("token", token);
     } else {
       throw new Error(`Error ${response.status}: ${response.data}`);
     }
@@ -30,7 +31,7 @@ const login = async (email: string, password: string) => {
   }
 };
 
-const register = async (email: string, password: string) => {
+const register = async (username: string, email: string, password: string) => {
   console.log("API_URL:", API_URL);
 
   try {
@@ -38,14 +39,17 @@ const register = async (email: string, password: string) => {
       throw new Error("Error en el servidor: API_URL no está definido");
     }
 
-    const response = await axios.post(`${API_URL}/api/auth/register`, {
+    const response = await axios.post(`${API_URL}/auth/register`, {
+      user_name: username,
       email,
       password,
     });
 
     if (response.status === 201) {
-      console.log("Registro exitoso:", response.data);
-      // Guardar el token
+      console.log(response.data);
+
+      const token = response.data.token;
+      await AsyncStorage.setItem("token", token);
     } else {
       throw new Error(`Error ${response.status}: ${response.data}`);
     }
