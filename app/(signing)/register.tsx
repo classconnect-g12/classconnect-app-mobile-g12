@@ -2,7 +2,7 @@ import { register } from "@/services/AuthService";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { TextInput } from "react-native-paper";
+import { Snackbar, TextInput } from "react-native-paper";
 import { useAuth } from "../context/authContext";
 
 export default function SignUp() {
@@ -11,40 +11,56 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
-  const {login: authLogin} = useAuth();
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const { login: authLogin } = useAuth();
   const router = useRouter();
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarVisible(true);
+  };
 
   const handleSubmit = async () => {
     if (!username) {
-      Alert.alert("Error", "Completa el email");
+      showSnackbar("Required fields are empty (username)");
       return;
     }
     if (!email) {
-      Alert.alert("Error", "Completa el email");
+      showSnackbar("Required fields are empty (email)");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showSnackbar("Please enter a valid email address");
       return;
     }
     if (!password) {
-      Alert.alert("Error", "Completa la contraseña");
+      showSnackbar("Required fields are empty (password)");
       return;
     }
-
+    if (password.length < 8){
+      showSnackbar("The password must have more than 8 characters.");
+      return;
+    }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Las contraseñas no coinciden");
+      showSnackbar("Passwords do not match");
       return;
     }
 
     try {
       const token = await register(username, email, password);
       await authLogin(token);
-      Alert.alert("Registro exitoso", "¡Bienvenido!");
       router.replace("../home");
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-        return;
-      } else {
-        Alert.alert("Ha ocurrido un error en el servidor");
-        return;
+    } catch (error: any) {
+      showSnackbar(error.data);
+      if (error?.status === 400){
+        showSnackbar("Invalid fields");
+      }else if (error?.status === 409){
+        showSnackbar("The email is already registered");
+      }else if (error?.status === 500){
+        showSnackbar("Internal server Error, contact the administrator")
       }
     }
   };
@@ -95,6 +111,18 @@ export default function SignUp() {
           Sign in
         </Link>
       </Text>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: "OK",
+          onPress: () => setSnackbarVisible(false),
+        }}
+        style={{ backgroundColor: "#ff5252" }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 }

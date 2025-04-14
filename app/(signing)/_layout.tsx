@@ -30,24 +30,15 @@ export default function SigningLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: "#327756",
-        },
-        headerTintColor: "white",
+        headerShown: false,
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerTitle: "Home",
-          headerLeft: () => <></>,
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen name="about" options={{ headerTitle: "About" }} />
-      <Stack.Screen name="login" options={{ headerTitle: "Login" }} />
-      <Stack.Screen name="register" options={{ headerTitle: "Register" }} />
-      <Stack.Screen name="forgotPassword" options={{ headerTitle: "Forgot Password" }} />
+      <Stack.Screen name="index" />
+      <Stack.Screen name="about" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="forgotPassword" />
     </Stack>
   );
+  
 }

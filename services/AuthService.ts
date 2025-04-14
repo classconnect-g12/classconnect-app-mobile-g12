@@ -25,11 +25,13 @@ const login = async (email: string, password: string): Promise<string> => {
       await storeToken(token);
       return token;
     } else {
-      throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
+      throw new Error(
+        `Error ${response.status}: ${JSON.stringify(response.data)}`
+      );
     }
   } catch (error: any) {
     console.error("Error en login:", error?.response?.data || error.message);
-    throw new Error(error?.response?.data?.message || "Error al iniciar sesión");
+    throw error?.response?.data || { message: "Error al iniciar sesión" };
   }
 };
 
@@ -56,11 +58,13 @@ const register = async (
       await storeToken(token);
       return token;
     } else {
-      throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
+      throw new Error(
+        `Error ${response.status}: ${JSON.stringify(response.data)}`
+      );
     }
   } catch (error: any) {
     console.error("Error en registro:", error?.response?.data || error.message);
-    throw new Error(error?.response?.data?.message || "Error al registrarse");
+    throw error?.response?.data || "Error al registrarse";
   }
 };
 
