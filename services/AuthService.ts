@@ -1,15 +1,20 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const login = async (email: string, password: string) => {
+const storeToken = async (token: string) => {
+  await AsyncStorage.setItem("token", token);
+};
+
+const login = async (email: string, password: string): Promise<string> => {
   console.log("API_URL:", API_URL);
 
-  try {
-    if (!API_URL) {
-      throw new Error("Error en el servidor: API_URL no está definido");
-    }
+  if (!API_URL) {
+    throw new Error("Error en el servidor: API_URL no está definido");
+  }
 
+  try {
     const response = await axios.post(`${API_URL}/auth/login`, {
       email,
       password,
@@ -17,28 +22,29 @@ const login = async (email: string, password: string) => {
 
     if (response.status === 200) {
       const token = response.data.token;
-      await AsyncStorage.setItem("token", token);
+      await storeToken(token);
+      return token;
     } else {
-      throw new Error(`Error ${response.status}: ${response.data}`);
+      throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
     }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error en login:", error.message);
-      throw new Error(error.message);
-    } else {
-      throw new Error("Ha ocurrido un error desconocido");
-    }
+  } catch (error: any) {
+    console.error("Error en login:", error?.response?.data || error.message);
+    throw new Error(error?.response?.data?.message || "Error al iniciar sesión");
   }
 };
 
-const register = async (username: string, email: string, password: string) => {
+const register = async (
+  username: string,
+  email: string,
+  password: string
+): Promise<string> => {
   console.log("API_URL:", API_URL);
 
-  try {
-    if (!API_URL) {
-      throw new Error("Error en el servidor: API_URL no está definido");
-    }
+  if (!API_URL) {
+    throw new Error("Error en el servidor: API_URL no está definido");
+  }
 
+  try {
     const response = await axios.post(`${API_URL}/auth/register`, {
       user_name: username,
       email,
@@ -46,20 +52,15 @@ const register = async (username: string, email: string, password: string) => {
     });
 
     if (response.status === 201) {
-      console.log(response.data);
-
       const token = response.data.token;
-      await AsyncStorage.setItem("token", token);
+      await storeToken(token);
+      return token;
     } else {
-      throw new Error(`Error ${response.status}: ${response.data}`);
+      throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
     }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error en registro:", error.message);
-      throw new Error(error.message);
-    } else {
-      throw new Error("Ha ocurrido un error desconocido");
-    }
+  } catch (error: any) {
+    console.error("Error en registro:", error?.response?.data || error.message);
+    throw new Error(error?.response?.data?.message || "Error al registrarse");
   }
 };
 

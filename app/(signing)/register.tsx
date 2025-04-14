@@ -1,15 +1,18 @@
 import { register } from "@/services/AuthService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { TextInput } from "react-native-paper";
+import { useAuth } from "../context/authContext";
 
 export default function SignUp() {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  const {login: authLogin} = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!username) {
@@ -31,7 +34,10 @@ export default function SignUp() {
     }
 
     try {
-      await register(username, email, password);
+      const token = await register(username, email, password);
+      await authLogin(token);
+      Alert.alert("Registro exitoso", "¡Bienvenido!");
+      router.replace("../home");
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert(error.message);
@@ -44,7 +50,6 @@ export default function SignUp() {
   };
   return (
     <View style={styles.container}>
-      {/* <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/> */}
       <Text style={styles.title}>Create Account</Text>
       <Text style={styles.subtitle}>Sign up to get started</Text>
       <TextInput

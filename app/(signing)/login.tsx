@@ -1,13 +1,17 @@
 import { login } from "@/services/AuthService";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 import { TextInput } from "react-native-paper";
+import { useAuth } from "../context/authContext";
 
 export default function SignIn() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+  const router = useRouter();
+  const { login: authLogin } = useAuth();
 
   const handleSubmit = async () => {
     if (!email) {
@@ -20,7 +24,9 @@ export default function SignIn() {
     }
 
     try {
-      await login(email, password);
+      const token = await login(email, password);
+      await authLogin(token);
+      router.replace("../home");
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert(error.message);
@@ -34,7 +40,6 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      {/* <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/> */}
       <Text style={styles.title}>Welcome!</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
       <TextInput
