@@ -16,7 +16,9 @@ export default function HomeScreen() {
   const [search, setSearch] = useState("");
 
   const handleSearch = () => {
-    router.push(`/profile/${search}`);
+    if (search.trim() !== "") {
+      router.push(`/profile/${search}`);
+    }
   };
 
   const handleAddCourse = () => {
@@ -36,14 +38,23 @@ export default function HomeScreen() {
           <View style={styles.content}>
             <Text style={styles.welcome}>Welcome!</Text>
 
+            <Text style={styles.sectionLabel}>Search for a profile</Text>
             <View style={styles.searchContainer}>
               <TextInput
-                placeholder="Search profile"
+                placeholder="Enter username"
                 value={search}
                 onChangeText={setSearch}
                 style={styles.searchInput}
               />
-              <Appbar.Action icon="magnify" onPress={handleSearch} />
+              <Button
+                mode="contained"
+                onPress={handleSearch}
+                style={styles.searchButton}
+                icon="magnify"
+                labelStyle={{ fontWeight: "bold" }}
+              >
+                Search
+              </Button>
             </View>
 
             <View style={styles.noCoursesContainer}>
@@ -51,7 +62,7 @@ export default function HomeScreen() {
               <Button
                 mode="contained"
                 onPress={handleJoinClass}
-                style={styles.joinButton}
+                style={styles.primaryButton}
                 labelStyle={{ fontWeight: "bold" }}
               >
                 Join a class
@@ -75,6 +86,8 @@ export default function HomeScreen() {
   );
 }
 
+const PRIMARY_COLOR = "#2e7d32";
+
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -86,18 +99,25 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    justifyContent: "flex-start",
   },
   welcome: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: "center",
+  },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 8,
+    marginTop: 10,
+    color: "#333",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    marginBottom: 30,
   },
   searchInput: {
     flex: 1,
@@ -106,6 +126,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     backgroundColor: "#fff",
+  },
+  searchButton: {
+    backgroundColor: PRIMARY_COLOR,
+    borderRadius: 10,
   },
   noCoursesContainer: {
     flex: 1,
@@ -118,8 +142,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.5,
   },
-  joinButton: {
-    backgroundColor: "green",
+  primaryButton: {
+    backgroundColor: PRIMARY_COLOR,
     paddingHorizontal: 20,
     paddingVertical: 5,
     borderRadius: 8,
@@ -128,6 +152,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: "green",
+    backgroundColor: PRIMARY_COLOR,
   },
 });
