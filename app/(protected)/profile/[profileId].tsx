@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Text, View, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
+import { ActivityIndicator } from "react-native-paper";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -41,10 +42,23 @@ const UserProfile: React.FC = () => {
           }
         );
 
-        setProfile(response.data);
+        setProfile({
+          ...response.data,
+          banner: response.data.banner || "https://via.placeholder.com/150",
+        });
       } catch (err) {
-        console.error(err);
-        setError("Error loading profile");
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          if (status === 404) {
+            setError("Profile not found.");
+          } else if (status === 401) {
+            setError("Unauthorized. Please log in.");
+          } else {
+            setError("Error loading profile.");
+          }
+        } else {
+          setError("Unexpected error.");
+        }
       } finally {
         setLoading(false);
       }
@@ -53,94 +67,135 @@ const UserProfile: React.FC = () => {
     fetchProfile();
   }, [profileId]);
 
-  if (loading) return <Text style={styles.loadingText}>Loading profile...</Text>;
-  if (error) return <Text style={styles.errorText}>{error}</Text>;
+  if (loading)
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </View>
+    );
+
+  if (error)
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+
+  if (!profile) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.errorText}>No profile information found.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      {profile ? (
-        <View style={styles.profileContainer}>
-          <View style={styles.header}>
-            <Text style={styles.userName}>{profile.user_name}</Text>
-            <Image
-              source={{ uri: profile.banner }}
-              style={styles.avatar}
-            />
-          </View>
-          <Text style={styles.details}>
-            <Text style={styles.boldText}></Text> {profile.description}
-          </Text>
-          <Text style={styles.details}>
-            <Text style={styles.boldText}>First name:</Text> {profile.first_name}
-          </Text>
-          <Text style={styles.details}>
-            <Text style={styles.boldText}>Last name:</Text> {profile.last_name}
-          </Text>
-          <Text style={styles.details}>
-            <Text style={styles.boldText}>Email:</Text> {profile.email}
-          </Text>
-        </View>
-      ) : (
-        <Text>No profile information found.</Text>
-      )}
-    </View>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <Text style={styles.userName}>{profile.user_name}</Text>
+
+      <View style={styles.header}>
+        <Image source={{ uri: profile.banner }} style={styles.avatar} />
+      </View>
+
+      <View style={styles.inputCard}>
+        <Text style={styles.label}>Description</Text>
+        <Text style={styles.readOnlyText}>
+          {profile.description || "No description provided."}
+        </Text>
+      </View>
+
+      <View style={styles.inputCard}>
+        <Text style={styles.label}>First Name</Text>
+        <Text style={styles.readOnlyText}>{profile.first_name}</Text>
+      </View>
+
+      <View style={styles.inputCard}>
+        <Text style={styles.label}>Last Name</Text>
+        <Text style={styles.readOnlyText}>{profile.last_name}</Text>
+      </View>
+
+      <View style={{ width: "100%" }}>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.email}>{profile.email}</Text>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+  scrollContainer: {
     padding: 20,
-  },
-  profileContainer: {
-    backgroundColor: "white",
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    width: "100%",
-    maxWidth: 400,
     alignItems: "center",
+    backgroundColor: "#f4f6f8",
+    flexGrow: 1,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f4f6f8",
   },
   header: {
     alignItems: "center",
-    marginBottom: 20,
+    marginVertical: 20,
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 4,
-    borderColor: "#fff",
+    borderWidth: 3,
+    borderColor: "#ccc",
     backgroundColor: "#e0e0e0",
-    marginBottom: 10,
   },
   userName: {
-    fontSize: 24,
-    fontWeight: "600",
+    fontSize: 26,
+    fontWeight: "bold",
     color: "#333",
-    marginBottom: 10,
   },
-  details: {
-    fontSize: 16,
+  inputCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 14,
     color: "#555",
-    marginBottom: 10,
+    marginBottom: 6,
+    fontWeight: "500",
   },
-  boldText: {
-    fontWeight: "700",
+  readOnlyText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  email: {
+    fontSize: 14,
+    color: "#888",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
   loadingText: {
     fontSize: 18,
     color: "#333",
+    marginTop: 10,
   },
   errorText: {
     fontSize: 18,
     color: "red",
+    textAlign: "center",
+    paddingHorizontal: 30,
   },
 });
 
