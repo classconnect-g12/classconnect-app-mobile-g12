@@ -2,7 +2,7 @@ import { Stack, useRouter } from "expo-router";
 import { useAuth } from "../context/authContext";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { Provider as PaperProvider } from "react-native-paper"; // 👈 import PaperProvider
+import { Provider as PaperProvider } from "react-native-paper";
 
 export default function ProtectedLayout() {
   const { isAuthenticated } = useAuth();
