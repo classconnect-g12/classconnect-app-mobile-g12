@@ -5,15 +5,21 @@ export default function ProfileLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#327756",
+          backgroundColor: "rgba(255,255,255,0.95)",
         },
-        headerTintColor: "white",
+        headerTintColor: "black",
       }}
     >
       <Stack.Screen
-        name="profile"
+        name="[profileId]"
         options={{
           headerTitle: "Profile",
+        }}
+      />
+      <Stack.Screen
+        name="profileEdit"
+        options={{
+          headerTitle: "My Profile",
         }}
       />
     </Stack>
