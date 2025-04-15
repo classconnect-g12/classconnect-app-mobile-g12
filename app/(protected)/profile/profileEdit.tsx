@@ -107,7 +107,16 @@ export default function ProfileScreen() {
       if (profile.description)
         formData.append("description", profile.description);
 
-      // TODO! Agregar la foto.
+      if (profile.banner && profile.banner.startsWith("file://")) {
+        const uriParts = profile.banner.split(".");
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append("banner", {
+          uri: profile.banner,
+          name: `profile_banner.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
 
       const response = await axios.patch(`${API_URL}/user/update`, formData, {
         headers: {
@@ -115,6 +124,7 @@ export default function ProfileScreen() {
           "Content-Type": "multipart/form-data",
         },
       });
+
       setProfile((prevProfile) => ({
         ...prevProfile,
         first_name: response.data.first_name || prevProfile.first_name,
