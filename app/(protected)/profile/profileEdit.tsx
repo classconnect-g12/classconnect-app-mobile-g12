@@ -244,8 +244,10 @@ export default function ProfileScreen() {
           action={{
             label: "OK",
             onPress: () => setSnackbarVisible(false),
+            labelStyle: { color: colors.buttonText }
           }}
-          style={{ backgroundColor: "green" }}
+          style={{ backgroundColor: colors.success }}
+          theme={{ colors: { onSurface: colors.buttonText } }}
         >
           {snackbarMessage}
         </Snackbar>

@@ -11,6 +11,7 @@ import {
 import { Appbar, AnimatedFAB, Button } from "react-native-paper";
 import AppbarMenu from "../components/AppbarMenu";
 import { router } from "expo-router";
+import { colors } from "../../theme/colors";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
@@ -45,13 +46,14 @@ export default function HomeScreen() {
                 value={search}
                 onChangeText={setSearch}
                 style={styles.searchInput}
+                placeholderTextColor={colors.text}
               />
               <Button
                 mode="contained"
                 onPress={handleSearch}
                 style={styles.searchButton}
                 icon="magnify"
-                labelStyle={{ fontWeight: "bold" }}
+                labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
               >
                 Search
               </Button>
@@ -63,7 +65,7 @@ export default function HomeScreen() {
                 mode="contained"
                 onPress={handleJoinClass}
                 style={styles.primaryButton}
-                labelStyle={{ fontWeight: "bold" }}
+                labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
               >
                 Join a class
               </Button>
@@ -78,7 +80,7 @@ export default function HomeScreen() {
             style={styles.fab}
             visible
             animateFrom="right"
-            color="#fff"
+            color={colors.buttonText}
           />
         </View>
       </ImageBackground>
@@ -86,15 +88,13 @@ export default function HomeScreen() {
   );
 }
 
-const PRIMARY_COLOR = "#2e7d32";
-
 const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(230, 230, 230, 0.85)",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -105,13 +105,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 10,
     textAlign: "center",
+    color: colors.text,
   },
   sectionLabel: {
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 8,
     marginTop: 10,
-    color: "#333",
+    color: colors.text,
   },
   searchContainer: {
     flexDirection: "row",
@@ -122,13 +123,14 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.border,
     borderRadius: 10,
     padding: 10,
-    backgroundColor: "#fff",
+    backgroundColor: colors.inputBackground,
+    color: colors.text,
   },
   searchButton: {
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: colors.primary,
     borderRadius: 10,
   },
   noCoursesContainer: {
@@ -141,9 +143,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
     opacity: 0.5,
+    color: colors.text,
   },
   primaryButton: {
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 5,
     borderRadius: 8,
@@ -152,6 +155,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 16,
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: colors.primary,
   },
 });
