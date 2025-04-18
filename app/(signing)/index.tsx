@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { colors } from "../../theme/colors";
 
 export default function Index() {
   return (
@@ -21,13 +22,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.background,
   },
   text: {
     fontSize: 16,
     width: "80%",
     textAlign: "center",
-    color: "#333",
+    color: colors.text,
     marginBottom: 20,
     fontFamily: "System",
   },
@@ -35,12 +36,12 @@ const styles = StyleSheet.create({
     width: "30%",
     padding: 15,
     borderRadius: 8,
-    backgroundColor: "#4683a1",
+    backgroundColor: colors.primary,
     alignItems: "center",
     marginTop: 20,
   },
   buttonText: {
-    color: "#FFF",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },

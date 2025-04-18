@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator } from "react-native-paper";
+import { colors } from "./../../../theme/colors"
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -14,6 +15,9 @@ interface UserProfileResponse {
   email: string;
   description: string;
   banner: string;
+  profile_picture: string;
+  bio: string;
+  role: string;
 }
 
 const UserProfile: React.FC = () => {
@@ -21,6 +25,7 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { profileId } = useLocalSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -53,6 +58,7 @@ const UserProfile: React.FC = () => {
             setError("Profile not found.");
           } else if (status === 401) {
             setError("Unauthorized. Please log in.");
+            router.replace("/login");
           } else {
             setError("Error loading profile.");
           }
@@ -65,137 +71,158 @@ const UserProfile: React.FC = () => {
     };
 
     fetchProfile();
-  }, [profileId]);
+  }, [profileId, API_URL, router]);
 
   if (loading)
     return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
 
   if (error)
     return (
-      <View style={styles.centeredContainer}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
 
   if (!profile) {
     return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.errorText}>No profile information found.</Text>
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Profile not found</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.userName}>{profile.user_name}</Text>
-
-      <View style={styles.header}>
-        <Image source={{ uri: profile.banner }} style={styles.avatar} />
+    <ScrollView style={styles.container}>
+      <View style={styles.profileHeader}>
+        <Image
+          source={
+            profile.profile_picture
+              ? { uri: profile.profile_picture }
+              : require("./../../../assets/images/icon.png")
+          }
+          style={styles.profileImage}
+        />
+        <Text style={styles.username}>{profile.user_name}</Text>
+        <Text style={styles.role}>{profile.role}</Text>
       </View>
 
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Description</Text>
-        <Text style={styles.readOnlyText}>
-          {profile.description || "No description provided."}
-        </Text>
-      </View>
+      <View style={styles.infoContainer}>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>Email</Text>
+          <Text style={styles.infoValue}>{profile.email}</Text>
+        </View>
 
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>First Name</Text>
-        <Text style={styles.readOnlyText}>{profile.first_name}</Text>
-      </View>
-
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Last Name</Text>
-        <Text style={styles.readOnlyText}>{profile.last_name}</Text>
-      </View>
-
-      <View style={{ width: "100%" }}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.email}>{profile.email}</Text>
+        {profile.bio && (
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Bio</Text>
+            <Text style={styles.infoValue}>{profile.bio}</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#f4f6f8",
-    flexGrow: 1,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
-  centeredContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f4f6f8",
+    backgroundColor: colors.background,
   },
-  header: {
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    marginVertical: 20,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: "#ccc",
-    backgroundColor: "#e0e0e0",
-  },
-  userName: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  inputCard: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 6,
-    fontWeight: "500",
-  },
-  readOnlyText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  email: {
-    fontSize: 14,
-    color: "#888",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#333",
-    marginTop: 10,
+    backgroundColor: colors.background,
+    padding: 20,
   },
   errorText: {
     fontSize: 18,
-    color: "red",
+    color: colors.error,
+    marginBottom: 20,
     textAlign: "center",
-    paddingHorizontal: 30,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 5,
+    width: "50%",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: colors.background,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  profileHeader: {
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: colors.cardBackground,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+    backgroundColor: colors.inputBackground,
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 5,
+  },
+  role: {
+    fontSize: 16,
+    color: colors.text,
+    opacity: 0.7,
+  },
+  infoContainer: {
+    padding: 20,
+    backgroundColor: colors.cardBackground,
+    marginTop: 10,
+    borderRadius: 10,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  infoItem: {
+    marginBottom: 15,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: colors.text,
+    opacity: 0.7,
+    marginBottom: 5,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: colors.text,
   },
 });
 

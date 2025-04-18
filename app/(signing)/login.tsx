@@ -5,6 +5,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 import { Snackbar, TextInput } from "react-native-paper";
 import { useAuth } from "../context/authContext";
+import { colors } from "../../theme/colors";
 
 export default function SignIn() {
   const [email, setEmail] = useState<string>("");
@@ -66,7 +67,7 @@ export default function SignIn() {
         style={styles.input}
         label="Email"
         mode="outlined"
-        theme={{ colors: { primary: "#2b9dd6" } }}
+        theme={{ colors: { primary: colors.secondary } }}
         value={email}
         onChangeText={setEmail}
       />
@@ -75,12 +76,12 @@ export default function SignIn() {
         secureTextEntry
         label="Password"
         mode="outlined"
-        theme={{ colors: { primary: "#2b9dd6" } }}
+        theme={{ colors: { primary: colors.secondary } }}
         value={password}
         onChangeText={setPassword}
       />
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={{ color: "#FFF" }}>Sign In</Text>
+        <Text style={styles.buttonText}>Sign In</Text>
       </TouchableOpacity>
       <Text style={styles.footerText}>
         Forgot Password?{" "}
@@ -98,11 +99,7 @@ export default function SignIn() {
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
-        action={{
-          label: "OK",
-          onPress: () => setSnackbarVisible(false),
-        }}
-        style={{ backgroundColor: "#ff5252" }}
+        style={{ backgroundColor: colors.error }}
       >
         {snackbarMessage}
       </Snackbar>
@@ -115,45 +112,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#FFF",
-  },
-  logo: {
-    width: 800,
-    height: 100,
-    marginBottom: 20,
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+    color: colors.text,
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 30,
+    color: colors.text,
   },
   input: {
     width: "80%",
-    height: 40,
-    paddingHorizontal: 10,
     marginBottom: 15,
+  },
+  button: {
+    width: "80%",
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: colors.background,
+    fontSize: 16,
+    fontWeight: "600",
   },
   footerText: {
     marginTop: 20,
-    fontSize: 14,
-    color: "blue",
+    color: colors.text,
   },
   footerLink: {
-    color: "#4683a1",
+    color: colors.primary,
     fontWeight: "bold",
-    textDecorationLine: "underline",
-  },
-  button: {
-    width: "30%",
-    alignItems: "center",
-    backgroundColor: "#4683a1",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
   },
 });
