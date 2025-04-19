@@ -1,14 +1,17 @@
 import { Link } from "expo-router";
-import { Text, View, StyleSheet, Image } from "react-native";
+import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { colors } from "../../theme/colors";
 
 export default function Index() {
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/>
       <Text style={styles.text}>Helping educators and students communicate, save time, and stay organized.</Text>
-      <Link href="/login" style={styles.button}>
-        <Text style={styles.text}>Start</Text>
-      </Link>
+      <TouchableOpacity style={styles.button}>
+        <Link href="/login">
+          <Text style={styles.buttonText}>Start</Text>
+        </Link>
+      </TouchableOpacity>
       {/*<Link href="../(profile)" style={styles.button}>Profile debug</Link>*/}
     </View>
   );
@@ -19,27 +22,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#bce5ff",
+    backgroundColor: colors.background,
   },
   text: {
-    fontSize: 14,
+    fontSize: 16,
     width: "80%",
     textAlign: "center",
-    fontWeight: "bold",
-    fontFamily: "serif",
-  },
-  title: {
-    fontSize: 20,
-    opacity: 0.5,
-    marginBottom: 10,
+    color: colors.text,
+    marginBottom: 20,
+    fontFamily: "System",
   },
   button: {
     width: "30%",
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#4683a1",
-    color: "#fff",
-    marginTop: 40,
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonText: {
+    color: colors.background,
+    fontSize: 16,
+    fontWeight: "600",
   },
   logo: {
     width: 800,

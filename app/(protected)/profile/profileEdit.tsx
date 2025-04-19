@@ -15,6 +15,7 @@ import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, Snackbar } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "./../../../theme/colors";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -163,7 +164,7 @@ export default function ProfileScreen() {
   if (loading)
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
+        <ActivityIndicator size="large" color={colors.text} />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -183,7 +184,7 @@ export default function ProfileScreen() {
         <View style={styles.header}>
           <Image source={{ uri: profile.banner }} style={styles.avatar} />
           <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
-            <Ionicons name="camera" size={20} color="#fff" />
+            <Ionicons name="camera" size={20} color={colors.buttonText} />
             <Text style={styles.iconButtonText}>Change Photo</Text>
           </TouchableOpacity>
         </View>
@@ -230,7 +231,7 @@ export default function ProfileScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.buttonText} />
           ) : (
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
@@ -243,8 +244,10 @@ export default function ProfileScreen() {
           action={{
             label: "OK",
             onPress: () => setSnackbarVisible(false),
+            labelStyle: { color: colors.buttonText }
           }}
-          style={{ backgroundColor: "green" }}
+          style={{ backgroundColor: colors.success }}
+          theme={{ colors: { onSurface: colors.buttonText } }}
         >
           {snackbarMessage}
         </Snackbar>
@@ -256,7 +259,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f4f6f8",
+    backgroundColor: colors.background,
   },
   scrollContainer: {
     padding: 20,
@@ -266,7 +269,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f4f6f8",
+    backgroundColor: colors.background,
   },
   header: {
     alignItems: "center",
@@ -277,64 +280,64 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 3,
-    borderColor: "#ccc",
-    backgroundColor: "#e0e0e0",
+    borderColor: colors.border,
+    backgroundColor: colors.inputBackground,
   },
   iconButton: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 12,
-    backgroundColor: "#007BFF",
+    backgroundColor: colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 25,
   },
   iconButtonText: {
-    color: "#fff",
+    color: colors.buttonText,
     marginLeft: 8,
     fontWeight: "600",
   },
   userName: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.text,
   },
   inputCard: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: colors.cardBackground,
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 15,
     paddingVertical: 10,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
   label: {
     fontSize: 14,
-    color: "#555",
+    color: colors.text,
     marginBottom: 6,
     fontWeight: "500",
   },
   input: {
     fontSize: 16,
-    color: "#333",
+    color: colors.text,
     paddingVertical: 6,
   },
   email: {
     fontSize: 14,
-    color: "#888",
-    backgroundColor: "#fff",
+    color: colors.text,
+    backgroundColor: colors.cardBackground,
     padding: 12,
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 2,
   },
   saveButton: {
-    backgroundColor: "#28a745",
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 25,
@@ -344,17 +347,17 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
-    color: "#fff",
+    color: colors.buttonText,
     fontWeight: "bold",
   },
   loadingText: {
     fontSize: 18,
-    color: "#333",
+    color: colors.text,
     marginTop: 10,
   },
   errorText: {
     fontSize: 18,
-    color: "red",
+    color: colors.error,
     textAlign: "center",
     paddingHorizontal: 30,
   },

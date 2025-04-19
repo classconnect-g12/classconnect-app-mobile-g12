@@ -1,50 +1,96 @@
-# Welcome to your Expo app 👋
+# ClassConnect Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para conectar educadores y estudiantes, desarrollada con [Expo](https://expo.dev).
 
-## Get started
+## Requisitos Previos
 
-1. Install dependencies
+- Node.js (versión 14 o superior)
+- npm o yarn
+- Expo CLI
+- iOS Simulator (para Mac) o Android Studio (para Windows/Linux)
 
+## Configuración del Proyecto
+
+1. Clonar el repositorio
+   ```bash
+   git clone git@github.com:classconnect-g12/classconnect-app-mobile-g12.git
+   cd classconnect-app-mobile-g12
+   ```
+
+2. Instalar dependencias
    ```bash
    npm install
    ```
 
-2. Start the app
-
-   ```bash
-    npx expo start
+3. Configurar variables de entorno
+   - Crea un archivo `.env` en la raíz del proyecto
+   - Copia el siguiente contenido y ajusta los valores según sea necesario:
+   ```env
+   # API Configuration
+   EXPO_PUBLIC_API_URL=https://classconnect-api-gateway-g12-production.up.railway.app
    ```
 
-In the output, you'll find options to open the app in a
+4. Iniciar la aplicación
+   ```bash
+   npx expo start
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+## Opciones de Desarrollo
+
+Puedes abrir la aplicación en:
+- [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Expo Go](https://expo.dev/go)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Estructura del Proyecto
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+classconnect-app-mobile-g12/
+├── app/                    # Directorio principal de la aplicación
+│   ├── (signing)/         # Rutas de autenticación
+│   ├── (protected)/       # Rutas protegidas
+│   ├── components/        # Componentes reutilizables
+│   └── context/          # Contextos de React
+├── assets/                # Recursos estáticos
+├── services/             # Servicios de la API
+└── .env                  # Variables de entorno
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Características
 
-## Learn more
+- Autenticación de usuarios
+- Gestión de perfiles
+- Interfaz moderna y responsive
+- Sistema de temas centralizado
 
-To learn more about developing your project with Expo, look at the following resources:
+## Sistema de Temas
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+La aplicación utiliza un sistema de temas centralizado para mantener una apariencia consistente en toda la aplicación. Los colores y estilos se definen en el archivo `theme/colors.ts`.
 
-## Join the community
+### Uso del Sistema de Temas
 
-Join our community of developers creating universal apps.
+Para usar los colores del tema en cualquier componente, importa el objeto `colors`:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```typescript
+import { colors } from "../../theme/colors";
+
+// Ejemplo de uso
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.background,
+  },
+});
+```
+
+## Desarrollo
+
+En desarrollo ...
+
+## Contribución
+
+1. Fork el repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
