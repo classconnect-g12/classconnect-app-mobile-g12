@@ -1,7 +1,12 @@
 import { login } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { signInStyles as styles } from "@styles/signInStyles";
@@ -14,6 +19,7 @@ import { useSnackbar } from "src/hooks/useSnackbar";
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { login: authLogin } = useAuth();
   const router = useRouter();
@@ -49,11 +55,14 @@ export default function SignIn() {
       );
 
     try {
+      setIsLoading(true);
       const token = await login(email, password);
       await authLogin(token);
       router.replace("../home");
     } catch (error: any) {
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,6 +77,8 @@ export default function SignIn() {
         theme={{ colors: { primary: colors.secondary } }}
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}
@@ -78,8 +89,16 @@ export default function SignIn() {
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Sign In</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && { opacity: 0.6 }]}
+        onPress={handleSubmit}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Sign In</Text>
+        )}
       </TouchableOpacity>
       <Text style={styles.footerText}>
         Forgot Password?{" "}
