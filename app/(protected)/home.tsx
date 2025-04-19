@@ -42,12 +42,12 @@ export default function HomeScreen() {
 
   const handleAddCourse = () => {
     // TODO: implement
-    router.push("./courses");
+    router.push("./addCourse");
   };
 
   const handleJoinClass = () => {
     // TODO: implement
-    router.push("./join-class");
+    router.push("/(protected)/course/findCourse");
   };
 
   return (

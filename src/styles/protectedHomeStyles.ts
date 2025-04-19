@@ -29,7 +29,7 @@ export const protectedHomeStyles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   searchSection: {
     marginBottom: 20,
