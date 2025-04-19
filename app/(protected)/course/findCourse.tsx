@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   KeyboardAvoidingView,
-  ScrollView,
   Platform,
   FlatList,
 } from "react-native";
 import { TextInput, Button, Snackbar, Card } from "react-native-paper";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
-import { findCourseStyles as styles} from "@styles/findCourseStyles";
+import { findCourseStyles as styles } from "@styles/findCourseStyles";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 interface Course {
   id: string;
@@ -23,19 +23,20 @@ interface Course {
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      showSnackbar("Please enter a search term");
+      showSnackbar("Please enter a search term", SNACKBAR_VARIANTS.INFO);
       return;
     }
 
@@ -63,7 +64,7 @@ export default function FindCourse() {
 
   const handleJoinCourse = (courseId: string) => {
     // TODO: Implement join course API call
-    showSnackbar("Successfully joined the course!");
+    showSnackbar("Successfully joined the course!", SNACKBAR_VARIANTS.SUCCESS);
     router.back();
   };
 
@@ -122,7 +123,7 @@ export default function FindCourse() {
         renderItem={renderCourse}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.courseList}
-        ListEmptyComponent={() => 
+        ListEmptyComponent={() =>
           !isLoading ? (
             <Text style={styles.emptyText}>
               {searchQuery
@@ -136,7 +137,8 @@ export default function FindCourse() {
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        onDismiss={() => setSnackbarVisible(false)}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </KeyboardAvoidingView>
   );

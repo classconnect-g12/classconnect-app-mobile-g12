@@ -3,41 +3,57 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-paper";
-
 import { useAuth } from "@context/authContext";
 import { signInStyles as styles } from "@styles/signInStyles";
 import { colors } from "@theme/colors";
 import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useSnackbar } from "src/hooks/useSnackbar";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const router = useRouter();
   const { login: authLogin } = useAuth();
+  const router = useRouter();
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleSubmit = async () => {
-    if (!email) return showSnackbar("Required fields are empty (email)");
+    if (!email)
+      return showSnackbar(
+        "Required fields are empty (email)",
+        SNACKBAR_VARIANTS.ERROR
+      );
     if (!validateEmail(email))
-      return showSnackbar("Please enter a valid email address");
-    if (!password) return showSnackbar("Required fields are empty (password)");
+      return showSnackbar(
+        "Please enter a valid email address",
+        SNACKBAR_VARIANTS.ERROR
+      );
+    if (!password)
+      return showSnackbar(
+        "Required fields are empty (password)",
+        SNACKBAR_VARIANTS.ERROR
+      );
     if (!validatePasswordLength(password))
-      return showSnackbar("The password must have more than 8 characters.");
+      return showSnackbar(
+        "The password must have more than 8 characters.",
+        SNACKBAR_VARIANTS.ERROR
+      );
 
     try {
       const token = await login(email, password);
       await authLogin(token);
       router.replace("../home");
     } catch (error: any) {
-      showSnackbar(error.detail);
+      showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
     }
   };
 
@@ -80,7 +96,8 @@ export default function SignIn() {
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        onDismiss={() => setSnackbarVisible(false)}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </View>
   );

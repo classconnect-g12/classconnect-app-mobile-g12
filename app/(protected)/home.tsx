@@ -16,21 +16,24 @@ import { images } from "@assets/images";
 import { protectedHomeStyles as styles } from "@styles/protectedHomeStyles";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateUsername } from "@utils/validators";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleSearch = () => {
     const validationError = validateUsername(search);
     if (validationError) {
-      showSnackbar(validationError);
+      showSnackbar(validationError, SNACKBAR_VARIANTS.INFO);
       return;
     }
 
@@ -125,7 +128,8 @@ export default function HomeScreen() {
           <AppSnackbar
             visible={snackbarVisible}
             message={snackbarMessage}
-            onDismiss={() => setSnackbarVisible(false)}
+            onDismiss={hideSnackbar}
+            variant={snackbarVariant}
           />
         </View>
       </ImageBackground>

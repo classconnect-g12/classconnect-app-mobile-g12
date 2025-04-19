@@ -16,6 +16,8 @@ import { colors } from "@theme/colors";
 import { profileEditStyles as styles } from "@styles/profileEditStyles";
 import { getUserProfile, updateUserProfile } from "@services/ProfileService";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -36,13 +38,13 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +90,7 @@ export default function ProfileScreen() {
 
   const handleSaveChanges = async () => {
     if (!hasChanges()) {
-      showSnackbar("No changes to save.");
+      showSnackbar("No changes to save.", SNACKBAR_VARIANTS.INFO);
       return;
     }
 
@@ -97,7 +99,7 @@ export default function ProfileScreen() {
       const updated = await updateUserProfile(profile);
       setProfile(updated);
       setOriginalProfile(updated);
-      showSnackbar("Profile updated successfully!");
+      showSnackbar("Profile updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
     } catch (err) {
       setError("Error saving changes.");
     } finally {
@@ -184,7 +186,8 @@ export default function ProfileScreen() {
         <AppSnackbar
           visible={snackbarVisible}
           message={snackbarMessage}
-          onDismiss={() => setSnackbarVisible(false)}
+          onDismiss={hideSnackbar}
+          variant={snackbarVariant}
         />
       </ScrollView>
     </KeyboardAvoidingView>

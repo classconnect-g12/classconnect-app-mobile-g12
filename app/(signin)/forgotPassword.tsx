@@ -7,29 +7,38 @@ import { forgotPasswordStyles as styles } from "@styles/forgotPasswordStyles";
 import { colors } from "@theme/colors";
 import { validateEmail } from "@utils/validators";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleSubmit = async () => {
     if (!email) {
-      showSnackbar("Please enter your email address");
+      showSnackbar("Please enter your email address", SNACKBAR_VARIANTS.ERROR);
       return;
     }
     if (!validateEmail(email)) {
-      showSnackbar("Please enter a valid email address");
+      showSnackbar(
+        "Please enter a valid email address",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
     // TODO: Lógica futura para recuperación vía email
-    showSnackbar("Password reset instructions sent to your email");
+    showSnackbar(
+      "Password reset instructions sent to your email",
+      SNACKBAR_VARIANTS.INFO
+    );
   };
 
   return (
@@ -55,10 +64,12 @@ export default function ForgotPassword() {
           Sign in
         </Link>
       </Text>
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        onDismiss={() => setSnackbarVisible(false)}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </View>
   );

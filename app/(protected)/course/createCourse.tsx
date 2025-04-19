@@ -13,27 +13,30 @@ import { colors } from "@theme/colors";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateCourse } from "@utils/validators";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
   const [description, setDescription] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleCreateCourse = async () => {
     const error = validateCourse(courseName);
     if (error) {
-      showSnackbar(error);
+      showSnackbar(error, SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     // TODO: Implement course creation API call
-    showSnackbar("Course created successfully!");
+    showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
     router.back();
   };
 
@@ -81,7 +84,8 @@ export default function CreateCourse() {
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
-        onDismiss={() => setSnackbarVisible(false)}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </KeyboardAvoidingView>
   );

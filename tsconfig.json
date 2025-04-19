@@ -10,7 +10,9 @@
       "@theme/*": ["src/theme/*"],
       "@context/*": ["src/context/*"],
       "@services/*": ["src/services/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@constants/*": ["src/constants/*"],
+      "@hooks/*": ["src/hooks/*"],
     }
   },
   "include": [

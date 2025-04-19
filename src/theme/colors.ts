@@ -5,6 +5,7 @@ export const colors = {
   text: '#333',
   error: '#ff5252',
   success: '#28a745',
+  info: '#1976D2',
   border: '#ccc',
   shadow: '#000',
   cardBackground: '#f4f6f8',
