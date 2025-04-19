@@ -24,7 +24,7 @@ Aplicación móvil para conectar educadores y estudiantes, desarrollada con [Exp
 
 3. Configurar variables de entorno
    - Crea un archivo `.env` en la raíz del proyecto
-   - Copia el siguiente contenido y ajusta los valores según sea necesario(ver seccion de [temas](#sistema-de-temas)):
+   - Copia el siguiente contenido y ajusta los valores según sea necesario:
    ```env
    # API Configuration
    EXPO_PUBLIC_API_URL=https://classconnect-api-gateway-g12-production.up.railway.app
@@ -62,29 +62,11 @@ classconnect-app-mobile-g12/
 - Autenticación de usuarios
 - Gestión de perfiles
 - Interfaz moderna y responsive
-- Tema personalizable mediante variables de entorno
+- Sistema de temas centralizado
 
 ## Sistema de Temas
 
-La aplicación utiliza un sistema de temas centralizado para mantener una apariencia consistente en toda la aplicación. Los colores y estilos se definen en el archivo `theme/colors.ts` y se pueden personalizar mediante variables de entorno.
-
-### Variables de Entorno para Temas
-
-Las siguientes variables de entorno pueden ser configuradas en el archivo `.env`:
-
-```env
-EXPO_PUBLIC_PRIMARY_COLOR=#4683a1      # Color principal de la aplicación
-EXPO_PUBLIC_SECONDARY_COLOR=#2b9dd6    # Color secundario
-EXPO_PUBLIC_BACKGROUND_COLOR=#ffffff    # Color de fondo
-EXPO_PUBLIC_TEXT_COLOR=#333            # Color del texto
-EXPO_PUBLIC_ERROR_COLOR=#ff5252        # Color para mensajes de error
-EXPO_PUBLIC_SUCCESS_COLOR=#28a745      # Color para mensajes de éxito
-EXPO_PUBLIC_BORDER_COLOR=#ccc          # Color de bordes
-EXPO_PUBLIC_SHADOW_COLOR=#000          # Color de sombras
-EXPO_PUBLIC_CARD_BACKGROUND=#f4f6f8    # Color de fondo para tarjetas
-EXPO_PUBLIC_INPUT_BACKGROUND=#e0e0e0   # Color de fondo para inputs
-EXPO_PUBLIC_BUTTON_TEXT_COLOR=#FFF     # Color del texto en botones
-```
+La aplicación utiliza un sistema de temas centralizado para mantener una apariencia consistente en toda la aplicación. Los colores y estilos se definen en el archivo `theme/colors.ts`.
 
 ### Uso del Sistema de Temas
 
@@ -98,12 +80,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
   },
-  text: {
-    color: colors.text,
-  },
-  button: {
-    backgroundColor: colors.primary,
-  }
 });
 ```
 
