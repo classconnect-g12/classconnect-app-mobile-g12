@@ -7,6 +7,7 @@ import {
   ImageBackground,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
 import { Appbar, AnimatedFAB, Button, Snackbar } from "react-native-paper";
 import AppbarMenu from "../components/AppbarMenu";
@@ -57,38 +58,53 @@ export default function HomeScreen() {
           <AppbarMenu title="ClassConnect" />
 
           <View style={styles.content}>
-            <Text style={styles.welcome}>Welcome!</Text>
+            <Text style={styles.welcome}>Welcome to ClassConnect!</Text>
+            <Text style={styles.subtitle}>Connect with teachers and students</Text>
 
-            <Text style={styles.sectionLabel}>Search for a profile</Text>
-            <View style={styles.searchContainer}>
-              <TextInput
-                placeholder="Enter username"
-                value={search}
-                onChangeText={setSearch}
-                style={styles.searchInput}
-                placeholderTextColor={colors.text}
-              />
-              <Button
-                mode="contained"
-                onPress={handleSearch}
-                style={styles.searchButton}
-                icon="magnify"
-                labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
-              >
-                Search
-              </Button>
-            </View>
+            <View style={styles.mainContent}>
+              <View style={styles.searchSection}>
+                <Text style={styles.sectionLabel}>Find a User</Text>
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    placeholder="Enter username"
+                    value={search}
+                    onChangeText={setSearch}
+                    style={styles.searchInput}
+                    placeholderTextColor={colors.text}
+                  />
+                  <Button
+                    mode="contained"
+                    onPress={handleSearch}
+                    style={styles.searchButton}
+                    icon="magnify"
+                    labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
+                  >
+                    Search
+                  </Button>
+                </View>
+              </View>
 
-            <View style={styles.noCoursesContainer}>
-              <Text style={styles.noCoursesText}>No courses found</Text>
-              <Button
-                mode="contained"
-                onPress={handleJoinClass}
-                style={styles.primaryButton}
-                labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
-              >
-                Join a class
-              </Button>
+              <View style={styles.booksContainer}>
+                <Image
+                  source={require("../../assets/images/books.png")}
+                  style={styles.booksImage}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <View style={styles.joinSection}>
+                <Text style={styles.joinTitle}>Ready to Learn?</Text>
+                <Text style={styles.joinSubtitle}>Join a class to get started</Text>
+                <Button
+                  mode="contained"
+                  onPress={handleJoinClass}
+                  style={styles.joinButton}
+                  labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
+                  icon="school"
+                >
+                  Join a Class
+                </Button>
+              </View>
             </View>
           </View>
 
@@ -130,24 +146,36 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   welcome: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 10,
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 5,
     textAlign: "center",
     color: colors.text,
   },
-  sectionLabel: {
+  subtitle: {
     fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
-    marginTop: 10,
+    textAlign: "center",
+    color: colors.text,
+    opacity: 0.7,
+    marginBottom: 20,
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  searchSection: {
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
     color: colors.text,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 30,
   },
   searchInput: {
     flex: 1,
@@ -162,23 +190,38 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 10,
   },
-  noCoursesContainer: {
-    flex: 1,
-    justifyContent: "center",
+  booksContainer: {
     alignItems: "center",
+    marginVertical: 20,
   },
-  noCoursesText: {
-    fontSize: 18,
-    marginBottom: 16,
-    textAlign: "center",
-    opacity: 0.5,
+  booksImage: {
+    width: 150,
+    height: 150,
+  },
+  joinSection: {
+    alignItems: "center",
+    backgroundColor: colors.cardBackground,
+    padding: 20,
+    borderRadius: 15,
+    marginTop: 20,
+  },
+  joinTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
     color: colors.text,
+    marginBottom: 5,
   },
-  primaryButton: {
+  joinSubtitle: {
+    fontSize: 16,
+    color: colors.text,
+    opacity: 0.7,
+    marginBottom: 15,
+  },
+  joinButton: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   fab: {
     position: "absolute",
