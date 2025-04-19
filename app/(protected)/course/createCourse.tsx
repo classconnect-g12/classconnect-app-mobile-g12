@@ -2,44 +2,41 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
 } from "react-native";
-import { TextInput, Button, Snackbar } from "react-native-paper";
+import { TextInput, Button } from "react-native-paper";
 import { router } from "expo-router";
-import { colors } from "../../theme/colors";
+
+import { colors } from "@theme/colors";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { validateCourse } from "@utils/validators";
+import { createCourseStyles as styles } from "@styles/createCourseStyles";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
   const [description, setDescription] = useState("");
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const handleCreateCourse = async () => {
-    if (!courseName.trim()) {
-      showSnackbar("Please enter a course name");
-      return;
-    }
-
-    if (courseName.length < 3) {
-      showSnackbar("Course name must be at least 3 characters long");
-      return;
-    }
-
-    if (courseName.length > 50) {
-      showSnackbar("Course name cannot be longer than 50 characters");
+    const error = validateCourse(courseName);
+    if (error) {
+      showSnackbar(error, SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     // TODO: Implement course creation API call
-    showSnackbar("Course created successfully!");
+    showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
     router.back();
   };
 
@@ -84,50 +81,12 @@ export default function CreateCourse() {
         </View>
       </ScrollView>
 
-      <Snackbar
+      <AppSnackbar
         visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        style={{ backgroundColor: colors.error }}
-      >
-        {snackbarMessage}
-      </Snackbar>
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
+      />
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 5,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.text,
-    opacity: 0.7,
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  inputContainer: {
-    gap: 20,
-  },
-  input: {
-    backgroundColor: colors.inputBackground,
-  },
-  button: {
-    marginTop: 20,
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-  },
-}); 

@@ -1,18 +1,21 @@
 import { Link } from "expo-router";
 import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { colors } from "../../theme/colors";
+import { colors } from "@theme/colors";
+import { images } from "@assets/images";
 
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/classconnect-logo.png')} style={styles.logo} resizeMode="contain"/>
-      <Text style={styles.text}>Helping educators and students communicate, save time, and stay organized.</Text>
+      <Image source={images.logo} style={styles.logo} resizeMode="contain" />
+      <Text style={styles.text}>
+        Helping educators and students communicate, save time, and stay
+        organized.
+      </Text>
       <TouchableOpacity style={styles.button}>
         <Link href="/login">
           <Text style={styles.buttonText}>Start</Text>
         </Link>
       </TouchableOpacity>
-      {/*<Link href="../(profile)" style={styles.button}>Profile debug</Link>*/}
     </View>
   );
 }
