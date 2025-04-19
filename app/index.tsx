@@ -1,5 +1,5 @@
 import { Redirect } from "expo-router";
-import { useAuth } from "./context/authContext";
+import { useAuth } from "../src/context/authContext";
 import { LogBox } from 'react-native';
 
 LogBox.ignoreAllLogs(true); //Para que no salgan carteles de errores en producción.
@@ -10,6 +10,6 @@ export default function Index() {
     return null;
   }
   return (
-    <Redirect href={isAuthenticated ? "/(protected)/home" : "/(signing)"} />
+    <Redirect href={isAuthenticated ? "/(protected)/home" : "/(signin)"} />
   );
 }

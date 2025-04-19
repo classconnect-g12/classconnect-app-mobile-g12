@@ -1,9 +1,9 @@
 import { Stack, useRouter } from "expo-router";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "@context/authContext";
 import { useEffect } from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import { colors } from "../../theme/colors";
+import { colors } from "@theme/colors";
 
 export default function ProtectedLayout() {
   const { isAuthenticated } = useAuth();

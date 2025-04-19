@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "@context/authContext";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
@@ -34,7 +34,6 @@ export default function SigningLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="about" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
       <Stack.Screen name="forgotPassword" />

@@ -7,12 +7,14 @@ const storeToken = async (token: string) => {
   await AsyncStorage.setItem("token", token);
 };
 
-const login = async (email: string, password: string): Promise<string> => {
-  console.log("API_URL:", API_URL);
-
+const checkApiUrl = () => {
   if (!API_URL) {
-    throw new Error("Error en el servidor: API_URL no está definido");
+    throw new Error("Server error: API_URL is not defined");
   }
+};
+
+const login = async (email: string, password: string): Promise<string> => {
+  checkApiUrl();
 
   try {
     const response = await axios.post(`${API_URL}/auth/login`, {
@@ -24,14 +26,12 @@ const login = async (email: string, password: string): Promise<string> => {
       const token = response.data.token;
       await storeToken(token);
       return token;
-    } else {
-      throw new Error(
-        `Error ${response.status}: ${JSON.stringify(response.data)}`
-      );
     }
+
+    throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
   } catch (error: any) {
-    console.error("Error en login:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Error al iniciar sesión" };
+    console.error("Login error:", error?.response?.data || error.message);
+    throw error?.response?.data || { message: "Login failed" };
   }
 };
 
@@ -40,11 +40,7 @@ const register = async (
   email: string,
   password: string
 ): Promise<string> => {
-  console.log("API_URL:", API_URL);
-
-  if (!API_URL) {
-    throw new Error("Error en el servidor: API_URL no está definido");
-  }
+  checkApiUrl();
 
   try {
     const response = await axios.post(`${API_URL}/auth/register`, {
@@ -57,14 +53,12 @@ const register = async (
       const token = response.data.token;
       await storeToken(token);
       return token;
-    } else {
-      throw new Error(
-        `Error ${response.status}: ${JSON.stringify(response.data)}`
-      );
     }
+
+    throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
   } catch (error: any) {
-    console.error("Error en registro:", error?.response?.data || error.message);
-    throw error?.response?.data || "Error al registrarse";
+    console.error("Register error:", error?.response?.data || error.message);
+    throw error?.response?.data || { message: "Registration failed" };
   }
 };
 

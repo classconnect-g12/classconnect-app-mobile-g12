@@ -47,14 +47,19 @@ Puedes abrir la aplicación en:
 
 ```
 classconnect-app-mobile-g12/
-├── app/                    # Directorio principal de la aplicación
+├── app/                   # Directorio principal de la navegación y pantallas
 │   ├── (signing)/         # Rutas de autenticación
 │   ├── (protected)/       # Rutas protegidas
+├── src/                   # Código fuente reutilizable y organización principal
+│   ├── assets/            # Recursos estáticos (imágenes, íconos, etc.)
 │   ├── components/        # Componentes reutilizables
-│   └── context/          # Contextos de React
-├── assets/                # Recursos estáticos
-├── services/             # Servicios de la API
-└── .env                  # Variables de entorno
+│   ├── context/           # Contextos de React
+│   ├── services/          # Servicios de la API (Axios, etc.)
+│   ├── styles/            # Archivos de estilos centralizados
+│   └── theme/             # Colores y estilos
+│   └── utils/             # Funciones utilitarias (validaciones, helpers, etc.)
+├── .env                   # Variables de entorno
+
 ```
 
 ## Características
