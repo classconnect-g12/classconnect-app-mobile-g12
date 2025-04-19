@@ -83,6 +83,11 @@ const UserProfile: React.FC = () => {
   if (error)
     return (
       <View style={styles.errorContainer}>
+        <Image 
+          source={require("../../../assets/images/not_found_profile.png")}
+          style={styles.errorImage}
+          resizeMode="contain"
+        />
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity
           style={styles.button}
@@ -96,6 +101,11 @@ const UserProfile: React.FC = () => {
   if (!profile) {
     return (
       <View style={styles.errorContainer}>
+        <Image 
+          source={require("../../../assets/images/not_found_profile.png")}
+          style={styles.errorImage}
+          resizeMode="contain"
+        />
         <Text style={styles.errorText}>Profile not found</Text>
         <TouchableOpacity
           style={styles.button}
@@ -157,9 +167,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: 20,
   },
+  errorImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
   errorText: {
     fontSize: 18,
-    color: colors.error,
+    color: colors.text,
     marginBottom: 20,
     textAlign: "center",
   },

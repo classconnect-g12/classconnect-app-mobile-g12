@@ -8,18 +8,38 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Appbar, AnimatedFAB, Button } from "react-native-paper";
+import { Appbar, AnimatedFAB, Button, Snackbar } from "react-native-paper";
 import AppbarMenu from "../components/AppbarMenu";
 import { router } from "expo-router";
 import { colors } from "../../theme/colors";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarVisible(true);
+  };
 
   const handleSearch = () => {
-    if (search.trim() !== "") {
-      router.push(`/profile/${search}`);
+    if (search.trim() === "") {
+      showSnackbar("Please enter a username");
+      return;
     }
+
+    if (search.length < 5) {
+      showSnackbar("Username must be at least 5 characters long");
+      return;
+    }
+
+    if (search.length > 30) {
+      showSnackbar("Username cannot be longer than 30 characters");
+      return;
+    }
+
+    router.push(`/profile/${search}`);
   };
 
   const handleAddCourse = () => {
@@ -82,6 +102,15 @@ export default function HomeScreen() {
             animateFrom="right"
             color={colors.buttonText}
           />
+
+          <Snackbar
+            visible={snackbarVisible}
+            onDismiss={() => setSnackbarVisible(false)}
+            duration={3000}
+            style={{ backgroundColor: colors.error }}
+          >
+            {snackbarMessage}
+          </Snackbar>
         </View>
       </ImageBackground>
     </TouchableWithoutFeedback>
