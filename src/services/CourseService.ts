@@ -1,14 +1,5 @@
+import { CourseData, GetCoursesResponse } from "@types/course";
 import { getToken } from "@utils/tokenUtils";
-
-type CourseData = {
-  title: string;
-  description: string;
-  teacherId: number;
-  capacity: number;
-  startDate: string;
-  endDate: string;
-  modality: "ONLINE" | "ONSITE" | "HYBRID";
-};
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -32,3 +23,41 @@ export const createCourse = async (data: CourseData) => {
   const r = response.json();
   console.log(r);
 };
+
+export async function fetchCourses(
+  page = 0,
+  limit = 10
+): Promise<GetCoursesResponse> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        courses: [
+          {
+            id: "uuid-1",
+            title: "Introduction to React Native",
+            description: "Learn the basics of React Native development",
+            capacity: 40,
+            available: true,
+            startDate: "2025-10-20T18:00:00Z",
+            endDate: "2025-12-20T20:00:00Z",
+          },
+          {
+            id: "uuid-2",
+            title: "Advanced JavaScript",
+            description: "Deep dive into JavaScript concepts",
+            capacity: 30,
+            available: true,
+            startDate: "2025-11-01T15:00:00Z",
+            endDate: "2026-01-01T17:00:00Z",
+          },
+        ],
+        pagination: {
+          currentPage: page,
+          pageSize: limit,
+          totalItems: 2,
+          totalPages: 1,
+        },
+      });
+    }, 1000);
+  });
+}
