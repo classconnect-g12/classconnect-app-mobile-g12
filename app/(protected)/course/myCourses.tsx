@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { getMyCourses } from "@services/CourseService";
@@ -47,14 +48,37 @@ export default function MyCourses() {
     }
   };
 
-  const handleDelete = async (courseId: string) => {
-    try {
-      setCourses((prev) => prev.filter((course) => course.id !== courseId));
-      alert("Course deleted successfully");
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete course");
-    }
+  const handleDelete = (courseId: string) => {
+    Alert.alert(
+      "Delete Course",
+      "Are you sure you want to delete this course?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Acá llamarías al servicio para eliminarlo
+              // await deleteCourse(courseId);
+
+              // Por ahora simplemente sacarlo de la lista
+              setCourses((prev) =>
+                prev.filter((course) => course.id !== courseId)
+              );
+              alert("Course deleted successfully");
+            } catch (error) {
+              console.error(error);
+              alert("Failed to delete course");
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const renderItem = ({ item }: { item: ApiCourse }) => (
