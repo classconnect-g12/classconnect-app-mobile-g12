@@ -1,30 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
-import { TextInput, Button, Snackbar, Card } from "react-native-paper";
+import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-
-interface Course {
-  id: string;
-  name: string;
-  description: string;
-  instructor: string;
-}
+import { fetchCourses } from "@services/CourseService";
+import { ApiCourse } from "@types/course";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [courses, setCourses] = useState<ApiCourse[]>([]);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
 
   const {
     snackbarVisible,
@@ -34,46 +31,56 @@ export default function FindCourse() {
     hideSnackbar,
   } = useSnackbar();
 
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const response = await fetchCourses();
+        const availableCourses = response.courses.filter(
+          (course) => course.available
+        );
+        setCourses(availableCourses);
+      } catch (error) {
+        console.error(error);
+        showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
+      } finally {
+        setIsLoadingInitial(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       showSnackbar("Please enter a search term", SNACKBAR_VARIANTS.INFO);
       return;
     }
 
-    setIsLoading(true);
-    // TODO: Implement course search API call
-    // Simulated API response
-    setTimeout(() => {
-      setCourses([
-        {
-          id: "1",
-          name: "Introduction to React Native",
-          description: "Learn the basics of React Native development",
-          instructor: "John Doe",
-        },
-        {
-          id: "2",
-          name: "Advanced JavaScript",
-          description: "Deep dive into JavaScript concepts",
-          instructor: "Jane Smith",
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    setIsSearching(true);
+    try {
+      const response = await fetchCourses();
+      const availableCourses = response.courses.filter(
+        (course) => course.available
+      );
+      setCourses(availableCourses);
+    } catch (error) {
+      console.error(error);
+      showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleJoinCourse = (courseId: string) => {
-    // TODO: Implement join course API call
     showSnackbar("Successfully joined the course!", SNACKBAR_VARIANTS.SUCCESS);
     router.back();
   };
 
-  const renderCourse = ({ item }: { item: Course }) => (
+  const renderCourse = ({ item }: { item: ApiCourse }) => (
     <Card style={styles.courseCard}>
       <Card.Content>
-        <Text style={styles.courseName}>{item.name}</Text>
+        <Text style={styles.courseName}>{item.title}</Text>
         <Text style={styles.courseDescription}>{item.description}</Text>
-        <Text style={styles.instructor}>Instructor: {item.instructor}</Text>
       </Card.Content>
       <Card.Actions>
         <Button
@@ -87,6 +94,19 @@ export default function FindCourse() {
       </Card.Actions>
     </Card>
   );
+
+  if (isLoadingInitial) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -112,7 +132,7 @@ export default function FindCourse() {
           onPress={handleSearch}
           style={styles.searchButton}
           labelStyle={{ color: colors.buttonText }}
-          loading={isLoading}
+          loading={isSearching}
         >
           Search
         </Button>
@@ -123,15 +143,13 @@ export default function FindCourse() {
         renderItem={renderCourse}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.courseList}
-        ListEmptyComponent={() =>
-          !isLoading ? (
-            <Text style={styles.emptyText}>
-              {searchQuery
-                ? "No courses found. Try a different search term."
-                : "Search for courses to join"}
-            </Text>
-          ) : null
-        }
+        ListEmptyComponent={() => (
+          <Text style={styles.emptyText}>
+            {searchQuery
+              ? "No courses found. Try a different search term."
+              : "Search for courses to join"}
+          </Text>
+        )}
       />
 
       <AppSnackbar
