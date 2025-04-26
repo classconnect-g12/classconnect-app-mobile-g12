@@ -4,7 +4,7 @@ import {
   CourseRequestBody,
   FullCourse,
   GetCoursesResponse,
-} from "@types/course";
+} from "@src/types/course";
 import { getToken } from "@utils/tokenUtils";
 
 interface Teacher {
