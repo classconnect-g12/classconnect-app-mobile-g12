@@ -35,4 +35,31 @@ export const createCourseStyles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 8,
   },
+  datePickerContainer: {
+    marginVertical: 10,
+  },
+  dateLabel: {
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 5,
+  },
+  datePicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.inputBackground,
+    marginBottom: 10,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: colors.text,
+    flex: 1,
+  },
+  datePickerIcon: {
+    marginLeft: 8,
+  },
 });

@@ -42,7 +42,7 @@ export default function HomeScreen() {
 
   const handleAddCourse = () => {
     // TODO: implement
-    router.push("./addCourse");
+    router.push("/(protected)/course/createCourse");
   };
 
   const handleJoinClass = () => {
