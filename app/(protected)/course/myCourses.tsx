@@ -47,9 +47,22 @@ export default function MyCourses() {
     }
   };
 
+  const handleDelete = async (courseId: string) => {
+    try {
+      setCourses((prev) => prev.filter((course) => course.id !== courseId));
+      alert("Course deleted successfully");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete course");
+    }
+  };
+
   const renderItem = ({ item }: { item: ApiCourse }) => (
-    <TouchableOpacity onPress={() => router.push(`/course/${item.id}` as any)}>
-      <Card style={{ marginBottom: 12, padding: 12 }}>
+    <Card style={{ marginBottom: 12, padding: 12 }}>
+      <TouchableOpacity
+        onPress={() => router.push(`/course/${item.id}` as any)}
+        style={{ marginBottom: 12 }}
+      >
         <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.title}</Text>
         <Text style={{ marginTop: 4, color: "gray" }} numberOfLines={2}>
           {item.description}
@@ -62,8 +75,35 @@ export default function MyCourses() {
           {new Date(item.startDate).toLocaleDateString()} -{" "}
           {new Date(item.endDate).toLocaleDateString()}
         </Text>
-      </Card>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      <View
+        style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}
+      >
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.primary,
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: 6,
+          }}
+          onPress={() => router.push(`/edit-course/${item.id}` as any)}
+        >
+          <Text style={{ color: "white" }}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: "red",
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: 6,
+          }}
+          onPress={() => handleDelete(item.id)}
+        >
+          <Text style={{ color: "white" }}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </Card>
   );
 
   if (loading && courses.length === 0) {
