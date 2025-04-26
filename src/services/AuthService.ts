@@ -1,11 +1,7 @@
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storeToken } from "@utils/tokenUtils";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
-const storeToken = async (token: string) => {
-  await AsyncStorage.setItem("token", token);
-};
 
 const checkApiUrl = () => {
   if (!API_URL) {
@@ -28,7 +24,9 @@ const login = async (email: string, password: string): Promise<string> => {
       return token;
     }
 
-    throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
+    throw new Error(
+      `Error ${response.status}: ${JSON.stringify(response.data)}`
+    );
   } catch (error: any) {
     console.error("Login error:", error?.response?.data || error.message);
     throw error?.response?.data || { message: "Login failed" };
@@ -55,7 +53,9 @@ const register = async (
       return token;
     }
 
-    throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
+    throw new Error(
+      `Error ${response.status}: ${JSON.stringify(response.data)}`
+    );
   } catch (error: any) {
     console.error("Register error:", error?.response?.data || error.message);
     throw error?.response?.data || { message: "Registration failed" };

@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getToken } from "@utils/tokenUtils";
 
 type CourseData = {
   title: string;
@@ -13,7 +13,7 @@ type CourseData = {
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const createCourse = async (data: CourseData) => {
-  const token = await AsyncStorage.getItem("token");
+  const token = await getToken();
 
   const response = await fetch(`${API_URL}/course/create`, {
     method: "POST",

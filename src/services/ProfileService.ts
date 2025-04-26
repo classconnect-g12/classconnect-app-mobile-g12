@@ -1,5 +1,5 @@
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getToken } from "@utils/tokenUtils";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const PLACEHOLDER_BANNER = "https://via.placeholder.com/150";
@@ -12,12 +12,6 @@ export interface UserProfileResponse {
   description: string;
   banner: string;
 }
-
-const getToken = async (): Promise<string> => {
-  const token = await AsyncStorage.getItem("token");
-  if (!token) throw new Error("Token not found");
-  return token;
-};
 
 export const getUserProfileByUsername = async (
   username: string
@@ -42,9 +36,12 @@ export const getUserProfileByUsername = async (
 export const getUserProfile = async (): Promise<UserProfileResponse> => {
   const token = await getToken();
 
-  const response = await axios.get<UserProfileResponse>(`${API_URL}/user/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await axios.get<UserProfileResponse>(
+    `${API_URL}/user/profile`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
 
   return {
     ...response.data,
@@ -52,7 +49,9 @@ export const getUserProfile = async (): Promise<UserProfileResponse> => {
   };
 };
 
-export const updateUserProfile = async (profile: Partial<UserProfileResponse>) => {
+export const updateUserProfile = async (
+  profile: Partial<UserProfileResponse>
+) => {
   const token = await getToken();
 
   const formData = new FormData();
