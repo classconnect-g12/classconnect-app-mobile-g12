@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, ActivityIndicator, ScrollView, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { fetchCourseDetail } from "@services/CourseService"; // Simulación que hicimos
-import { findCourseStyles as styles } from "@styles/findCourseStyles";
+import { fetchCourseDetail } from "@services/CourseService";
+import { detailCourseStyles as styles } from "@styles/detailCourseStyles";
 import { colors } from "@theme/colors";
+import { Card, Button } from "react-native-paper";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,23 +50,57 @@ export default function CourseDetail() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20 }}>
+      <View style={styles.bannerContainer}>
+        <Image source={{ uri: teacher.banner }} style={styles.bannerImage} />
+      </View>
+
       <Text style={styles.title}>{course.title}</Text>
-      <Text style={styles.description}>{course.description}</Text>
 
-      <Text style={styles.sectionTitle}>Objectives</Text>
-      <Text style={styles.sectionText}>{course.objectives}</Text>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.cardTitle}>Course Description</Text>
+          <Text style={styles.description}>{course.description}</Text>
+        </Card.Content>
+      </Card>
 
-      <Text style={styles.sectionTitle}>Syllabus</Text>
-      <Text style={styles.sectionText}>{course.syllabus}</Text>
+      {/* Objetivos */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Objectives</Text>
+        <Text style={styles.sectionText}>{course.objectives}</Text>
+      </View>
 
-      <Text style={styles.sectionTitle}>Prerequisites</Text>
-      <Text style={styles.sectionText}>{course.prerequisites}</Text>
+      {/* Syllabus */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Syllabus</Text>
+        <Text style={styles.sectionText}>{course.syllabus}</Text>
+      </View>
 
-      <Text style={styles.sectionTitle}>Teacher</Text>
-      <Text style={styles.sectionText}>
-        {teacher.first_name} {teacher.last_name}
-      </Text>
-      <Text style={styles.sectionText}>{teacher.email}</Text>
+      {/* Prerequisitos */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Prerequisites</Text>
+        <Text style={styles.sectionText}>{course.prerequisites}</Text>
+      </View>
+
+      {/* Información del profesor */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.cardTitle}>Teacher Information</Text>
+          <Text style={styles.sectionText}>
+            {teacher.first_name} {teacher.last_name}
+          </Text>
+          <Text style={styles.sectionText}>{teacher.email}</Text>
+          <Text style={styles.sectionText}>{teacher.description}</Text>
+        </Card.Content>
+      </Card>
+
+      {/* Botón para unirse al curso */}
+      <Button
+        mode="contained"
+        onPress={() => alert("Joined the course")}
+        style={styles.joinButton}
+      >
+        Join Course
+      </Button>
     </ScrollView>
   );
 }

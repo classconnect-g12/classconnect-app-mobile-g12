@@ -22,6 +22,7 @@ export default function CourseLayout() {
           headerTitle: "Search course",
         }}
       />
+      <Stack.Screen name="[id]" options={{ headerTitle: "Course Details" }} />
     </Stack>
   );
 }
