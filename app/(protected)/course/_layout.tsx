@@ -29,6 +29,12 @@ export default function CourseLayout() {
           headerTitle: "My Courses",
         }}
       />
+      <Stack.Screen
+        name="editCourse/[id]"
+        options={{
+          headerTitle: "Edit course",
+        }}
+      />
     </Stack>
   );
 }
