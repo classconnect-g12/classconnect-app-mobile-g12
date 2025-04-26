@@ -6,6 +6,7 @@ import {
   Platform,
   FlatList,
   ActivityIndicator,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
@@ -77,22 +78,31 @@ export default function FindCourse() {
   };
 
   const renderCourse = ({ item }: { item: ApiCourse }) => (
-    <Card style={styles.courseCard}>
-      <Card.Content>
-        <Text style={styles.courseName}>{item.title}</Text>
-        <Text style={styles.courseDescription}>{item.description}</Text>
-      </Card.Content>
-      <Card.Actions>
-        <Button
-          mode="contained"
-          onPress={() => handleJoinCourse(item.id)}
-          style={styles.joinButton}
-          labelStyle={{ color: colors.buttonText }}
-        >
-          Join Course
-        </Button>
-      </Card.Actions>
-    </Card>
+    <TouchableWithoutFeedback
+      onPress={() => router.push(`/course/${item.id}` as any)}
+    >
+      <View>
+        <Card style={styles.courseCard}>
+          <Card.Content>
+            <Text style={styles.courseName}>{item.title}</Text>
+            <Text style={styles.courseDescription}>{item.description}</Text>
+          </Card.Content>
+          <Card.Actions>
+            <Button
+              mode="contained"
+              onPress={(e) => {
+                e.stopPropagation();
+                handleJoinCourse(item.id);
+              }}
+              style={styles.joinButton}
+              labelStyle={{ color: colors.buttonText }}
+            >
+              Join Course
+            </Button>
+          </Card.Actions>
+        </Card>
+      </View>
+    </TouchableWithoutFeedback>
   );
 
   if (isLoadingInitial) {
