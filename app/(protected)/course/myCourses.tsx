@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { getMyCourses } from "@services/CourseService";
-import { ApiCourse } from "@types/course";
+import { ApiCourse } from "@src/types/course";
 import { colors } from "@theme/colors";
 import { Card } from "react-native-paper";
 
@@ -110,7 +110,7 @@ export default function MyCourses() {
             paddingHorizontal: 12,
             borderRadius: 6,
           }}
-          onPress={() => router.push(`/edit-course/${item.id}` as any)}
+          onPress={() => router.push(`/course/editCourse/${item.id}` as any)}
         >
           <Text style={{ color: "white" }}>Edit</Text>
         </TouchableOpacity>
