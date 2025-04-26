@@ -22,6 +22,21 @@ let simulatedCourses: ApiCourse[] = [
   },
 ];
 
+export const simulatedCourses2: ApiCourse[] = Array.from(
+  { length: 50 },
+  (_, index) => ({
+    id: `course-${index + 1}`,
+    title: `Course ${index + 1}`,
+    description: `This is the description for course ${
+      index + 1
+    }. Learn amazing things!`,
+    available: index % 2 === 0, // alterna disponible / no disponible
+    capacity: 10 + (index % 5) * 5, // 10, 15, 20, 25, 30 seats
+    startDate: new Date(Date.now() + index * 86400000).toISOString(), // uno por día a partir de hoy
+    endDate: new Date(Date.now() + (index + 30) * 86400000).toISOString(), // termina 30 días después
+  })
+);
+
 // const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // export const createCourse = async (data: CourseData) => {
@@ -132,6 +147,51 @@ export async function fetchCourseDetail(id: string) {
       } else {
         reject(new Error("Course not found"));
       }
+    }, 1000);
+  });
+}
+
+// export async function getMyCourses(
+//   page = 0,
+//   limit = 10
+// ): Promise<GetCoursesResponse> {
+//   const token = await getToken();
+//   const response = await fetch(
+//     `${process.env.EXPO_PUBLIC_API_URL}/course/mycourses?page=${page}&limit=${limit}&id=${userId}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch courses");
+//   }
+
+//   return response.json();
+// }
+
+export async function getMyCourses(
+  page = 0,
+  limit = 10
+): Promise<GetCoursesResponse> {
+  const token = await getToken();
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const start = page * limit;
+      const end = start + limit;
+      resolve({
+        courses: simulatedCourses2.slice(start, end),
+        pagination: {
+          currentPage: page,
+          pageSize: limit,
+          totalItems: simulatedCourses2.length,
+          totalPages: Math.ceil(simulatedCourses2.length / limit),
+        },
+      });
     }, 1000);
   });
 }

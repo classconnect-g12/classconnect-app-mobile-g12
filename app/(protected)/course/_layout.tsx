@@ -23,6 +23,12 @@ export default function CourseLayout() {
         }}
       />
       <Stack.Screen name="[id]" options={{ headerTitle: "Course Details" }} />
+      <Stack.Screen
+        name="myCourses"
+        options={{
+          headerTitle: "My Courses",
+        }}
+      />
     </Stack>
   );
 }
