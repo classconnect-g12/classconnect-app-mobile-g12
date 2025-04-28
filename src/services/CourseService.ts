@@ -27,9 +27,12 @@ export async function fetchCourses(
   limit = 10
 ): Promise<GetCoursesResponse> {
   const response = await axios.get<GetCoursesResponse>(
-    `${EXPO_PUBLIC_API_URL}/course/get`,
+    `${EXPO_PUBLIC_API_URL}/course/get?page=${page}&limit=${limit}`,
     {
-      params: { page, limit },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${await getToken()}`,
+      },
     }
   );
 
