@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  FlatList,
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  SectionList,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { deleteCourse, getMyCourses } from "@services/CourseService";
@@ -136,6 +136,35 @@ export default function MyCourses() {
     );
   }
 
+  const now = new Date();
+
+  const activeCourses = courses.filter(
+    (course) =>
+      new Date(course.startDate) <= now && new Date(course.endDate) >= now
+  );
+
+  const finishedCourses = courses.filter(
+    (course) => new Date(course.endDate) < now
+  );
+
+  const futureCourses = courses.filter(
+    (course) => new Date(course.startDate) > now
+  );
+
+  const sections = [];
+
+  if (activeCourses.length > 0) {
+    sections.push({ title: "Active Courses", data: activeCourses });
+  }
+
+  if (futureCourses.length > 0) {
+    sections.push({ title: "Upcoming Courses", data: futureCourses });
+  }
+
+  if (finishedCourses.length > 0) {
+    sections.push({ title: "Finished Courses", data: finishedCourses });
+  }
+
   if (!loading && courses.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -144,14 +173,36 @@ export default function MyCourses() {
     );
   }
 
+  if (!loading && sections.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>No courses to show yet.</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList
+    <SectionList
       contentContainerStyle={{ padding: 16 }}
-      data={courses}
+      sections={sections}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       onEndReached={loadMore}
       onEndReachedThreshold={0.5}
+      renderSectionHeader={({ section: { title } }) => (
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginVertical: 12,
+            backgroundColor: "#f0f0f0",
+            padding: 8,
+            borderRadius: 6,
+          }}
+        >
+          {title}
+        </Text>
+      )}
       ListFooterComponent={
         loading ? <ActivityIndicator color={colors.primary} /> : null
       }
