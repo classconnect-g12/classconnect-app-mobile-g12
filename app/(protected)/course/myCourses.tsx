@@ -7,14 +7,26 @@ import { ApiCourse } from "@src/types/course";
 import Tab from "@components/Tab";
 import CourseItem from "@components/CourseItem";
 import SectionHeader from "@components/SectionHeader";
+import CourseFilter from "@components/CourseFilter";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useSnackbar } from "@hooks/useSnackbar";
 
 export default function MyCourses() {
   const router = useRouter();
   const [tab, setTab] = useState<"created" | "enrolled">("created");
 
+  const { showSnackbar } = useSnackbar();
+
   const [createdCourses, setCreatedCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<ApiCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<{
+    name: string;
+    state: "all" | "active" | "upcoming" | "finished";
+  }>({
+    name: "",
+    state: "all",
+  });
 
   const fetchCreatedCourses = async () => {
     try {
@@ -22,7 +34,10 @@ export default function MyCourses() {
       const data = await getMyCourses(0, 10);
       setCreatedCourses(data.courses);
     } catch (err) {
-      alert("Error loading your created courses");
+      showSnackbar(
+        "Error loading your created courses",
+        SNACKBAR_VARIANTS.ERROR
+      );
     } finally {
       setLoading(false);
     }
@@ -34,7 +49,10 @@ export default function MyCourses() {
       const data = await getMyEnrollments(0, 10);
       setEnrolledCourses(data.courses);
     } catch (err) {
-      alert("Error loading your enrolled courses");
+      showSnackbar(
+        "Error loading your enrolled courses",
+        SNACKBAR_VARIANTS.ERROR
+      );
     } finally {
       setLoading(false);
     }
@@ -47,11 +65,31 @@ export default function MyCourses() {
   const now = new Date();
 
   const categorizeCourses = (courses: ApiCourse[]) => {
-    const active = courses.filter(
+    const filteredByName = filters.name
+      ? courses.filter((c) =>
+          c.title.toLowerCase().includes(filters.name.toLowerCase())
+        )
+      : courses;
+
+    const now = new Date();
+
+    let filtered = filteredByName;
+
+    if (filters.state !== "all") {
+      filtered = filteredByName.filter((c) => {
+        const start = new Date(c.startDate);
+        const end = new Date(c.endDate);
+        if (filters.state === "active") return start <= now && end >= now;
+        if (filters.state === "upcoming") return start > now;
+        if (filters.state === "finished") return end < now;
+      });
+    }
+
+    const active = filtered.filter(
       (c) => new Date(c.startDate) <= now && new Date(c.endDate) >= now
     );
-    const upcoming = courses.filter((c) => new Date(c.startDate) > now);
-    const finished = courses.filter((c) => new Date(c.endDate) < now);
+    const upcoming = filtered.filter((c) => new Date(c.startDate) > now);
+    const finished = filtered.filter((c) => new Date(c.endDate) < now);
 
     const sections = [];
     if (active.length) sections.push({ title: "Active", data: active });
@@ -75,24 +113,33 @@ export default function MyCourses() {
         >
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      ) : sections.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text>No courses found</Text>
-        </View>
       ) : (
-        <SectionList
-          contentContainerStyle={{ padding: 16 }}
-          sections={sections}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }: { item: ApiCourse }) => (
-            <CourseItem item={item} tab={tab} router={router} />
+        <>
+          <CourseFilter filters={filters} setFilters={setFilters} />
+          {sections.length === 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text>No courses found</Text>
+            </View>
+          ) : (
+            <SectionList
+              contentContainerStyle={{ padding: 16 }}
+              sections={sections}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }: { item: ApiCourse }) => (
+                <CourseItem item={item} tab={tab} router={router} />
+              )}
+              renderSectionHeader={({ section: { title } }) => (
+                <SectionHeader title={title} />
+              )}
+            />
           )}
-          renderSectionHeader={({ section: { title } }) => (
-            <SectionHeader title={title} />
-          )}
-        />
+        </>
       )}
     </View>
   );
