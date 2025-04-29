@@ -13,7 +13,6 @@ const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 
 export const createCourse = async (data: BaseCourse): Promise<void> => {
   const token = await getToken();
-  console.log(data);
 
   await axios.post(`${EXPO_PUBLIC_API_URL}/course/create`, data, {
     headers: {
@@ -44,7 +43,13 @@ export async function fetchCourseDetail(
   id: string
 ): Promise<{ course: FullCourse; teacher: any }> {
   const response = await axios.get<{ course: FullCourse; teacher: any }>(
-    `${EXPO_PUBLIC_API_URL}/course/details/${id}`
+    `${EXPO_PUBLIC_API_URL}/course/details/${id}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${await getToken()}`,
+      },
+    }
   );
 
   return response.data;
