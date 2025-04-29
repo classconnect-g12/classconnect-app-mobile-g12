@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Button,
-  Pressable,
-} from "react-native";
+import { View, Text, TextInput, ScrollView, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchCourseDetail, updateCourse } from "@services/CourseService";
 import { CourseRequestBody, FullCourse } from "@src/types/course";
@@ -18,10 +11,22 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { editCourseStyles as styles } from "@styles/editCourseStyles";
+import { Button } from "react-native-paper";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function EditCourse() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const [initialCourse, setInitialCourse] = useState<CourseRequestBody>({});
   const [title, setTitle] = useState("");
@@ -68,7 +73,7 @@ export default function EditCourse() {
         setInitialCourse(course);
       } catch (error) {
         console.error("Error loading course details:", error);
-        alert("Error loading course details");
+        showSnackbar("Error loading course details.", SNACKBAR_VARIANTS.ERROR);
       }
     };
 
@@ -78,6 +83,40 @@ export default function EditCourse() {
   }, [id]);
 
   const handleSave = async () => {
+    if (!title.trim()) {
+      showSnackbar("Title is required.", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (description.trim().length < 50 || description.trim().length > 255) {
+      showSnackbar(
+        "Description must have between 50 and 255 characters",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      showSnackbar(
+        "Start date cannot be in the past.",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (end <= start) {
+      showSnackbar(
+        "End date must be after start date.",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
     const updatedFields: Partial<typeof initialCourse> = {};
 
     if (title !== initialCourse.title) updatedFields.title = title;
@@ -94,20 +133,22 @@ export default function EditCourse() {
     if (endDate !== initialCourse.endDate) updatedFields.endDate = endDate;
 
     if (Object.keys(updatedFields).length === 0) {
-      alert("No changes to save.");
+      showSnackbar("No changes to save.", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     try {
       const parsedId = Array.isArray(id) ? id[0] : id;
-      const data = await updateCourse(parsedId, updatedFields);
-      console.log("Course updated:", data);
+      await updateCourse(parsedId, updatedFields);
 
-      alert("Course updated successfully!");
+      showSnackbar("Course updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
       console.error("Error updating course:", error);
-      alert("An error occurred while updating the course.");
+      showSnackbar(
+        "An error occurred while updating the course.",
+        SNACKBAR_VARIANTS.ERROR
+      );
     }
   };
 
@@ -202,6 +243,7 @@ export default function EditCourse() {
       <Picker
         selectedValue={modality}
         onValueChange={(itemValue) => setModality(itemValue)}
+        style={styles.input}
       >
         <Picker.Item label="Hybrid" value="HYBRID" />
         <Picker.Item label="Online" value="ONLINE" />
@@ -231,8 +273,17 @@ export default function EditCourse() {
       </Pressable>
 
       <View style={{ marginTop: 20 }}>
-        <Button title="Save Changes" onPress={handleSave} color="#007bff" />
+        <Button mode="contained" onPress={handleSave} buttonColor="#007bff">
+          Save Changes
+        </Button>
       </View>
+
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
+      />
     </ScrollView>
   );
 }
