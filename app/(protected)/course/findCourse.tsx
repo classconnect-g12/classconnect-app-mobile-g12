@@ -16,13 +16,16 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { fetchCourses } from "@services/CourseService";
-import { ApiCourse } from "@types/course";
+import { ApiCourse } from "@src/types/course";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
   const [courses, setCourses] = useState<ApiCourse[]>([]);
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const {
     snackbarVisible,
@@ -32,43 +35,75 @@ export default function FindCourse() {
     hideSnackbar,
   } = useSnackbar();
 
-  useEffect(() => {
-    const loadCourses = async () => {
-      try {
-        const response = await fetchCourses();
-        const availableCourses = response.courses.filter(
-          (course) => course.available
-        );
-        setCourses(availableCourses);
-      } catch (error) {
-        console.error(error);
-        showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
-      } finally {
-        setIsLoadingInitial(false);
-      }
-    };
+  const loadCourses = async (pageNumber = 0, reset = false) => {
+    if (reset) {
+      setCourses([]);
+      setPage(0);
+      setTotalPages(1);
+    }
 
-    loadCourses();
+    try {
+      if (pageNumber === 0) {
+        setIsLoadingInitial(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      const response = await fetchCourses(pageNumber, 10);
+      const availableCourses = response.courses.filter(
+        (course) => course.available
+      );
+
+      setCourses((prev) =>
+        pageNumber === 0 ? availableCourses : [...prev, ...availableCourses]
+      );
+      setTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error(error);
+      showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
+    } finally {
+      if (pageNumber === 0) {
+        setIsLoadingInitial(false);
+      } else {
+        setIsLoadingMore(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadCourses(0);
   }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      showSnackbar("Please enter a search term", SNACKBAR_VARIANTS.INFO);
+      loadCourses(0, true);
       return;
     }
 
     setIsSearching(true);
     try {
-      const response = await fetchCourses();
+      const response = await fetchCourses(0, 10);
       const availableCourses = response.courses.filter(
-        (course) => course.available
+        (course) =>
+          course.available &&
+          course.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
+
       setCourses(availableCourses);
+      setTotalPages(1);
     } catch (error) {
       console.error(error);
       showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (!isSearching && !isLoadingMore && page + 1 < totalPages) {
+      const nextPage = page + 1;
+      loadCourses(nextPage);
+      setPage(nextPage);
     }
   };
 
@@ -153,6 +188,11 @@ export default function FindCourse() {
         renderItem={renderCourse}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.courseList}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isLoadingMore ? <ActivityIndicator color={colors.primary} /> : null
+        }
         ListEmptyComponent={() => (
           <Text style={styles.emptyText}>
             {searchQuery
