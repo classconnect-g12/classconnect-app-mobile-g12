@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   ApiCourse,
+  BaseCourse,
   CourseData,
   CourseRequestBody,
   FullCourse,
@@ -10,7 +11,7 @@ import { getToken } from "@utils/tokenUtils";
 
 const EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 
-export const createCourse = async (data: CourseData): Promise<void> => {
+export const createCourse = async (data: BaseCourse): Promise<void> => {
   const token = await getToken();
   console.log(data);
 
