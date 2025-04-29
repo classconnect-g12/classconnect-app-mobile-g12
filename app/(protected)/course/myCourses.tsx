@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { getMyCourses } from "@services/CourseService";
+import { deleteCourse, getMyCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
 import { colors } from "@theme/colors";
 import { Card } from "react-native-paper";
@@ -24,6 +24,7 @@ export default function MyCourses() {
     try {
       setLoading(true);
       const data = await getMyCourses(pageNumber, 10);
+
       setCourses((prev) =>
         pageNumber === 0 ? data.courses : [...prev, ...data.courses]
       );
@@ -62,10 +63,7 @@ export default function MyCourses() {
           style: "destructive",
           onPress: async () => {
             try {
-              // Acá llamarías al servicio para eliminarlo
-              // await deleteCourse(courseId);
-
-              // Por ahora simplemente sacarlo de la lista
+              await deleteCourse(courseId);
               setCourses((prev) =>
                 prev.filter((course) => course.id !== courseId)
               );
