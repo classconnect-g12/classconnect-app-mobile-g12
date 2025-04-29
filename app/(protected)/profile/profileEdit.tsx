@@ -2,7 +2,6 @@ import {
   View,
   Text,
   Image,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -10,11 +9,15 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useLocalSearchParams } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, Snackbar } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@theme/colors";
+import { profileEditStyles as styles } from "@styles/profileEditStyles";
+import { getUserProfile, updateUserProfile } from "@services/ProfileService";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -35,40 +38,18 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
-  };
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
-
-        if (!token) {
-          setError("Token not found");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/user/profile`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const fetchedProfile = {
-          user_name: response.data.user_name,
-          first_name: response.data.first_name,
-          last_name: response.data.last_name,
-          email: response.data.email,
-          description: response.data.description,
-          banner: response.data.banner || "https://via.placeholder.com/150",
-        };
-
+        const fetchedProfile = await getUserProfile();
         setProfile(fetchedProfile);
         setOriginalProfile(fetchedProfile);
       } catch (err) {
@@ -78,7 +59,7 @@ export default function ProfileScreen() {
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, [profileId]);
 
   const hasChanges = () => {
@@ -109,50 +90,16 @@ export default function ProfileScreen() {
 
   const handleSaveChanges = async () => {
     if (!hasChanges()) {
-      showSnackbar("No changes to save.");
+      showSnackbar("No changes to save.", SNACKBAR_VARIANTS.INFO);
       return;
     }
 
     setSaving(true);
-
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) throw new Error("Token not found");
-
-      const formData = new FormData();
-      if (profile.first_name) formData.append("first_name", profile.first_name);
-      if (profile.last_name) formData.append("last_name", profile.last_name);
-      if (profile.description)
-        formData.append("description", profile.description);
-
-      if (profile.banner && profile.banner.startsWith("file://")) {
-        const uriParts = profile.banner.split(".");
-        const fileType = uriParts[uriParts.length - 1];
-        formData.append("banner", {
-          uri: profile.banner,
-          name: `profile_banner.${fileType}`,
-          type: `image/${fileType}`,
-        } as any);
-      }
-
-      const response = await axios.patch(`${API_URL}/user/update`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const updatedProfile = {
-        ...profile,
-        first_name: response.data.first_name || profile.first_name,
-        last_name: response.data.last_name || profile.last_name,
-        description: response.data.description || profile.description,
-        banner: response.data.banner || profile.banner,
-      };
-
-      setProfile(updatedProfile);
-      setOriginalProfile(updatedProfile);
-      showSnackbar("Profile updated successfully!");
+      const updated = await updateUserProfile(profile);
+      setProfile(updated);
+      setOriginalProfile(updated);
+      showSnackbar("Profile updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
     } catch (err) {
       setError("Error saving changes.");
     } finally {
@@ -163,7 +110,7 @@ export default function ProfileScreen() {
   if (loading)
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
+        <ActivityIndicator size="large" color={colors.text} />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -183,7 +130,7 @@ export default function ProfileScreen() {
         <View style={styles.header}>
           <Image source={{ uri: profile.banner }} style={styles.avatar} />
           <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
-            <Ionicons name="camera" size={20} color="#fff" />
+            <Ionicons name="camera" size={20} color={colors.buttonText} />
             <Text style={styles.iconButtonText}>Change Photo</Text>
           </TouchableOpacity>
         </View>
@@ -230,132 +177,19 @@ export default function ProfileScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.buttonText} />
           ) : (
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
         </TouchableOpacity>
 
-        <Snackbar
+        <AppSnackbar
           visible={snackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          duration={3000}
-          action={{
-            label: "OK",
-            onPress: () => setSnackbarVisible(false),
-          }}
-          style={{ backgroundColor: "green" }}
-        >
-          {snackbarMessage}
-        </Snackbar>
+          message={snackbarMessage}
+          onDismiss={hideSnackbar}
+          variant={snackbarVariant}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f4f6f8",
-  },
-  scrollContainer: {
-    padding: 20,
-    alignItems: "center",
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f4f6f8",
-  },
-  header: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: "#ccc",
-    backgroundColor: "#e0e0e0",
-  },
-  iconButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 12,
-    backgroundColor: "#007BFF",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 25,
-  },
-  iconButtonText: {
-    color: "#fff",
-    marginLeft: 8,
-    fontWeight: "600",
-  },
-  userName: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  inputCard: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 6,
-    fontWeight: "500",
-  },
-  input: {
-    fontSize: 16,
-    color: "#333",
-    paddingVertical: 6,
-  },
-  email: {
-    fontSize: 14,
-    color: "#888",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  saveButton: {
-    backgroundColor: "#28a745",
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    marginTop: 20,
-    width: "60%",
-    alignItems: "center",
-  },
-  saveButtonText: {
-    fontSize: 16,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#333",
-    marginTop: 10,
-  },
-  errorText: {
-    fontSize: 18,
-    color: "red",
-    textAlign: "center",
-    paddingHorizontal: 30,
-  },
-});

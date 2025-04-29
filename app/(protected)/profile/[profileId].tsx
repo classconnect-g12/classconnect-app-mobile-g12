@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
+import { View, Text, Image, ScrollView } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
-interface UserProfileResponse {
-  user_name: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  description: string;
-  banner: string;
-}
+import { useLocalSearchParams } from "expo-router";
+import { getUserProfileByUsername, UserProfileResponse } from "@services/ProfileService";
+import { profileIdStyles as styles } from "@styles/profileIdStyles";
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -25,39 +14,15 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = await AsyncStorage.getItem("token");
-
-        if (!token) {
-          setError("Token not found");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get<UserProfileResponse>(
-          `${API_URL}/user/username/${profileId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setProfile({
-          ...response.data,
-          banner: response.data.banner || "https://via.placeholder.com/150",
-        });
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          const status = err.response?.status;
-          if (status === 404) {
-            setError("Profile not found.");
-          } else if (status === 401) {
-            setError("Unauthorized. Please log in.");
-          } else {
-            setError("Error loading profile.");
-          }
+        const data = await getUserProfileByUsername(profileId as string);
+        setProfile(data);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setError("Profile not found.");
+        } else if (err.response?.status === 401) {
+          setError("Unauthorized. Please log in.");
         } else {
-          setError("Unexpected error.");
+          setError(err.message || "Error loading profile.");
         }
       } finally {
         setLoading(false);
@@ -122,81 +87,5 @@ const UserProfile: React.FC = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  scrollContainer: {
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#f4f6f8",
-    flexGrow: 1,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f4f6f8",
-  },
-  header: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: "#ccc",
-    backgroundColor: "#e0e0e0",
-  },
-  userName: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  inputCard: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 6,
-    fontWeight: "500",
-  },
-  readOnlyText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  email: {
-    fontSize: 14,
-    color: "#888",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#333",
-    marginTop: 10,
-  },
-  errorText: {
-    fontSize: 18,
-    color: "red",
-    textAlign: "center",
-    paddingHorizontal: 30,
-  },
-});
 
 export default UserProfile;

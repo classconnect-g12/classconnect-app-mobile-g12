@@ -3,30 +3,51 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   ImageBackground,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
-import { Appbar, AnimatedFAB, Button } from "react-native-paper";
-import AppbarMenu from "../components/AppbarMenu";
+import { AnimatedFAB, Button, Snackbar } from "react-native-paper";
+import AppbarMenu from "@components/AppbarMenu";
 import { router } from "expo-router";
+import { colors } from "@theme/colors";
+import { images } from "@assets/images";
+import { protectedHomeStyles as styles } from "@styles/protectedHomeStyles";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { validateUsername } from "@utils/validators";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
 
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
+
   const handleSearch = () => {
-    if (search.trim() !== "") {
-      router.push(`/profile/${search}`);
+    const validationError = validateUsername(search);
+    if (validationError) {
+      showSnackbar(validationError, SNACKBAR_VARIANTS.INFO);
+      return;
     }
+
+    router.push(`/profile/${search}`);
   };
 
   const handleAddCourse = () => {
-    router.push("./courses");
+    // TODO: implement
+    router.push("/(protected)/course/createCourse");
   };
 
   const handleJoinClass = () => {
-    router.push("./join-class");
+    // TODO: implement
+    router.push("/(protected)/course/findCourse");
   };
 
   return (
@@ -36,37 +57,60 @@ export default function HomeScreen() {
           <AppbarMenu title="ClassConnect" />
 
           <View style={styles.content}>
-            <Text style={styles.welcome}>Welcome!</Text>
+            <Text style={styles.welcome}>Welcome</Text>
+            <Text style={styles.subtitle}>
+              Connect with teachers and students
+            </Text>
 
-            <Text style={styles.sectionLabel}>Search for a profile</Text>
-            <View style={styles.searchContainer}>
-              <TextInput
-                placeholder="Enter username"
-                value={search}
-                onChangeText={setSearch}
-                style={styles.searchInput}
-              />
-              <Button
-                mode="contained"
-                onPress={handleSearch}
-                style={styles.searchButton}
-                icon="magnify"
-                labelStyle={{ fontWeight: "bold" }}
-              >
-                Search
-              </Button>
-            </View>
+            <View style={styles.mainContent}>
+              <View style={styles.searchSection}>
+                <Text style={styles.sectionLabel}>Find a User</Text>
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    placeholder="Enter username"
+                    value={search}
+                    onChangeText={setSearch}
+                    style={styles.searchInput}
+                    placeholderTextColor={colors.text}
+                  />
+                  <Button
+                    mode="contained"
+                    onPress={handleSearch}
+                    style={styles.searchButton}
+                    icon="magnify"
+                    labelStyle={{
+                      fontWeight: "bold",
+                      color: colors.buttonText,
+                    }}
+                  >
+                    Search
+                  </Button>
+                </View>
+              </View>
 
-            <View style={styles.noCoursesContainer}>
-              <Text style={styles.noCoursesText}>No courses found</Text>
-              <Button
-                mode="contained"
-                onPress={handleJoinClass}
-                style={styles.primaryButton}
-                labelStyle={{ fontWeight: "bold" }}
-              >
-                Join a class
-              </Button>
+              <View style={styles.booksContainer}>
+                <Image
+                  source={images.book}
+                  style={styles.booksImage}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <View style={styles.joinSection}>
+                <Text style={styles.joinTitle}>Ready to Learn?</Text>
+                <Text style={styles.joinSubtitle}>
+                  Join a class to get started
+                </Text>
+                <Button
+                  mode="contained"
+                  onPress={handleJoinClass}
+                  style={styles.joinButton}
+                  labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
+                  icon="school"
+                >
+                  Join a Class
+                </Button>
+              </View>
             </View>
           </View>
 
@@ -78,80 +122,17 @@ export default function HomeScreen() {
             style={styles.fab}
             visible
             animateFrom="right"
-            color="#fff"
+            color={colors.buttonText}
+          />
+
+          <AppSnackbar
+            visible={snackbarVisible}
+            message={snackbarMessage}
+            onDismiss={hideSnackbar}
+            variant={snackbarVariant}
           />
         </View>
       </ImageBackground>
     </TouchableWithoutFeedback>
   );
 }
-
-const PRIMARY_COLOR = "#2e7d32";
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(230, 230, 230, 0.85)",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  welcome: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  sectionLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
-    marginTop: 10,
-    color: "#333",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 30,
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: "#fff",
-  },
-  searchButton: {
-    backgroundColor: PRIMARY_COLOR,
-    borderRadius: 10,
-  },
-  noCoursesContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  noCoursesText: {
-    fontSize: 18,
-    marginBottom: 16,
-    textAlign: "center",
-    opacity: 0.5,
-  },
-  primaryButton: {
-    backgroundColor: PRIMARY_COLOR,
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    backgroundColor: PRIMARY_COLOR,
-  },
-});

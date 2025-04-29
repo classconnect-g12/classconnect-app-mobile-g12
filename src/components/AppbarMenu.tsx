@@ -20,7 +20,12 @@ const AppbarMenu: React.FC<AppbarMenuProps> = ({ title }) => {
 
   const handleMyProfile = () => {
     setMenuVisible(false);
-    router.push("./profile/profileEdit");
+    router.push("/profile/profileEdit");
+  };
+
+  const handleMyCourses = () => {
+    setMenuVisible(false);
+    router.push("/course/myCourses");
   };
 
   return (
@@ -41,6 +46,11 @@ const AppbarMenu: React.FC<AppbarMenuProps> = ({ title }) => {
         <Menu.Item
           onPress={handleMyProfile}
           title="My Profile"
+          titleStyle={{ fontWeight: "bold" }}
+        />
+        <Menu.Item
+          onPress={handleMyCourses}
+          title="My Courses" // <-- Nueva opción
           titleStyle={{ fontWeight: "bold" }}
         />
         <Menu.Item
