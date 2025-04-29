@@ -103,3 +103,18 @@ export async function deleteCourse(courseId: string): Promise<void> {
     },
   });
 }
+
+export async function getMyEnrollments(page = 0, limit = 10) {
+  const token = await getToken();
+
+  const response = await axios.get(
+    `${EXPO_PUBLIC_API_URL}/enrollment/mycourses?page=${page}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+}

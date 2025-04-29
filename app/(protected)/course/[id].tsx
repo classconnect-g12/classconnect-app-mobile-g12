@@ -5,9 +5,14 @@ import { fetchCourseDetail } from "@services/CourseService";
 import { detailCourseStyles as styles } from "@styles/detailCourseStyles";
 import { colors } from "@theme/colors";
 import { Card, Button } from "react-native-paper";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  const { showSnackbar } = useSnackbar();
+
   const router = useRouter();
   const [courseDetail, setCourseDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +101,9 @@ export default function CourseDetail() {
       {/* Botón para unirse al curso */}
       <Button
         mode="contained"
-        onPress={() => alert("Joined the course")}
+        onPress={() =>
+          showSnackbar("Joined the course", SNACKBAR_VARIANTS.SUCCESS)
+        }
         style={styles.joinButton}
       >
         Join Course
