@@ -48,10 +48,22 @@ export default function CreateCourse() {
       return;
     }
 
-    const parsedCapacity = parseInt(capacity);
+    const parsedCapacity = parseInt(capacity, 10);
     if (isNaN(parsedCapacity) || parsedCapacity <= 0) {
       showSnackbar(
         "Capacity must be a valid positive number",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (
+      description.length < 0 ||
+      description.length < 50 ||
+      description.length > 255
+    ) {
+      showSnackbar(
+        "Description must be between 50 and 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -65,14 +77,16 @@ export default function CreateCourse() {
       return;
     }
 
+    const teacherId = 123;
+
     try {
       const courseData = {
         title: courseName,
         description,
-        teacherId: 123,
+        teacherId,
         capacity: parsedCapacity,
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
         modality,
       };
       await createCourse(courseData);
@@ -138,7 +152,7 @@ export default function CreateCourse() {
           />
 
           <TextInput
-            label="Description (Optional)"
+            label="Description"
             value={description}
             onChangeText={setDescription}
             mode="outlined"
