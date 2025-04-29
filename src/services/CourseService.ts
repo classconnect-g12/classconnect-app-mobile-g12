@@ -62,12 +62,11 @@ export async function getMyCourses(
   const token = await getToken();
 
   const response = await axios.get<GetCoursesResponse>(
-    `${EXPO_PUBLIC_API_URL}/course/mycourses`,
+    `${EXPO_PUBLIC_API_URL}/course/mycourses?page=${page}&limit=${limit}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      params: { page, limit },
     }
   );
 
