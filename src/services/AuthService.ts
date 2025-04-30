@@ -1,65 +1,37 @@
-import axios from "axios";
+import apiClient from "@utils/apiClient";
 import { storeToken } from "@utils/tokenUtils";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+export const login = async (
+  email: string,
+  password: string
+): Promise<string> => {
+  const response = await apiClient.post("/auth/login", { email, password });
 
-const checkApiUrl = () => {
-  if (!API_URL) {
-    throw new Error("Server error: API_URL is not defined");
+  if (response.status === 200) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
   }
+
+  throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
 };
 
-const login = async (email: string, password: string): Promise<string> => {
-  checkApiUrl();
-
-  try {
-    const response = await axios.post(`${API_URL}/auth/login`, {
-      email,
-      password,
-    });
-
-    if (response.status === 200) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
-
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Login error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Login failed" };
-  }
-};
-
-const register = async (
+export const register = async (
   username: string,
   email: string,
   password: string
 ): Promise<string> => {
-  checkApiUrl();
+  const response = await apiClient.post("/auth/register", {
+    user_name: username,
+    email,
+    password,
+  });
 
-  try {
-    const response = await axios.post(`${API_URL}/auth/register`, {
-      user_name: username,
-      email,
-      password,
-    });
-
-    if (response.status === 201) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
-
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Register error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Registration failed" };
+  if (response.status === 201) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
   }
-};
 
-export { login, register };
+  throw new Error(`Error ${response.status}: ${JSON.stringify(response.data)}`);
+};
