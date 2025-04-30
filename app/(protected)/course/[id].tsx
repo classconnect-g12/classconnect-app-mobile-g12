@@ -7,6 +7,8 @@ import { colors } from "@theme/colors";
 import { Card, Button } from "react-native-paper";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { ApiError } from "@src/types/apiError";
+import { handleApiError } from "@utils/handleApiError";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +27,7 @@ export default function CourseDetail() {
         const data = await fetchCourseDetail(id);
         setCourseDetail(data);
       } catch (error) {
-        console.error(error);
+        handleApiError(error, showSnackbar, "Error loading course data");
         router.back();
       } finally {
         setLoading(false);
