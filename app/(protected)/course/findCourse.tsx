@@ -19,6 +19,7 @@ import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import CourseFilter from "@components/CourseFilter";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,6 +29,9 @@ export default function FindCourse() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [dateFilter, setDateFilter] = useState<
+    "all" | "active" | "upcoming" | "finished"
+  >("all");
 
   const {
     snackbarVisible,
@@ -51,13 +55,41 @@ export default function FindCourse() {
         setIsLoadingMore(true);
       }
 
-      const response = await fetchCourses(pageNumber, 10);
-      const availableCourses = response.courses.filter(
-        (course) => course.available
-      );
+      // Fetch courses with title filter if searchQuery exists
+      const response = await fetchCourses(pageNumber, 10, {
+        title: searchQuery,
+      });
+
+      // Apply client-side filtering
+      let filteredCourses = response.courses.filter((course) => {
+        // Filter by availability
+        if (!course.available) return false;
+
+        // Filter by searchQuery in description (since backend only filters title)
+        if (searchQuery) {
+          return (
+            course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+        return true;
+      });
+
+      // Apply date filter
+      if (dateFilter !== "all") {
+        const now = new Date();
+        filteredCourses = filteredCourses.filter((course) => {
+          const start = new Date(course.startDate);
+          const end = new Date(course.endDate);
+          if (dateFilter === "active") return start <= now && end >= now;
+          if (dateFilter === "upcoming") return start > now;
+          if (dateFilter === "finished") return end < now;
+          return true;
+        });
+      }
 
       setCourses((prev) =>
-        pageNumber === 0 ? availableCourses : [...prev, ...availableCourses]
+        pageNumber === 0 ? filteredCourses : [...prev, ...filteredCourses]
       );
       setTotalPages(response.pagination.totalPages);
     } catch (error) {
@@ -72,31 +104,11 @@ export default function FindCourse() {
   };
 
   useEffect(() => {
-    loadCourses(0);
-  }, []);
+    loadCourses(0, true);
+  }, [searchQuery, dateFilter]);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      loadCourses(0, true);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const response = await fetchCourses(0, 10);
-      const availableCourses = response.courses.filter(
-        (course) =>
-          course.available &&
-          course.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      setCourses(availableCourses);
-      setTotalPages(1);
-    } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching courses");
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearch = () => {
+    loadCourses(0, true);
   };
 
   const loadMore = () => {
@@ -121,6 +133,10 @@ export default function FindCourse() {
           <Card.Content>
             <Text style={styles.courseName}>{item.title}</Text>
             <Text style={styles.courseDescription}>{item.description}</Text>
+            <Text style={styles.courseDetails}>
+              Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
+              {new Date(item.endDate).toLocaleDateString()}
+            </Text>
           </Card.Content>
           <Card.Actions>
             <Button
@@ -165,7 +181,7 @@ export default function FindCourse() {
 
       <View style={styles.searchContainer}>
         <TextInput
-          label="Search Courses"
+          label="Search by Title or Description"
           value={searchQuery}
           onChangeText={setSearchQuery}
           mode="outlined"
@@ -183,6 +199,8 @@ export default function FindCourse() {
         </Button>
       </View>
 
+      <CourseFilter dateFilter={dateFilter} setDateFilter={setDateFilter} />
+
       <FlatList
         data={courses}
         renderItem={renderCourse}
@@ -195,8 +213,8 @@ export default function FindCourse() {
         }
         ListEmptyComponent={() => (
           <Text style={styles.emptyText}>
-            {searchQuery
-              ? "No courses found. Try a different search term."
+            {searchQuery || dateFilter !== "all"
+              ? "No courses found. Try different search terms or filters."
               : "Search for courses to join"}
           </Text>
         )}
