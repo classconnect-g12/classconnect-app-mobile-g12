@@ -105,10 +105,11 @@ export default function FindCourse() {
 
   useEffect(() => {
     loadCourses(0, true);
-  }, [searchQuery, dateFilter]);
+  }, [dateFilter]); // Removed searchQuery from dependencies
 
   const handleSearch = () => {
-    loadCourses(0, true);
+    setIsSearching(true);
+    loadCourses(0, true).finally(() => setIsSearching(false));
   };
 
   const loadMore = () => {
@@ -184,6 +185,7 @@ export default function FindCourse() {
           label="Search by Title or Description"
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch} // Trigger search on Enter
           mode="outlined"
           style={styles.searchInput}
           theme={{ colors: { primary: colors.primary } }}
