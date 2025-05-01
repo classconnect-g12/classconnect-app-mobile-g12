@@ -1,4 +1,4 @@
-import apiClient from "@utils/apiClient";
+import { privateClient } from "@utils/apiClient";
 
 const PLACEHOLDER_BANNER = "https://via.placeholder.com/150";
 
@@ -14,7 +14,7 @@ export interface UserProfileResponse {
 export const getUserProfileByUsername = async (
   username: string
 ): Promise<UserProfileResponse> => {
-  const response = await apiClient.get<UserProfileResponse>(
+  const response = await privateClient.get<UserProfileResponse>(
     `/user/username/${username}`
   );
   return {
@@ -24,7 +24,9 @@ export const getUserProfileByUsername = async (
 };
 
 export const getUserProfile = async (): Promise<UserProfileResponse> => {
-  const response = await apiClient.get<UserProfileResponse>("/user/profile");
+  const response = await privateClient.get<UserProfileResponse>(
+    "/user/profile"
+  );
   return {
     ...response.data,
     banner: response.data.banner || PLACEHOLDER_BANNER,
@@ -48,7 +50,7 @@ export const updateUserProfile = async (
     } as any);
   }
 
-  const response = await apiClient.patch("/user/update", formData, {
+  const response = await privateClient.patch("/user/update", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

@@ -1,11 +1,11 @@
-import apiClient from "@utils/apiClient";
+import { publicClient } from "@utils/apiClient";
 import { storeToken } from "@utils/tokenUtils";
 
 export const login = async (
   email: string,
   password: string
 ): Promise<string> => {
-  const response = await apiClient.post("/auth/login", { email, password });
+  const response = await publicClient.post("/auth/login", { email, password });
 
   if (response.status === 200) {
     const token = response.data.token;
@@ -21,7 +21,7 @@ export const register = async (
   email: string,
   password: string
 ): Promise<string> => {
-  const response = await apiClient.post("/auth/register", {
+  const response = await publicClient.post("/auth/register", {
     user_name: username,
     email,
     password,
