@@ -73,6 +73,18 @@ export const findCourseStyles = StyleSheet.create({
     opacity: 0.6,
     marginBottom: 5,
   },
+  availabilityIndicator: {
+    fontSize: 12,
+    color: colors.error, // Red for urgency
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  alreadyStartedIndicator: {
+    fontSize: 12,
+    color: "#eb9b34", // Orange for started courses
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
   instructor: {
     fontSize: 14,
     color: colors.text,

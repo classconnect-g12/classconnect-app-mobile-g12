@@ -105,7 +105,7 @@ export default function FindCourse() {
 
   useEffect(() => {
     loadCourses(0, true);
-  }, [dateFilter]); // Removed searchQuery from dependencies
+  }, [dateFilter]);
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -125,37 +125,65 @@ export default function FindCourse() {
     router.back();
   };
 
-  const renderCourse = ({ item }: { item: ApiCourse }) => (
-    <TouchableWithoutFeedback
-      onPress={() => router.push(`/course/${item.id}` as any)}
-    >
-      <View>
-        <Card style={styles.courseCard}>
-          <Card.Content>
-            <Text style={styles.courseName}>{item.title}</Text>
-            <Text style={styles.courseDescription}>{item.description}</Text>
-            <Text style={styles.courseDetails}>
-              Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
-              {new Date(item.endDate).toLocaleDateString()}
-            </Text>
-          </Card.Content>
-          <Card.Actions>
-            <Button
-              mode="contained"
-              onPress={(e) => {
-                e.stopPropagation();
-                handleJoinCourse(item.id);
-              }}
-              style={styles.joinButton}
-              labelStyle={{ color: colors.buttonText }}
-            >
-              Join Course
-            </Button>
-          </Card.Actions>
-        </Card>
-      </View>
-    </TouchableWithoutFeedback>
-  );
+  const renderCourse = ({ item }: { item: ApiCourse }) => {
+    // Check for limited capacity (5 or fewer spots)
+    const isLimitedCapacity = item.capacity <= 5;
+    // Check if course is about to start (within 3 days)
+    const now = new Date();
+    const startDate = new Date(item.startDate);
+    const daysUntilStart =
+      (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
+    // Check if course has already started
+    const hasStarted = startDate < now;
+
+    return (
+      <TouchableWithoutFeedback
+        onPress={() => router.push(`/course/${item.id}` as any)}
+      >
+        <View>
+          <Card style={styles.courseCard}>
+            <Card.Content>
+              <Text style={styles.courseName}>{item.title}</Text>
+              <Text style={styles.courseDescription}>{item.description}</Text>
+              <Text style={styles.courseDetails}>
+                Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
+                {new Date(item.endDate).toLocaleDateString()}
+              </Text>
+              {isLimitedCapacity && (
+                <Text style={styles.availabilityIndicator}>
+                  Limited spots remaining
+                </Text>
+              )}
+              {isStartingSoon && (
+                <Text style={styles.availabilityIndicator}>
+                  Last days to register
+                </Text>
+              )}
+              {hasStarted && (
+                <Text style={styles.alreadyStartedIndicator}>
+                  Already started
+                </Text>
+              )}
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                mode="contained"
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleJoinCourse(item.id);
+                }}
+                style={styles.joinButton}
+                labelStyle={{ color: colors.buttonText }}
+              >
+                Join Course
+              </Button>
+            </Card.Actions>
+          </Card>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  };
 
   if (isLoadingInitial) {
     return (
@@ -185,7 +213,7 @@ export default function FindCourse() {
           label="Search by Title or Description"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearch} // Trigger search on Enter
+          onSubmitEditing={handleSearch}
           mode="outlined"
           style={styles.searchInput}
           theme={{ colors: { primary: colors.primary } }}
