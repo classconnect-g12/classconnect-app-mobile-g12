@@ -8,13 +8,12 @@ import { ApiCourse } from "@src/types/course";
 import Tab from "@components/Tab";
 import CourseItem from "@components/CourseItem";
 import SectionHeader from "@components/SectionHeader";
-import CourseFilter from "@components/CourseFilter";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import MyCourseFilter from "@components/MyCoursesFilter";
 import { useSnackbar } from "@hooks/useSnackbar";
-import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
 
 export default function MyCourses() {
+  const now = new Date();
   const router = useRouter();
   const [tab, setTab] = useState<"created" | "enrolled">("created");
 
@@ -63,16 +62,12 @@ export default function MyCourses() {
     tab === "created" ? fetchCreatedCourses() : fetchEnrolledCourses();
   }, [tab]);
 
-  const now = new Date();
-
   const categorizeCourses = (courses: ApiCourse[]) => {
     const filteredByName = filters.name
       ? courses.filter((c) =>
           c.title.toLowerCase().includes(filters.name.toLowerCase())
         )
       : courses;
-
-    const now = new Date();
 
     let filtered = filteredByName;
 
@@ -83,6 +78,7 @@ export default function MyCourses() {
         if (filters.state === "active") return start <= now && end >= now;
         if (filters.state === "upcoming") return start > now;
         if (filters.state === "finished") return end < now;
+        return true;
       });
     }
 
@@ -105,7 +101,7 @@ export default function MyCourses() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Tab tab={tab} setTab={setTab} />
 
       {loading ? (
@@ -116,7 +112,7 @@ export default function MyCourses() {
         </View>
       ) : (
         <>
-          <CourseFilter filters={filters} setFilters={setFilters} />
+          <MyCourseFilter filters={filters} setFilters={setFilters} />
           {sections.length === 0 ? (
             <View
               style={{
@@ -125,7 +121,11 @@ export default function MyCourses() {
                 alignItems: "center",
               }}
             >
-              <Text>No courses found</Text>
+              <Text style={{ color: colors.text, opacity: 0.7 }}>
+                {filters.name || filters.state !== "all"
+                  ? "No courses found. Try different search terms or filters."
+                  : "No courses available"}
+              </Text>
             </View>
           ) : (
             <SectionList
