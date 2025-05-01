@@ -1,12 +1,7 @@
 import { login, loginWithGoogle } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { signInStyles as styles } from "@styles/signInStyles";
@@ -36,7 +31,8 @@ export default function SignIn() {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: "660953493084-hns6fmmg55oo6fc11qqtmr9u04kvnsrd.apps.googleusercontent.com", 
+      webClientId:
+        "660953493084-hns6fmmg55oo6fc11qqtmr9u04kvnsrd.apps.googleusercontent.com",
     });
   }, []);
 
@@ -78,21 +74,25 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-  
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+
       const userInfo: any = await GoogleSignin.signIn();
       const idToken = userInfo.idToken || userInfo.data?.idToken;
-  
+
       if (!idToken) {
         throw new Error("Google Sign-In failed: no ID token returned.");
       }
-  
+
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const userCredential = await auth().signInWithCredential(
+        googleCredential
+      );
       const firebaseIdToken = await userCredential.user.getIdToken();
-  
+
       const backendToken = await loginWithGoogle(firebaseIdToken);
-  
+
       await authLogin(backendToken);
       router.replace("../home");
     } catch (error) {
@@ -137,18 +137,9 @@ export default function SignIn() {
           <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
-   
+
       <TouchableOpacity
-        style={[
-          {
-            backgroundColor: "#4285F4",
-            padding: 12,
-            borderRadius: 6,
-            alignItems: "center",
-            marginTop: 10,
-          },
-          isLoading && { opacity: 0.6 },
-        ]}
+        style={[styles.button, isLoading && { opacity: 0.6 }]} // Use styles.button instead of inline style
         onPress={handleGoogleLogin}
         disabled={isLoading}
       >
