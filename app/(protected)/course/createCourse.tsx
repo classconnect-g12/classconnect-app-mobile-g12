@@ -22,6 +22,8 @@ import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse } from "@services/CourseService";
+import { ApiError } from "@src/types/apiError";
+import { handleApiError } from "@utils/handleApiError";
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
@@ -92,10 +94,8 @@ export default function CreateCourse() {
       await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
-    } catch (err: any) {
-      console.error("Error completo:", err);
-      const errorMessage = err.message || "Server error";
-      showSnackbar(errorMessage, SNACKBAR_VARIANTS.ERROR);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error creating the course");
     }
   };
 

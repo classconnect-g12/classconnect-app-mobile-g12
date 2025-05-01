@@ -10,6 +10,8 @@ import SectionHeader from "@components/SectionHeader";
 import CourseFilter from "@components/CourseFilter";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "@hooks/useSnackbar";
+import { ApiError } from "@src/types/apiError";
+import { handleApiError } from "@utils/handleApiError";
 
 export default function MyCourses() {
   const router = useRouter();
@@ -33,11 +35,8 @@ export default function MyCourses() {
       setLoading(true);
       const data = await getMyCourses(0, 10);
       setCreatedCourses(data.courses);
-    } catch (err) {
-      showSnackbar(
-        "Error loading your created courses",
-        SNACKBAR_VARIANTS.ERROR
-      );
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error loading your created courses");
     } finally {
       setLoading(false);
     }
@@ -48,10 +47,11 @@ export default function MyCourses() {
       setLoading(true);
       const data = await getMyEnrollments(0, 10);
       setEnrolledCourses(data.courses);
-    } catch (err) {
-      showSnackbar(
-        "Error loading your enrolled courses",
-        SNACKBAR_VARIANTS.ERROR
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "Error loading your enrolled courses"
       );
     } finally {
       setLoading(false);

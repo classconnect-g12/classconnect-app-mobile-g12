@@ -15,6 +15,8 @@ import { Button } from "react-native-paper";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { ApiError } from "@src/types/apiError";
+import { handleApiError } from "@utils/handleApiError";
 
 export default function EditCourse() {
   const { id } = useLocalSearchParams();
@@ -72,8 +74,7 @@ export default function EditCourse() {
 
         setInitialCourse(course);
       } catch (error) {
-        console.error("Error loading course details:", error);
-        showSnackbar("Error loading course details.", SNACKBAR_VARIANTS.ERROR);
+        handleApiError(error, showSnackbar, "Error loading course data");
       }
     };
 
@@ -144,11 +145,7 @@ export default function EditCourse() {
       showSnackbar("Course updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
-      console.error("Error updating course:", error);
-      showSnackbar(
-        "An error occurred while updating the course.",
-        SNACKBAR_VARIANTS.ERROR
-      );
+      handleApiError(error, showSnackbar, "Error updating course");
     }
   };
 
@@ -176,7 +173,7 @@ export default function EditCourse() {
         negativeButton: { label: "Cancel", textColor: colors.text },
       });
     } catch (error) {
-      console.error("Error opening start date picker:", error);
+      handleApiError(error, showSnackbar, "Error opening datepicker");
     }
   };
 
@@ -192,7 +189,7 @@ export default function EditCourse() {
         negativeButton: { label: "Cancel", textColor: colors.text },
       });
     } catch (error) {
-      console.error("Error opening end date picker:", error);
+      handleApiError(error, showSnackbar, "Error opening datepicker");
     }
   };
 

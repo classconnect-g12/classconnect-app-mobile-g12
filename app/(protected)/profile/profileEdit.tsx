@@ -18,6 +18,7 @@ import { getUserProfile, updateUserProfile } from "@services/ProfileService";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { handleApiError } from "@utils/handleApiError";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -36,7 +37,6 @@ export default function ProfileScreen() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     snackbarVisible,
@@ -52,8 +52,8 @@ export default function ProfileScreen() {
         const fetchedProfile = await getUserProfile();
         setProfile(fetchedProfile);
         setOriginalProfile(fetchedProfile);
-      } catch (err) {
-        setError("Error al cargar el perfil.");
+      } catch (error) {
+        handleApiError(error, showSnackbar, "Error loading the profile");
       } finally {
         setLoading(false);
       }
@@ -100,8 +100,8 @@ export default function ProfileScreen() {
       setProfile(updated);
       setOriginalProfile(updated);
       showSnackbar("Profile updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
-    } catch (err) {
-      setError("Error saving changes.");
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error saving changes");
     } finally {
       setSaving(false);
     }
@@ -112,13 +112,6 @@ export default function ProfileScreen() {
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color={colors.text} />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
-
-  if (error)
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
 

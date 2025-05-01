@@ -17,6 +17,8 @@ import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
+import { ApiError } from "@src/types/apiError";
+import { handleApiError } from "@utils/handleApiError";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,8 +61,7 @@ export default function FindCourse() {
       );
       setTotalPages(response.pagination.totalPages);
     } catch (error) {
-      console.error(error);
-      showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
+      handleApiError(error, showSnackbar, "Error fetching courses");
     } finally {
       if (pageNumber === 0) {
         setIsLoadingInitial(false);
@@ -92,8 +93,7 @@ export default function FindCourse() {
       setCourses(availableCourses);
       setTotalPages(1);
     } catch (error) {
-      console.error(error);
-      showSnackbar("Error fetching courses", SNACKBAR_VARIANTS.ERROR);
+      handleApiError(error, showSnackbar, "Error fetching courses");
     } finally {
       setIsSearching(false);
     }
