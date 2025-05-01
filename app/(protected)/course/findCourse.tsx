@@ -19,6 +19,7 @@ import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
+import { enrollInCourse } from "@services/EnrollmentService";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,9 +120,20 @@ export default function FindCourse() {
     }
   };
 
-  const handleJoinCourse = (courseId: string) => {
-    showSnackbar("Successfully joined the course!", SNACKBAR_VARIANTS.SUCCESS);
-    router.back();
+  const handleJoinCourse = async (courseId: string) => {
+    try {
+      await enrollInCourse(courseId);
+      showSnackbar(
+        "Successfully joined the course!",
+        SNACKBAR_VARIANTS.SUCCESS
+      );
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "There was a problem joinin the course"
+      );
+    }
   };
 
   const renderCourse = ({ item }: { item: ApiCourse }) => {

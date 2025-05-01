@@ -7,13 +7,20 @@ import { colors } from "@theme/colors";
 import { Card, Button } from "react-native-paper";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { enrollInCourse } from "@services/EnrollmentService";
+import { AppSnackbar } from "@components/AppSnackbar";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { showSnackbar } = useSnackbar();
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
 
   const router = useRouter();
   const [courseDetail, setCourseDetail] = useState<any>(null);
@@ -36,6 +43,22 @@ export default function CourseDetail() {
 
     loadCourse();
   }, [id]);
+
+  const handleJoinCourse = async (courseId: string) => {
+    try {
+      await enrollInCourse(courseId);
+      showSnackbar(
+        "Successfully joined the course!",
+        SNACKBAR_VARIANTS.SUCCESS
+      );
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "There was a problem joinin the course"
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -103,13 +126,20 @@ export default function CourseDetail() {
       {/* Botón para unirse al curso */}
       <Button
         mode="contained"
-        onPress={() =>
-          showSnackbar("Joined the course", SNACKBAR_VARIANTS.SUCCESS)
-        }
+        onPress={(e) => {
+          e.stopPropagation();
+          handleJoinCourse(course.id);
+        }}
         style={styles.joinButton}
       >
         Join Course
       </Button>
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
+      />
     </ScrollView>
   );
 }
