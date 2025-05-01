@@ -44,6 +44,10 @@ export const findCourseStyles = StyleSheet.create({
     color: colors.text,
     marginBottom: 10,
   },
+  filterInput: {
+    backgroundColor: colors.inputBackground,
+    marginBottom: 10,
+  },
   filterPicker: {
     backgroundColor: colors.inputBackground,
   },
@@ -75,13 +79,13 @@ export const findCourseStyles = StyleSheet.create({
   },
   availabilityIndicator: {
     fontSize: 12,
-    color: colors.error, // Red for urgency
+    color: colors.error,
     fontWeight: "bold",
     marginBottom: 5,
   },
   alreadyStartedIndicator: {
     fontSize: 12,
-    color: "#eb9b34", // Orange for started courses
+    color: "#eb9b34",
     fontWeight: "bold",
     marginBottom: 5,
   },
