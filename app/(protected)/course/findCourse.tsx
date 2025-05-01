@@ -17,7 +17,6 @@ import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
-import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
 
