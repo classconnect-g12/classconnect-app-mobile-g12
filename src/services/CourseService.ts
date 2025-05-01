@@ -66,10 +66,3 @@ export async function updateCourse(
 export async function deleteCourse(courseId: string): Promise<void> {
   await privateClient.delete(`/course/delete/${courseId}`);
 }
-
-export async function getMyEnrollments(page = 0, limit = 10) {
-  const response = await privateClient.get(
-    `/enrollment/mycourses?page=${page}&limit=${limit}`
-  );
-  return response.data;
-}

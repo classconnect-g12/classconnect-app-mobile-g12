@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, SectionList } from "react-native";
 import { useRouter } from "expo-router";
-import { getMyCourses, getMyEnrollments } from "@services/CourseService";
+import { getMyCourses } from "@services/CourseService";
+import { getMyEnrollments } from "@services/EnrollmentService";
 import { colors } from "@theme/colors";
 import { ApiCourse } from "@src/types/course";
 import Tab from "@components/Tab";
