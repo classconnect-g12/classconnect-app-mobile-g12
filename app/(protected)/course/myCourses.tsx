@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, SectionList } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  SectionList,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { getMyCourses } from "@services/CourseService";
+import { deleteCourse, getMyCourses } from "@services/CourseService";
 import { getMyEnrollments } from "@services/EnrollmentService";
 import { colors } from "@theme/colors";
 import { ApiCourse } from "@src/types/course";
@@ -11,6 +17,7 @@ import SectionHeader from "@components/SectionHeader";
 import MyCourseFilter from "@components/MyCoursesFilter";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { handleApiError } from "@utils/handleApiError";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function MyCourses() {
   const now = new Date();
@@ -56,6 +63,41 @@ export default function MyCourses() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeletion = (courseId: string) => {
+    Alert.alert(
+      "Confirmar eliminación",
+      "¿Estás seguro de que querés eliminar este curso?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteCourse(courseId);
+              showSnackbar(
+                "Curso eliminado con éxito",
+                SNACKBAR_VARIANTS.SUCCESS
+              );
+              setCreatedCourses((prev) =>
+                prev.filter((course) => course.id !== courseId)
+              );
+            } catch (error) {
+              handleApiError(
+                error,
+                showSnackbar,
+                "Ocurrió un error al eliminar el curso"
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   useEffect(() => {
@@ -133,7 +175,16 @@ export default function MyCourses() {
               sections={sections}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }: { item: ApiCourse }) => (
-                <CourseItem item={item} tab={tab} router={router} />
+                <CourseItem
+                  item={item}
+                  tab={tab}
+                  router={router}
+                  showActions={tab === "created"}
+                  onEdit={() => router.push(`/course/editCourse/${item.id}`)}
+                  onDelete={() => {
+                    handleDeletion(item.id);
+                  }}
+                />
               )}
               renderSectionHeader={({ section: { title } }) => (
                 <SectionHeader title={title} />

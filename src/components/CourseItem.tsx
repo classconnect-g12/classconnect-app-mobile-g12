@@ -10,9 +10,19 @@ interface CourseItemProps {
   item: ApiCourse;
   tab: "created" | "enrolled";
   router: Router;
+  showActions?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-const CourseItem: React.FC<CourseItemProps> = ({ item, tab, router }) => {
+const CourseItem: React.FC<CourseItemProps> = ({
+  item,
+  tab,
+  router,
+  showActions = false,
+  onEdit,
+  onDelete,
+}) => {
   const isLimitedCapacity = item.capacity <= 5;
   const now = new Date();
   const startDate = new Date(item.startDate);
@@ -50,7 +60,7 @@ const CourseItem: React.FC<CourseItemProps> = ({ item, tab, router }) => {
               </Text>
             )}
           </Card.Content>
-          <Card.Actions>
+          <Card.Actions style={{ gap: 8, flexWrap: "wrap" }}>
             <Button
               mode="contained"
               onPress={(e) => {
@@ -62,6 +72,33 @@ const CourseItem: React.FC<CourseItemProps> = ({ item, tab, router }) => {
             >
               {tab === "created" ? "View Course" : "Go to Course"}
             </Button>
+
+            {showActions && (
+              <>
+                <Button
+                  mode="outlined"
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onEdit?.();
+                  }}
+                  style={{ borderColor: colors.primary }}
+                  labelStyle={{ color: colors.primary }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  mode="outlined"
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                  style={{ borderColor: colors.error }}
+                  labelStyle={{ color: colors.error }}
+                >
+                  Eliminar
+                </Button>
+              </>
+            )}
           </Card.Actions>
         </Card>
       </View>
