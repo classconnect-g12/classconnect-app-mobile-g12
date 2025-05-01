@@ -6,3 +6,7 @@ export async function getMyEnrollments(page = 0, limit = 10) {
   );
   return response.data;
 }
+
+export async function enrollInCourse(courseId: string) {
+  await privateClient.post(`/enrollment/create/${courseId}`);
+}
