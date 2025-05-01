@@ -62,4 +62,27 @@ const register = async (
   }
 };
 
+export const loginWithGoogle = async (firebaseIdToken: string): Promise<string> => {
+  checkApiUrl(); 
+
+  try {
+    const response = await axios.post(`${API_URL}/auth/google`, {
+      token: firebaseIdToken, 
+    });
+
+    if (response.status === 200) {
+      const token = response.data.token; 
+      await storeToken(token); 
+      return token;
+    }
+
+    throw new Error(
+      `Error ${response.status}: ${JSON.stringify(response.data)}`
+    );
+  } catch (error: any) {
+    console.error("Google login error:", error?.response?.data || error.message);
+    throw error?.response?.data || { message: "Google login failed" };
+  }
+};
+
 export { login, register };

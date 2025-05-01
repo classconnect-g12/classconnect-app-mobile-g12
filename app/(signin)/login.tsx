@@ -1,6 +1,6 @@
-import { login } from "@services/AuthService";
+import { login, loginWithGoogle } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,8 @@ import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "src/hooks/useSnackbar";
+import auth from "@react-native-firebase/auth";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -31,6 +33,12 @@ export default function SignIn() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "660953493084-hns6fmmg55oo6fc11qqtmr9u04kvnsrd.apps.googleusercontent.com", 
+    });
+  }, []);
 
   const handleSubmit = async () => {
     if (!email)
@@ -61,6 +69,35 @@ export default function SignIn() {
       router.replace("../home");
     } catch (error: any) {
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await GoogleSignin.signOut();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  
+      const userInfo: any = await GoogleSignin.signIn();
+      const idToken = userInfo.idToken || userInfo.data?.idToken;
+  
+      if (!idToken) {
+        throw new Error("Google Sign-In failed: no ID token returned.");
+      }
+  
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      const userCredential = await auth().signInWithCredential(googleCredential);
+      const firebaseIdToken = await userCredential.user.getIdToken();
+  
+      const backendToken = await loginWithGoogle(firebaseIdToken);
+  
+      await authLogin(backendToken);
+      router.replace("../home");
+    } catch (error) {
+      console.error("Google login error:", error);
+      showSnackbar("Google Sign-In failed", SNACKBAR_VARIANTS.ERROR);
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +137,28 @@ export default function SignIn() {
           <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
+   
+      <TouchableOpacity
+        style={[
+          {
+            backgroundColor: "#4285F4",
+            padding: 12,
+            borderRadius: 6,
+            alignItems: "center",
+            marginTop: 10,
+          },
+          isLoading && { opacity: 0.6 },
+        ]}
+        onPress={handleGoogleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Sign in with Google</Text>
+        )}
+      </TouchableOpacity>
+
       <Text style={styles.footerText}>
         Forgot Password?{" "}
         <Link href="/forgotPassword" style={styles.footerLink}>
