@@ -6,7 +6,7 @@ import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { signInStyles as styles } from "@styles/signInStyles";
 import { colors } from "@theme/colors";
-import { validateEmail, validatePasswordLength } from "@utils/validators";
+import { validateEmail, validatePasswordLength, validateUsername } from "@utils/validators";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "src/hooks/useSnackbar";
@@ -82,7 +82,7 @@ export default function SignIn() {
         }
 
         console.error("Google login error:", error);
-        showSnackbar("Google Sign-In failed", SNACKBAR_VARIANTS.ERROR);
+        showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
       }
     } finally {
       setIsLoading(false);
@@ -90,8 +90,10 @@ export default function SignIn() {
   };
 
   const handleGoogleRegister = async () => {
-    if (!username) {
-      showSnackbar("Please enter a username", SNACKBAR_VARIANTS.ERROR);
+    const validationError = validateUsername(username); 
+
+    if (validationError) {
+      showSnackbar(validationError, SNACKBAR_VARIANTS.ERROR); 
       return;
     }
 
@@ -100,9 +102,9 @@ export default function SignIn() {
       const token = await registerWithGoogle(pendingIdToken, username);
       await authLogin(token);
       router.replace("../home");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google registration error:", error);
-      showSnackbar("Google Registration failed", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
     } finally {
       setIsLoading(false);
     }
