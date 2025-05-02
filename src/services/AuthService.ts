@@ -67,7 +67,7 @@ export const loginWithGoogle = async (firebaseIdToken: string): Promise<string> 
 
   try {
     const response = await axios.post(`${API_URL}/auth/google`, {
-      token: firebaseIdToken, 
+      idToken: firebaseIdToken, 
     });
 
     if (response.status === 200) {
@@ -84,5 +84,30 @@ export const loginWithGoogle = async (firebaseIdToken: string): Promise<string> 
     throw error?.response?.data || { message: "Google login failed" };
   }
 };
+
+export const registerWithGoogle = async (firebaseIdToken: string, user_name: string): Promise<string> => {
+  checkApiUrl(); 
+
+  try {
+    const response = await axios.post(`${API_URL}/auth/google-register`, {
+      idToken: firebaseIdToken, 
+      user_name, 
+    });
+
+    if (response.status === 201) {
+      const token = response.data.token; 
+      await storeToken(token); 
+      return token;
+    }
+
+    throw new Error(
+      `Error ${response.status}: ${JSON.stringify(response.data)}`
+    );
+  } catch (error: any) {
+    console.error("Google registration error:", error?.response?.data || error.message);
+    throw error?.response?.data || { message: "Google registration failed" };
+  }
+};
+
 
 export { login, register };

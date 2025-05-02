@@ -1,4 +1,4 @@
-import { login, loginWithGoogle } from "@services/AuthService";
+import { login, loginWithGoogle, registerWithGoogle } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
@@ -17,6 +17,9 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
+  const [username, setUsername] = useState("");
+  const [pendingIdToken, setPendingIdToken] = useState("");
 
   const { login: authLogin } = useAuth();
   const router = useRouter();
@@ -37,26 +40,8 @@ export default function SignIn() {
   }, []);
 
   const handleSubmit = async () => {
-    if (!email)
-      return showSnackbar(
-        "Required fields are empty (email)",
-        SNACKBAR_VARIANTS.ERROR
-      );
-    if (!validateEmail(email))
-      return showSnackbar(
-        "Please enter a valid email address",
-        SNACKBAR_VARIANTS.ERROR
-      );
-    if (!password)
-      return showSnackbar(
-        "Required fields are empty (password)",
-        SNACKBAR_VARIANTS.ERROR
-      );
-    if (!validatePasswordLength(password))
-      return showSnackbar(
-        "The password must have more than 8 characters.",
-        SNACKBAR_VARIANTS.ERROR
-      );
+    if (!email || !validateEmail(email)) return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
+    if (!password || !validatePasswordLength(password)) return showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
 
     try {
       setIsLoading(true);
@@ -74,30 +59,50 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({
-        showPlayServicesUpdateDialog: true,
-      });
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
       const userInfo: any = await GoogleSignin.signIn();
       const idToken = userInfo.idToken || userInfo.data?.idToken;
 
-      if (!idToken) {
-        throw new Error("Google Sign-In failed: no ID token returned.");
-      }
+      if (!idToken) throw new Error("Google Sign-In failed: no ID token returned.");
 
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(
-        googleCredential
-      );
+      const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken();
 
-      const backendToken = await loginWithGoogle(firebaseIdToken);
+      try {
+        const backendToken = await loginWithGoogle(firebaseIdToken);
+        await authLogin(backendToken);
+        router.replace("../home");
+      } catch (error: any) {
+        if (error?.status === 404) {
+          setShowUsernameInput(true);
+          setPendingIdToken(firebaseIdToken); 
+          return;
+        }
 
-      await authLogin(backendToken);
+        console.error("Google login error:", error);
+        showSnackbar("Google Sign-In failed", SNACKBAR_VARIANTS.ERROR);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    if (!username) {
+      showSnackbar("Please enter a username", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const token = await registerWithGoogle(pendingIdToken, username);
+      await authLogin(token);
       router.replace("../home");
     } catch (error) {
-      console.error("Google login error:", error);
-      showSnackbar("Google Sign-In failed", SNACKBAR_VARIANTS.ERROR);
+      console.error("Google registration error:", error);
+      showSnackbar("Google Registration failed", SNACKBAR_VARIANTS.ERROR);
     } finally {
       setIsLoading(false);
     }
@@ -107,48 +112,50 @@ export default function SignIn() {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome!</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
-      <TextInput
-        style={styles.input}
-        label="Email"
-        mode="outlined"
-        theme={{ colors: { primary: colors.secondary } }}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        secureTextEntry
-        label="Password"
-        mode="outlined"
-        theme={{ colors: { primary: colors.secondary } }}
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity
-        style={[styles.button, isLoading && { opacity: 0.6 }]}
-        onPress={handleSubmit}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign In</Text>
-        )}
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, isLoading && { opacity: 0.6 }]} // Use styles.button instead of inline style
-        onPress={handleGoogleLogin}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign in with Google</Text>
-        )}
-      </TouchableOpacity>
+      {!showUsernameInput ? (
+        <>
+          <TextInput
+            style={styles.input}
+            label="Email"
+            mode="outlined"
+            theme={{ colors: { primary: colors.secondary } }}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            secureTextEntry
+            label="Password"
+            mode="outlined"
+            theme={{ colors: { primary: colors.secondary } }}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleSubmit} disabled={isLoading}>
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleGoogleLogin} disabled={isLoading}>
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign in with Google</Text>}
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <TextInput
+            style={styles.input}
+            label="Username"
+            mode="outlined"
+            theme={{ colors: { primary: colors.secondary } }}
+            value={username}
+            onChangeText={setUsername}
+          />
+          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleGoogleRegister} disabled={isLoading}>
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Continue</Text>}
+          </TouchableOpacity>
+        </>
+      )}
 
       <Text style={styles.footerText}>
         Forgot Password?{" "}
@@ -162,12 +169,7 @@ export default function SignIn() {
           Sign up
         </Link>
       </Text>
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
+      <AppSnackbar visible={snackbarVisible} message={snackbarMessage} onDismiss={hideSnackbar} variant={snackbarVariant} />
     </View>
   );
 }
