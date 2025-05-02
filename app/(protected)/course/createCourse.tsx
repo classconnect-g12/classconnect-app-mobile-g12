@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   DateTimePickerAndroid,
@@ -10,20 +10,23 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Pressable,
+  FlatList,
 } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { TextInput, Button, Checkbox } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
+import { TextInput as RNTextInput } from "react-native";
 import { colors } from "@theme/colors";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateCourse } from "@utils/validators";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { createCourse } from "@services/CourseService";
+import { createCourse, getMyCourses } from "@services/CourseService";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+
+type CourseOption = { id: string; title: string };
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
@@ -34,6 +37,9 @@ export default function CreateCourse() {
   const [modality, setModality] = useState<"ONLINE" | "ONSITE" | "HYBRID">(
     "ONLINE"
   );
+  const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     snackbarVisible,
@@ -42,6 +48,19 @@ export default function CreateCourse() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  const fetchCourses = async (query = "") => {
+    try {
+      const data = await getMyCourses(0, 10, query);
+      setAllCourses(data.courses);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error fetching courses");
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   const handleCreateCourse = async () => {
     const error = validateCourse(courseName);
@@ -90,7 +109,9 @@ export default function CreateCourse() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         modality,
+        prerequisites: selectedCourses,
       };
+
       await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
@@ -170,6 +191,52 @@ export default function CreateCourse() {
             style={styles.input}
             keyboardType="numeric"
           />
+
+          <Text style={styles.dateLabel}>Prerequisites</Text>
+
+          <View style={styles.input}>
+            <TextInput
+              placeholder="Buscar cursos..."
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                fetchCourses(text);
+              }}
+              mode="outlined"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={{ marginTop: 10 }}>
+            <Text style={styles.dateLabel}>Prerequisites (opcional)</Text>
+            {allCourses.map((course) => {
+              const isChecked = selectedCourses.includes(course.id);
+              return (
+                <Pressable
+                  key={course.id}
+                  onPress={() => {
+                    setSelectedCourses((prev) =>
+                      isChecked
+                        ? prev.filter((id) => id !== course.id)
+                        : [...prev, course.id]
+                    );
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 4,
+                  }}
+                >
+                  <MaterialIcons
+                    name={isChecked ? "check-box" : "check-box-outline-blank"}
+                    size={20}
+                    color={colors.primary}
+                  />
+                  <Text style={{ marginLeft: 8 }}>{course.title}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <View style={styles.datePickerContainer}>
             <Text style={styles.dateLabel}>Start Date</Text>
