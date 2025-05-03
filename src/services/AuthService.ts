@@ -1,5 +1,6 @@
 import axios from "axios";
 import { storeToken } from "@utils/tokenUtils";
+import messaging from "@react-native-firebase/messaging"; 
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -41,10 +42,13 @@ const register = async (
   checkApiUrl();
 
   try {
+    const fcmToken = await messaging().getToken();
+
     const response = await axios.post(`${API_URL}/auth/register`, {
       user_name: username,
       email,
       password,
+      fcm_token: fcmToken,
     });
 
     if (response.status === 201) {
@@ -89,9 +93,12 @@ export const registerWithGoogle = async (firebaseIdToken: string, user_name: str
   checkApiUrl(); 
 
   try {
+    const fcmToken = await messaging().getToken();
+
     const response = await axios.post(`${API_URL}/auth/google-register`, {
       idToken: firebaseIdToken, 
       user_name, 
+      fcm_token: fcmToken,
     });
 
     if (response.status === 201) {
