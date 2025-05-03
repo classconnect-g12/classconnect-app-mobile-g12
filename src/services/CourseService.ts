@@ -14,10 +14,20 @@ export const createCourse = async (data: BaseCourse): Promise<void> => {
 
 export async function fetchCourses(
   page = 0,
-  limit = 10
+  limit = 10,
+  filters: { title?: string } = {}
 ): Promise<GetCoursesResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (filters.title) {
+    params.append("title", filters.title);
+  }
+
   const response = await privateClient.get<GetCoursesResponse>(
-    `/course/get?page=${page}&limit=${limit}`
+    `/course/get?${params.toString()}`
   );
   return response.data;
 }
@@ -55,11 +65,4 @@ export async function updateCourse(
 
 export async function deleteCourse(courseId: string): Promise<void> {
   await privateClient.delete(`/course/delete/${courseId}`);
-}
-
-export async function getMyEnrollments(page = 0, limit = 10) {
-  const response = await privateClient.get(
-    `/enrollment/mycourses?page=${page}&limit=${limit}`
-  );
-  return response.data;
 }
