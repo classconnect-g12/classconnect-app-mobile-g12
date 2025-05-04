@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, SectionList } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  SectionList,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { getMyCourses, getMyEnrollments } from "@services/CourseService";
+import { deleteCourse, getMyCourses } from "@services/CourseService";
+import { getMyEnrollments } from "@services/EnrollmentService";
 import { colors } from "@theme/colors";
 import { ApiCourse } from "@src/types/course";
 import Tab from "@components/Tab";
 import CourseItem from "@components/CourseItem";
 import SectionHeader from "@components/SectionHeader";
-import CourseFilter from "@components/CourseFilter";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import MyCourseFilter from "@components/MyCoursesFilter";
 import { useSnackbar } from "@hooks/useSnackbar";
+import { handleApiError } from "@utils/handleApiError";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function MyCourses() {
+  const now = new Date();
   const router = useRouter();
   const [tab, setTab] = useState<"created" | "enrolled">("created");
 
@@ -33,11 +42,8 @@ export default function MyCourses() {
       setLoading(true);
       const data = await getMyCourses(0, 10);
       setCreatedCourses(data.courses);
-    } catch (err) {
-      showSnackbar(
-        "Error loading your created courses",
-        SNACKBAR_VARIANTS.ERROR
-      );
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error loading your created courses");
     } finally {
       setLoading(false);
     }
@@ -48,21 +54,55 @@ export default function MyCourses() {
       setLoading(true);
       const data = await getMyEnrollments(0, 10);
       setEnrolledCourses(data.courses);
-    } catch (err) {
-      showSnackbar(
-        "Error loading your enrolled courses",
-        SNACKBAR_VARIANTS.ERROR
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "Error loading your enrolled courses"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeletion = (courseId: string) => {
+    Alert.alert(
+      "Confirmar eliminación",
+      "¿Estás seguro de que querés eliminar este curso?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteCourse(courseId);
+              showSnackbar(
+                "Curso eliminado con éxito",
+                SNACKBAR_VARIANTS.SUCCESS
+              );
+              setCreatedCourses((prev) =>
+                prev.filter((course) => course.id !== courseId)
+              );
+            } catch (error) {
+              handleApiError(
+                error,
+                showSnackbar,
+                "Ocurrió un error al eliminar el curso"
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   useEffect(() => {
     tab === "created" ? fetchCreatedCourses() : fetchEnrolledCourses();
   }, [tab]);
-
-  const now = new Date();
 
   const categorizeCourses = (courses: ApiCourse[]) => {
     const filteredByName = filters.name
@@ -70,8 +110,6 @@ export default function MyCourses() {
           c.title.toLowerCase().includes(filters.name.toLowerCase())
         )
       : courses;
-
-    const now = new Date();
 
     let filtered = filteredByName;
 
@@ -82,6 +120,7 @@ export default function MyCourses() {
         if (filters.state === "active") return start <= now && end >= now;
         if (filters.state === "upcoming") return start > now;
         if (filters.state === "finished") return end < now;
+        return true;
       });
     }
 
@@ -104,7 +143,7 @@ export default function MyCourses() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Tab tab={tab} setTab={setTab} />
 
       {loading ? (
@@ -115,7 +154,7 @@ export default function MyCourses() {
         </View>
       ) : (
         <>
-          <CourseFilter filters={filters} setFilters={setFilters} />
+          <MyCourseFilter filters={filters} setFilters={setFilters} />
           {sections.length === 0 ? (
             <View
               style={{
@@ -124,7 +163,11 @@ export default function MyCourses() {
                 alignItems: "center",
               }}
             >
-              <Text>No courses found</Text>
+              <Text style={{ color: colors.text, opacity: 0.7 }}>
+                {filters.name || filters.state !== "all"
+                  ? "No courses found. Try different search terms or filters."
+                  : "No courses available"}
+              </Text>
             </View>
           ) : (
             <SectionList
@@ -132,7 +175,16 @@ export default function MyCourses() {
               sections={sections}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }: { item: ApiCourse }) => (
-                <CourseItem item={item} tab={tab} router={router} />
+                <CourseItem
+                  item={item}
+                  tab={tab}
+                  router={router}
+                  showActions={tab === "created"}
+                  onEdit={() => router.push(`/course/editCourse/${item.id}`)}
+                  onDelete={() => {
+                    handleDeletion(item.id);
+                  }}
+                />
               )}
               renderSectionHeader={({ section: { title } }) => (
                 <SectionHeader title={title} />

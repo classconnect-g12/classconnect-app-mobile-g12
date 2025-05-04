@@ -1,38 +1,46 @@
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import { View, TextInput } from "react-native";
+import { View, Text } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { colors } from "@theme/colors";
+import { findCourseStyles as styles } from "@styles/findCourseStyles";
 
-type Filters = {
-  name: string;
-  state: "all" | "active" | "upcoming" | "finished";
-};
+interface CourseFilterProps {
+  dateFilter: "all" | "active" | "upcoming" | "finished";
+  setDateFilter: React.Dispatch<
+    React.SetStateAction<"all" | "active" | "upcoming" | "finished">
+  >;
+}
 
-type Props = {
-  filters: Filters;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
-};
+const states = [
+  { label: "All", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Upcoming", value: "upcoming" },
+  { label: "Finished", value: "finished" },
+];
 
-export default function CourseFilter({ filters, setFilters }: Props) {
+const CourseFilter: React.FC<CourseFilterProps> = ({
+  dateFilter,
+  setDateFilter,
+}) => {
   return (
-    <View style={{ padding: 16 }}>
-      <TextInput
-        placeholder="Search by name"
-        value={filters.name}
-        onChangeText={(text) => setFilters((prev) => ({ ...prev, name: text }))}
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-
+    <View style={styles.filterContainer}>
+      <Text style={styles.filterTitle}>Filter by Date</Text>
       <Picker
-        selectedValue={filters.state}
-        onValueChange={(value) =>
-          setFilters((prev) => ({ ...prev, state: value }))
-        }
+        selectedValue={dateFilter}
+        onValueChange={(value) => setDateFilter(value)}
+        style={styles.filterPicker}
       >
-        <Picker.Item label="All" value="all" />
-        <Picker.Item label="Active" value="active" />
-        <Picker.Item label="Upcoming" value="upcoming" />
-        <Picker.Item label="Finished" value="finished" />
+        {states.map((state) => (
+          <Picker.Item
+            label={state.label}
+            value={state.value}
+            key={state.value}
+            color={colors.text}
+          />
+        ))}
       </Picker>
     </View>
   );
-}
+};
+
+export default CourseFilter;
