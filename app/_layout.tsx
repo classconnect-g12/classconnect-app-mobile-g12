@@ -2,8 +2,45 @@ import { Stack } from "expo-router";
 import { AuthProvider } from "../src/context/authContext";
 import { Platform } from "react-native";
 import { useEffect } from "react";
-import notifee, { AndroidImportance } from "@notifee/react-native";
+import notifee, { AndroidImportance, AndroidVisibility, EventType } from "@notifee/react-native";
 import messaging, { FirebaseMessagingTypes } from "@react-native-firebase/messaging"; 
+
+const showNotification = async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+  const title = typeof remoteMessage.data?.title === "string" ? remoteMessage.data.title : "Nueva notificación";
+  const body = typeof remoteMessage.data?.body === "string" ? remoteMessage.data.body : "Tienes un mensaje";
+
+  await notifee.requestPermission();
+  await notifee.createChannel({
+    id: "default",
+    name: "Default Channel",
+    importance: AndroidImportance.HIGH,
+  });
+
+  await notifee.displayNotification({
+    title,
+    body,
+    android: {
+      channelId: "default",
+      importance: AndroidImportance.HIGH,
+      visibility: AndroidVisibility.PUBLIC,
+      pressAction: {
+        id: "default",
+        launchActivity: "default",
+      },
+    },
+  });
+};
+
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+  console.log("🔄 NOTIFICACIÓN RECIBIDA (segundo plano):", remoteMessage);
+
+  if (!remoteMessage.data?.title || !remoteMessage.data?.body) {
+    console.warn("🚨 Notificación vacía recibida, ignorando.");
+    return;
+  }
+
+  showNotification(remoteMessage); 
+});
 
 export default function RootLayout() {
   useEffect(() => {
@@ -32,34 +69,8 @@ export default function RootLayout() {
       }
     };
 
-    const showNotification = async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-      await notifee.requestPermission();
-
-      await notifee.createChannel({
-        id: "default",
-        name: "Default Channel",
-        importance: AndroidImportance.HIGH,
-      });
-
-      await notifee.displayNotification({
-        title: remoteMessage.notification?.title || "Nueva notificación",
-        body: remoteMessage.notification?.body || "Tienes un mensaje",
-        android: {
-          channelId: "default",
-          importance: AndroidImportance.HIGH,
-        },
-      });
-    };
-
-    // ✅ Manejo de notificaciones en primer plano con Notifee
     const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
       console.log("📲 NOTIFICACIÓN RECIBIDA (primer plano):", remoteMessage);
-      showNotification(remoteMessage);
-    });
-
-    // ✅ Manejo de notificaciones en segundo plano con Notifee
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-      console.log("🔄 NOTIFICACIÓN RECIBIDA (segundo plano):", remoteMessage);
       showNotification(remoteMessage);
     });
 
@@ -70,6 +81,12 @@ export default function RootLayout() {
       unsubscribeForeground();
     };
   }, []);
+
+  notifee.onBackgroundEvent(async ({ type, detail }) => {
+    if (type === EventType.PRESS) {
+      console.log("🟢 Notificación presionada:", detail.notification);
+    }
+  });
 
   return (
     <AuthProvider>
