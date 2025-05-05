@@ -10,9 +10,16 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { enrollInCourse } from "@services/EnrollmentService";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { CourseDetailResponse } from "@src/types/course";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+
+  const [courseDetail, setCourseDetail] = useState<CourseDetailResponse | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
 
   const {
     snackbarVisible,
@@ -22,10 +29,6 @@ export default function CourseDetail() {
     hideSnackbar,
   } = useSnackbar();
 
-  const router = useRouter();
-  const [courseDetail, setCourseDetail] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!id) return;
 
@@ -34,7 +37,7 @@ export default function CourseDetail() {
         const data = await fetchCourseDetail(id);
         setCourseDetail(data);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading course data");
+        handleApiError(error, showSnackbar, "Failed to load course data.");
         router.back();
       } finally {
         setLoading(false);
@@ -52,17 +55,13 @@ export default function CourseDetail() {
         SNACKBAR_VARIANTS.SUCCESS
       );
     } catch (error) {
-      handleApiError(
-        error,
-        showSnackbar,
-        "There was a problem joinin the course"
-      );
+      handleApiError(error, showSnackbar, "Could not join the course.");
     }
   };
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -70,8 +69,8 @@ export default function CourseDetail() {
 
   if (!courseDetail) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Error loading course</Text>
+      <View>
+        <Text>Course not found.</Text>
       </View>
     );
   }
@@ -79,10 +78,12 @@ export default function CourseDetail() {
   const { course, teacher } = courseDetail;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20 }}>
-      <View style={styles.bannerContainer}>
-        <Image source={{ uri: teacher.banner }} style={styles.bannerImage} />
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      {teacher.banner ? (
+        <View style={styles.bannerContainer}>
+          <Image source={{ uri: teacher.banner }} style={styles.bannerImage} />
+        </View>
+      ) : null}
 
       <Text style={styles.title}>{course.title}</Text>
 
@@ -93,25 +94,21 @@ export default function CourseDetail() {
         </Card.Content>
       </Card>
 
-      {/* Objetivos */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Objectives</Text>
-        <Text style={styles.sectionText}>{course.objectives}</Text>
-      </View>
+      {renderSection("Objectives", course.objectives)}
+      {renderSection("Syllabus", course.syllabus)}
+      {course.correlatives.length > 0 && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.cardTitle}>Correlatives</Text>
+            {course.correlatives.map((correlative) => (
+              <Text key={correlative.id} style={styles.sectionText}>
+                • {correlative.title}
+              </Text>
+            ))}
+          </Card.Content>
+        </Card>
+      )}
 
-      {/* Syllabus */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Syllabus</Text>
-        <Text style={styles.sectionText}>{course.syllabus}</Text>
-      </View>
-
-      {/* Prerequisitos */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Prerequisites</Text>
-        <Text style={styles.sectionText}>{course.prerequisites}</Text>
-      </View>
-
-      {/* Información del profesor */}
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.cardTitle}>Teacher Information</Text>
@@ -123,17 +120,14 @@ export default function CourseDetail() {
         </Card.Content>
       </Card>
 
-      {/* Botón para unirse al curso */}
       <Button
         mode="contained"
-        onPress={(e) => {
-          e.stopPropagation();
-          handleJoinCourse(course.id);
-        }}
+        onPress={() => handleJoinCourse(course.id)}
         style={styles.joinButton}
       >
         Join Course
       </Button>
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
@@ -143,3 +137,10 @@ export default function CourseDetail() {
     </ScrollView>
   );
 }
+
+const renderSection = (title: string, content: string) => (
+  <View style={styles.sectionContainer}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    <Text style={styles.sectionText}>{content}</Text>
+  </View>
+);

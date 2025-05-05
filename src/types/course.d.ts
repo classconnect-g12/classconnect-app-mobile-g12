@@ -9,13 +9,21 @@ export interface BaseCourse {
   modality: Modality;
 }
 
+export type Teacher = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  description: string;
+  banner: string;
+};
+
 export interface FullCourse extends BaseCourse {
   id: string;
   available: boolean;
   objectives: string;
   syllabus: string;
-  prerequisites: string;
-  teacherId: number;
+  correlatives: FullCourse[];
+  teacher: Teacher;
 }
 
 export type ApiCourse = Pick<
@@ -46,3 +54,8 @@ export interface GetCoursesResponse {
     totalPages: number;
   };
 }
+
+export type CourseDetailResponse = {
+  course: FullCourse;
+  teacher: Teacher;
+};
