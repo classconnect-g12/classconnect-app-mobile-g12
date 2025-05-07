@@ -7,6 +7,9 @@ import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { colors } from "@theme/colors";
+import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
+import { CreateModuleModal } from "@components/CreateModuleModal";
 
 const CourseModulesScreen = () => {
   const {
@@ -22,6 +25,10 @@ const CourseModulesScreen = () => {
 
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [order, setOrder] = useState("");
 
   useEffect(() => {
     const loadModules = async () => {
@@ -41,6 +48,15 @@ const CourseModulesScreen = () => {
 
     loadModules();
   }, [courseId]);
+
+  const handleAddModule = () => {
+    // Aquí podrías enviar los datos a la API
+    console.log({ title, description, order });
+    setModalVisible(false);
+    setTitle("");
+    setDescription("");
+    setOrder("");
+  };
 
   const renderItem = ({ item }: { item: Module }) => (
     <View style={viewModulesStyles.moduleCard}>
@@ -71,6 +87,28 @@ const CourseModulesScreen = () => {
         ListEmptyComponent={
           <Text style={viewModulesStyles.empty}>No modules available.</Text>
         }
+      />
+      <CreateModuleModal
+        visible={modalVisible}
+        onDismiss={() => setModalVisible(false)}
+        title={title}
+        setTitle={setTitle}
+        description={description}
+        setDescription={setDescription}
+        order={order}
+        setOrder={setOrder}
+        onSubmit={handleAddModule}
+      />
+
+      <AnimatedFAB
+        icon="plus"
+        label=""
+        extended={false}
+        onPress={() => setModalVisible(true)}
+        style={viewModulesStyles.fab}
+        visible
+        animateFrom="right"
+        color={colors.buttonText}
       />
       <AppSnackbar
         visible={snackbarVisible}
