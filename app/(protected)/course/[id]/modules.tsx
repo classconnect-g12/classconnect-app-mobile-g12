@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchModules, createModule, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
@@ -12,6 +18,7 @@ import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
 
 const CourseModulesScreen = () => {
+  const router = useRouter();
   const {
     snackbarVisible,
     snackbarMessage,
@@ -58,11 +65,15 @@ const CourseModulesScreen = () => {
   };
 
   const renderItem = ({ item }: { item: Module }) => (
-    <View style={viewModulesStyles.moduleCard}>
-      <Text style={viewModulesStyles.title}>{item.title}</Text>
-      <Text style={viewModulesStyles.description}>{item.description}</Text>
-      <Text style={viewModulesStyles.order}>Orden: {item.order}</Text>
-    </View>
+    <TouchableOpacity
+      onPress={() => router.push(`/course/${courseId}/module/${item.moduleId}`)}
+    >
+      <View style={viewModulesStyles.moduleCard}>
+        <Text style={viewModulesStyles.title}>{item.title}</Text>
+        <Text style={viewModulesStyles.description}>{item.description}</Text>
+        <Text style={viewModulesStyles.order}>Orden: {item.order}</Text>
+      </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
