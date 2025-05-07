@@ -1,18 +1,6 @@
-import { colors } from "@theme/colors";
 import { StyleSheet } from "react-native";
 
 export const moduleDetailStyle = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  fab: {
-    position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.primary,
-  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -49,5 +37,27 @@ export const moduleDetailStyle = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     marginTop: 16,
+  },
+  resourceList: {
+    marginTop: 16,
+  },
+  resourceItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  resourceTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  resourceType: {
+    fontSize: 14,
+    color: "#666",
+  },
+  noResources: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
   },
 });

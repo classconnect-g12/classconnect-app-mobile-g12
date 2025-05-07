@@ -8,6 +8,15 @@ export interface Module {
   order: number;
 }
 
+export interface Resource {
+  resourceId: number;
+  title: string;
+  resourceType: "DOCUMENT" | "VIDEO" | "IMAGE" | "AUDIO";
+  url: string;
+  order: number;
+  moduleId: number;
+}
+
 export const fetchModules = async (courseId: string): Promise<Module[]> => {
   const response = await privateClient.get<Module[]>(
     `/course/modules/${courseId}`
@@ -68,4 +77,16 @@ export async function createResource(
     }
   );
   console.log(response.data);
+}
+
+export async function fetchResources(
+  courseId: string,
+  moduleId: string
+): Promise<Resource[]> {
+  const response = await privateClient.get<Resource[]>(
+    `/course/${courseId}/modules/${moduleId}/resources`
+  );
+  console.log(response.data);
+
+  return response.data.sort((a, b) => a.order - b.order);
 }

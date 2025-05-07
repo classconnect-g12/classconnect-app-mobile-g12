@@ -1,16 +1,28 @@
-import { View, Text, Modal, TextInput, Button, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Modal,
+  TextInput,
+  Button,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
-import { useState } from "react";
+import { moduleDetailStyle } from "@styles/moduleDetailStyle";
+import { useState, useEffect } from "react";
 import { AnimatedFAB, RadioButton } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
-import { createResource } from "@services/ModuleService";
-import { moduleDetailStyle } from "@styles/moduleDetailStyle";
+import {
+  createResource,
+  fetchResources,
+  Resource,
+} from "@services/ModuleService";
 import { handleApiError } from "@utils/handleApiError";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
-import { SNACKBAR_VARIANTS } from "../../../../../src/constants/snackbarVariants";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function ModulePage() {
   const {
@@ -25,12 +37,27 @@ export default function ModulePage() {
     moduleId: string;
   }>();
   const [modalVisible, setModalVisible] = useState(false);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     resource_type: "DOCUMENT",
     order: "1",
     file: null as DocumentPicker.DocumentPickerResult | null,
   });
+
+  // Cargar los recursos al montar el componente y después de crear uno nuevo
+  const loadResources = async () => {
+    try {
+      const fetchedResources = await fetchResources(id, moduleId);
+      setResources(fetchedResources);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error fetching resources");
+    }
+  };
+
+  useEffect(() => {
+    loadResources();
+  }, [id, moduleId]);
 
   // Manejar la selección de archivo
   const pickFile = async () => {
@@ -54,7 +81,6 @@ export default function ModulePage() {
       return;
     }
 
-    // Validar que order sea un número entero positivo
     const orderNum = parseInt(formData.order, 10);
     if (isNaN(orderNum) || orderNum < 1) {
       showSnackbar(
@@ -73,6 +99,8 @@ export default function ModulePage() {
         formData.order,
         formData.file
       );
+      showSnackbar("Resource created successfully", SNACKBAR_VARIANTS.SUCCESS);
+      await loadResources(); // Recargar los recursos después de crear uno nuevo
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating resource");
     } finally {
@@ -86,10 +114,37 @@ export default function ModulePage() {
     }
   };
 
+  // Renderizar cada recurso
+  const renderResource = ({ item }: { item: Resource }) => (
+    <TouchableOpacity
+      style={moduleDetailStyle.resourceItem}
+      onPress={() => {
+        // Aquí puedes agregar lógica para abrir el recurso (ej. abrir la URL)
+        showSnackbar(`Opening ${item.title}`, SNACKBAR_VARIANTS.INFO);
+      }}
+    >
+      <Text style={moduleDetailStyle.resourceTitle}>
+        {item.order}. {item.title}
+      </Text>
+      <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={viewModulesStyles.container}>
-      <Text>Course ID: {id}</Text>
-      <Text>Module ID: {moduleId}</Text>
+      {/* Lista de recursos */}
+      {resources.length > 0 ? (
+        <FlatList
+          data={resources}
+          renderItem={renderResource}
+          keyExtractor={(item) => item.resourceId.toString()}
+          style={moduleDetailStyle.resourceList}
+        />
+      ) : (
+        <Text style={moduleDetailStyle.noResources}>
+          No resources available
+        </Text>
+      )}
 
       {/* Modal para el formulario */}
       <Modal
@@ -121,7 +176,7 @@ export default function ModulePage() {
               value={formData.resource_type}
             >
               <View style={moduleDetailStyle.radioOption}>
-                <RadioButton value="DOCUMENT" />
+                <RadioButton value="DOCUMENT " />
                 <Text>Document</Text>
               </View>
               <View style={moduleDetailStyle.radioOption}>
