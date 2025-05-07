@@ -1,3 +1,4 @@
+import { colors } from "@theme/colors";
 import React from "react";
 import { Button, Modal, TextInput } from "react-native-paper";
 
@@ -57,7 +58,11 @@ export const CreateModuleModal: React.FC<Props> = ({
         keyboardType="numeric"
         style={{ marginBottom: 10 }}
       />
-      <Button mode="contained" onPress={onSubmit}>
+      <Button
+        mode="contained"
+        style={{ backgroundColor: colors.primary }}
+        onPress={onSubmit}
+      >
         Crear módulo
       </Button>
     </Modal>
