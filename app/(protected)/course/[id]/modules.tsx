@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { fetchModules, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
+import { handleApiError } from "@utils/handleApiError";
+import { useSnackbar } from "@hooks/useSnackbar";
+import { AppSnackbar } from "@components/AppSnackbar";
 
 const CourseModulesScreen = () => {
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const { courseId } = useCourse();
   console.log("Course ID:", courseId);
   console.log("Params:", useLocalSearchParams());
 
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadModules = async () => {
@@ -28,8 +31,9 @@ const CourseModulesScreen = () => {
           console.log("Modules data:", data);
           setModules(data);
         }
-      } catch (err) {
-        setError("Error loading modules");
+      } catch (error) {
+        handleApiError(error, showSnackbar, "Error loading modules");
+        setModules([]);
       } finally {
         setLoading(false);
       }
@@ -48,12 +52,12 @@ const CourseModulesScreen = () => {
 
   if (loading) {
     return (
-      <ActivityIndicator size="large" color="#0000ff" style={viewModulesStyles.loader} />
+      <ActivityIndicator
+        size="large"
+        color="#0000ff"
+        style={viewModulesStyles.loader}
+      />
     );
-  }
-
-  if (error) {
-    return <Text style={viewModulesStyles.error}>{error}</Text>;
   }
 
   return (
@@ -67,6 +71,12 @@ const CourseModulesScreen = () => {
         ListEmptyComponent={
           <Text style={viewModulesStyles.empty}>No modules available.</Text>
         }
+      />
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </View>
   );
