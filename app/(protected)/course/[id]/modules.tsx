@@ -10,6 +10,7 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { colors } from "@theme/colors";
 import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
+import { createModule } from "@services/CourseService";
 
 const CourseModulesScreen = () => {
   const {
@@ -49,9 +50,8 @@ const CourseModulesScreen = () => {
     loadModules();
   }, [courseId]);
 
-  const handleAddModule = () => {
-    // Aquí podrías enviar los datos a la API
-    console.log({ title, description, order });
+  const handleAddModule = async () => {
+    await createModule(courseId ?? "", title, description, parseInt(order));
     setModalVisible(false);
     setTitle("");
     setDescription("");
