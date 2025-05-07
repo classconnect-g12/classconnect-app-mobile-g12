@@ -25,7 +25,7 @@ function InnerTabs() {
           <Ionicons name="information-circle-outline" size={size} color={color} />
         )
       }} />
-      <Tabs.Screen name="modules" options={{
+      <Tabs.Screen name="module" options={{
         title: "Modules",
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="list-outline" size={size} color={color} />
