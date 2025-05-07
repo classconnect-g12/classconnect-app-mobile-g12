@@ -66,19 +66,3 @@ export async function updateCourse(
 export async function deleteCourse(courseId: string): Promise<void> {
   await privateClient.delete(`/course/delete/${courseId}`);
 }
-
-export async function createModule(
-  courseId: string,
-  title: string,
-  description: string,
-  order: number
-) {
-  const response = await privateClient.post(`/course/modules/${courseId}`, [
-    {
-      title,
-      description,
-      order,
-    },
-  ]);
-  console.log(response.data);
-}

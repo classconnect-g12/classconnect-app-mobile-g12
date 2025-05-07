@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { fetchModules, Module } from "@services/ModuleService";
+import { fetchModules, createModule, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { handleApiError } from "@utils/handleApiError";
@@ -10,7 +10,6 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { colors } from "@theme/colors";
 import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
-import { createModule } from "@services/CourseService";
 
 const CourseModulesScreen = () => {
   const {
