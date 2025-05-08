@@ -6,6 +6,7 @@ import {
   Button,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
@@ -14,6 +15,11 @@ import { useState, useEffect } from "react";
 import { AnimatedFAB, RadioButton } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
+import * as WebBrowser from "expo-web-browser";
+import { Video, ResizeMode } from "expo-av";
+import { Audio } from "expo-av";
+import { ActivityIndicator } from "react-native";
+import { IconButton } from "react-native-paper";
 import {
   createResource,
   fetchResources,
@@ -45,6 +51,13 @@ export default function ModulePage() {
     file: null as DocumentPicker.DocumentPickerResult | null,
   });
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Cargar los recursos al montar el componente y después de crear uno nuevo
   const loadResources = async () => {
     try {
@@ -74,7 +87,6 @@ export default function ModulePage() {
     }
   };
 
-  // Manejar el envío del formulario
   const handleSubmit = async () => {
     if (!formData.title || !formData.order || !formData.file) {
       showSnackbar("Complete all the required fields", SNACKBAR_VARIANTS.ERROR);
@@ -90,6 +102,7 @@ export default function ModulePage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await createResource(
         id,
@@ -100,35 +113,100 @@ export default function ModulePage() {
         formData.file
       );
       showSnackbar("Resource created successfully", SNACKBAR_VARIANTS.SUCCESS);
-      await loadResources(); // Recargar los recursos después de crear uno nuevo
+      await loadResources();
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating resource");
     } finally {
+      setIsSubmitting(false);
       setModalVisible(false);
       setFormData({
         title: "",
         resource_type: "DOCUMENT",
         order: "1",
-        file: null as DocumentPicker.DocumentPickerResult | null,
+        file: null,
       });
     }
   };
 
-  // Renderizar cada recurso
-  const renderResource = ({ item }: { item: Resource }) => (
-    <TouchableOpacity
-      style={moduleDetailStyle.resourceItem}
-      onPress={() => {
-        // Aquí puedes agregar lógica para abrir el recurso (ej. abrir la URL)
-        showSnackbar(`Opening ${item.title}`, SNACKBAR_VARIANTS.INFO);
-      }}
-    >
-      <Text style={moduleDetailStyle.resourceTitle}>
-        {item.order}. {item.title}
-      </Text>
-      <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
-    </TouchableOpacity>
-  );
+  const renderResource = ({ item }: { item: Resource }) => {
+    const handlePress = async () => {
+      switch (item.resourceType) {
+        case "IMAGE":
+          setSelectedImage(item.url);
+          break;
+        case "VIDEO":
+          setSelectedVideo(item.url);
+          break;
+        case "DOCUMENT":
+          try {
+            await WebBrowser.openBrowserAsync(item.url);
+            showSnackbar("Opening document...", SNACKBAR_VARIANTS.INFO);
+          } catch (e) {
+            showSnackbar("Failed to open document", SNACKBAR_VARIANTS.ERROR);
+          }
+          break;
+
+        case "AUDIO":
+          try {
+            if (sound) {
+              await sound.unloadAsync();
+              setSound(null);
+              setPlayingAudio(null);
+            } else {
+              const { sound: newSound } = await Audio.Sound.createAsync({
+                uri: item.url,
+              });
+              setSound(newSound);
+              setPlayingAudio(item.resourceId.toString());
+              await newSound.playAsync();
+            }
+          } catch (e) {
+            showSnackbar("Error playing audio", SNACKBAR_VARIANTS.ERROR);
+          }
+          break;
+      }
+    };
+
+    return (
+      <TouchableOpacity
+        style={moduleDetailStyle.resourceItem}
+        onPress={handlePress}
+      >
+        <View style={moduleDetailStyle.resourceHeader}>
+          <Text style={moduleDetailStyle.resourceTitle}>
+            {item.order}. {item.title}
+          </Text>
+          <IconButton
+            icon="pencil"
+            size={20}
+            onPress={() => {
+              // TODO: Implementar edición de recurso
+              console.log("Editar recurso", item.resourceId);
+            }}
+          />
+        </View>
+        <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
+
+        {item.resourceType === "IMAGE" && (
+          <Image
+            source={{ uri: item.url }}
+            style={{
+              width: "100%",
+              height: 200,
+              marginTop: 10,
+              borderRadius: 8,
+            }}
+            resizeMode={ResizeMode.CONTAIN}
+          />
+        )}
+
+        {item.resourceType === "AUDIO" &&
+          playingAudio === item.resourceId.toString() && (
+            <Text>Playing audio...</Text>
+          )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={viewModulesStyles.container}>
@@ -210,10 +288,21 @@ export default function ModulePage() {
                 <Text>Selected file: {formData.file.assets[0].name}</Text>
               )}
 
-            {/* Botones */}
             <View style={moduleDetailStyle.modalButtons}>
-              <Button title="Cancel" onPress={() => setModalVisible(false)} />
-              <Button title="Create" onPress={handleSubmit} />
+              <Button
+                title="Cancel"
+                onPress={() => setModalVisible(false)}
+                disabled={isSubmitting}
+              />
+              {isSubmitting ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  style={{ marginTop: 10 }}
+                />
+              ) : (
+                <Button title="Create" onPress={handleSubmit} />
+              )}
             </View>
           </View>
         </View>
@@ -236,6 +325,53 @@ export default function ModulePage() {
         onDismiss={hideSnackbar}
         variant={snackbarVariant}
       />
+      {/* Modal de imagen */}
+      <Modal
+        visible={!!selectedImage}
+        transparent={true}
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View
+          style={{ flex: 1, backgroundColor: "#000", justifyContent: "center" }}
+        >
+          <TouchableOpacity
+            onPress={() => setSelectedImage(null)}
+            style={{ flex: 1 }}
+          >
+            <Image
+              source={{ uri: selectedImage! }}
+              style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+            />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Modal de video */}
+      <Modal
+        visible={!!selectedVideo}
+        transparent={true}
+        onRequestClose={() => setSelectedVideo(null)}
+      >
+        <View
+          style={{ flex: 1, backgroundColor: "#000", justifyContent: "center" }}
+        >
+          <TouchableOpacity
+            onPress={() => setSelectedVideo(null)}
+            style={{ flex: 1 }}
+          >
+            <Video
+              source={{ uri: selectedVideo! }}
+              rate={1.0}
+              volume={1.0}
+              isMuted={false}
+              resizeMode={ResizeMode.CONTAIN}
+              useNativeControls
+              shouldPlay
+              style={{ width: "100%", height: "100%" }}
+            />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }

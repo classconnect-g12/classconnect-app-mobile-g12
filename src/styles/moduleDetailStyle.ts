@@ -60,4 +60,9 @@ export const moduleDetailStyle = StyleSheet.create({
     color: "#666",
     textAlign: "center",
   },
+  resourceHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 });
