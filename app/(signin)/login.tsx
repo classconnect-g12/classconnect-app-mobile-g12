@@ -1,6 +1,6 @@
 import { login, loginWithGoogle, registerWithGoogle } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
@@ -12,6 +12,9 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "src/hooks/useSnackbar";
 import auth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { getAllNotifications, getNotificationPreferences } from "@services/NotificationService";
+import { NotificationContext, defaultPreferences } from "@context/notificationContext";
+import { PreferencesResponse, NotificationType } from "@src/types/notification";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -31,13 +34,42 @@ export default function SignIn() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
-
+  const notificationContext = useContext(NotificationContext);
+  
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
         "660953493084-hns6fmmg55oo6fc11qqtmr9u04kvnsrd.apps.googleusercontent.com",
     });
   }, []);
+
+  const syncUserData = async () => {
+    if (!notificationContext) {
+      console.error("⚠️ NotificationContext no está disponible.");
+      return;
+    }
+  
+    const { setNotifications, setNotificationPreferences, setHasNewNotifications } = notificationContext;
+  
+    try {
+      const response: PreferencesResponse = await getNotificationPreferences();
+      const prefs = response.preferences;
+  
+      const newPrefs: { [key in NotificationType]: boolean } = { ...defaultPreferences };
+  
+      Object.keys(newPrefs).forEach((key) => {
+        newPrefs[key as NotificationType] = prefs.includes(key as NotificationType);
+      });
+  
+      setNotificationPreferences(newPrefs); 
+  
+      const loadedNotifications = await getAllNotifications();
+      setNotifications(loadedNotifications);
+      setHasNewNotifications(loadedNotifications.length > 0);
+    } catch (error) {
+      console.error("❌ Error syncing user data:", error);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!email || !validateEmail(email)) return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
@@ -47,6 +79,9 @@ export default function SignIn() {
       setIsLoading(true);
       const token = await login(email, password);
       await authLogin(token);
+
+      await syncUserData(); 
+
       router.replace("../home");
     } catch (error: any) {
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
@@ -73,6 +108,9 @@ export default function SignIn() {
       try {
         const backendToken = await loginWithGoogle(firebaseIdToken);
         await authLogin(backendToken);
+
+        await syncUserData(); 
+
         router.replace("../home");
       } catch (error: any) {
         if (error?.status === 404) {
@@ -101,6 +139,9 @@ export default function SignIn() {
       setIsLoading(true);
       const token = await registerWithGoogle(pendingIdToken, username);
       await authLogin(token);
+
+      await syncUserData(); 
+
       router.replace("../home");
     } catch (error: any) {
       console.error("Google registration error:", error);
