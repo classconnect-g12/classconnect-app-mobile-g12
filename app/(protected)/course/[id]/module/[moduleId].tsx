@@ -11,7 +11,8 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { moduleDetailStyle } from "@styles/moduleDetailStyle";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
+import { useCourse } from "@context/CourseContext";
 import { AnimatedFAB, RadioButton } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
@@ -19,11 +20,13 @@ import * as WebBrowser from "expo-web-browser";
 import { Video, ResizeMode } from "expo-av";
 import { Audio } from "expo-av";
 import { ActivityIndicator } from "react-native";
-import { IconButton } from "react-native-paper";
 import {
   createResource,
   fetchResources,
   Resource,
+  fetchModuleById,
+  updateModule,
+  Module,
 } from "@services/ModuleService";
 import { handleApiError } from "@utils/handleApiError";
 import { AppSnackbar } from "@components/AppSnackbar";
@@ -57,6 +60,17 @@ export default function ModulePage() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editedResources, setEditedResources] = useState<
+    { ID: number; order: number }[]
+  >([]);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [moduleData, setModuleData] = useState<Module | null>(null);
+
+  const [isSavingModule, setIsSavingModule] = useState(false);
+
+  const isTeacher = useCourse().isTeacher;
 
   // Cargar los recursos al montar el componente y después de crear uno nuevo
   const loadResources = async () => {
@@ -176,14 +190,6 @@ export default function ModulePage() {
           <Text style={moduleDetailStyle.resourceTitle}>
             {item.order}. {item.title}
           </Text>
-          <IconButton
-            icon="pencil"
-            size={20}
-            onPress={() => {
-              // TODO: Implementar edición de recurso
-              console.log("Editar recurso", item.resourceId);
-            }}
-          />
         </View>
         <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
 
@@ -308,17 +314,46 @@ export default function ModulePage() {
         </View>
       </Modal>
 
-      {/* Botón FAB */}
-      <AnimatedFAB
-        icon="plus"
-        label=""
-        extended={false}
-        onPress={() => setModalVisible(true)}
-        style={viewModulesStyles.fab}
-        visible
-        animateFrom="right"
-        color={colors.buttonText}
-      />
+      {/* Botones FAB visibles solo para docentes */}
+      {isTeacher && (
+        <>
+          <AnimatedFAB
+            icon="plus"
+            label=""
+            extended={false}
+            onPress={() => setModalVisible(true)}
+            style={viewModulesStyles.fab}
+            visible
+            animateFrom="right"
+            color={colors.buttonText}
+          />
+
+          <AnimatedFAB
+            icon="pencil"
+            label=""
+            extended={false}
+            onPress={async () => {
+              try {
+                const module = await fetchModuleById(id, moduleId);
+                setModuleData(module);
+                const initialEditedResources = resources.map((res) => ({
+                  ID: res.resourceId,
+                  order: res.order,
+                }));
+                setEditedResources(initialEditedResources);
+                setEditModalVisible(true);
+              } catch (e) {
+                handleApiError(e, showSnackbar, "Error loading module info");
+              }
+            }}
+            style={[viewModulesStyles.fab, { right: 80 }]}
+            visible
+            animateFrom="right"
+            color={colors.buttonText}
+          />
+        </>
+      )}
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
@@ -370,6 +405,130 @@ export default function ModulePage() {
               style={{ width: "100%", height: "100%" }}
             />
           </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={moduleDetailStyle.modalContainer}>
+          <View style={moduleDetailStyle.modalContent}>
+            <Text style={moduleDetailStyle.modalTitle}>Edit Module</Text>
+
+            {moduleData && (
+              <>
+                {/* Título */}
+                <TextInput
+                  style={moduleDetailStyle.input}
+                  placeholder="Module Title"
+                  value={moduleData.title}
+                  onChangeText={(text) =>
+                    setModuleData({ ...moduleData, title: text })
+                  }
+                />
+
+                {/* Descripción */}
+                <TextInput
+                  style={moduleDetailStyle.input}
+                  placeholder="Module Description"
+                  value={moduleData.description}
+                  onChangeText={(text) =>
+                    setModuleData({ ...moduleData, description: text })
+                  }
+                />
+
+                {/* Orden */}
+                <TextInput
+                  style={moduleDetailStyle.input}
+                  placeholder="Module Order"
+                  keyboardType="numeric"
+                  value={moduleData.order.toString()}
+                  onChangeText={(text) =>
+                    setModuleData({
+                      ...moduleData,
+                      order: parseInt(text, 10) || 0,
+                    })
+                  }
+                />
+
+                {/* Orden de recursos */}
+                <Text style={{ marginTop: 10 }}>Edit Resources Order</Text>
+                {editedResources.map((res, index) => (
+                  <View
+                    key={res.ID}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text style={{ flex: 1 }}>
+                      {resources.find((r) => r.resourceId === res.ID)?.title}
+                    </Text>
+                    <TextInput
+                      style={[moduleDetailStyle.input, { width: 60 }]}
+                      keyboardType="numeric"
+                      value={res.order.toString()}
+                      onChangeText={(text) => {
+                        const updated = [...editedResources];
+                        updated[index].order = parseInt(text, 10) || 0;
+                        setEditedResources(updated);
+                      }}
+                    />
+                  </View>
+                ))}
+                <View style={moduleDetailStyle.modalButtons}>
+                  <Button
+                    title="Cancel"
+                    onPress={() => setEditModalVisible(false)}
+                    disabled={isSavingModule}
+                  />
+                  {isSavingModule ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={colors.primary}
+                      style={{ marginTop: 10 }}
+                    />
+                  ) : (
+                    <Button
+                      title="Save"
+                      onPress={async () => {
+                        try {
+                          if (!moduleData) return;
+                          setIsSavingModule(true);
+                          await updateModule(
+                            id,
+                            moduleId,
+                            moduleData.title,
+                            moduleData.description,
+                            editedResources
+                          );
+                          showSnackbar(
+                            "Module updated successfully",
+                            SNACKBAR_VARIANTS.SUCCESS
+                          );
+                          await loadResources();
+                          setEditModalVisible(false);
+                        } catch (e) {
+                          handleApiError(
+                            e,
+                            showSnackbar,
+                            "Error updating module"
+                          );
+                        } finally {
+                          setIsSavingModule(false);
+                        }
+                      }}
+                    />
+                  )}
+                </View>
+              </>
+            )}
+          </View>
         </View>
       </Modal>
     </View>

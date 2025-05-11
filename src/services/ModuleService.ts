@@ -24,6 +24,13 @@ export const fetchModules = async (courseId: string): Promise<Module[]> => {
   return response.data;
 };
 
+export const fetchModuleById = async (courseId: string, moduleId: string): Promise<Module> => {
+  const response = await privateClient.get<Module>(
+    `/course/${courseId}/modules/${moduleId}`
+  );
+  return response.data;
+};
+
 export async function createModule(
   courseId: string,
   title: string,
@@ -89,4 +96,26 @@ export async function fetchResources(
   console.log(response.data);
 
   return response.data.sort((a, b) => a.order - b.order);
+}
+
+export async function updateModule(
+  courseId: string,
+  moduleId: string,
+  title: string,
+  description: string,
+  resources: { ID: number; order: number }[]
+) {
+  const payload = {
+    title,
+    description,
+    resources,
+  };
+
+  const response = await privateClient.put(
+    `/course/${courseId}/modules/${moduleId}`,
+    payload
+  );
+
+  console.log(response.data);
+  return response.data;
 }

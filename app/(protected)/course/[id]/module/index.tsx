@@ -26,9 +26,7 @@ const CourseModulesScreen = () => {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
-  const { courseId } = useCourse();
-  console.log("Course ID:", courseId);
-  console.log("Params:", useLocalSearchParams());
+  const { courseId, isTeacher } = useCourse();
 
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,16 +108,19 @@ const CourseModulesScreen = () => {
         onSubmit={handleAddModule}
       />
 
-      <AnimatedFAB
-        icon="plus"
-        label=""
-        extended={false}
-        onPress={() => setModalVisible(true)}
-        style={viewModulesStyles.fab}
-        visible
-        animateFrom="right"
-        color={colors.buttonText}
-      />
+      {isTeacher && (
+        <AnimatedFAB
+          icon="plus"
+          label=""
+          extended={false}
+          onPress={() => setModalVisible(true)}
+          style={viewModulesStyles.fab}
+          visible
+          animateFrom="right"
+          color={colors.buttonText}
+        />
+      )}
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
