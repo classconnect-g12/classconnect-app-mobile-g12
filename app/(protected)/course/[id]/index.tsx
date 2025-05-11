@@ -10,18 +10,11 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { enrollInCourse } from "@services/EnrollmentService";
 import { AppSnackbar } from "@components/AppSnackbar";
-
 import { useCourse } from "@context/CourseContext";
-import { CourseDetailResponse } from "@src/types/course";
+import { useAuth } from "@context/authContext";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-
-  const [courseDetail, setCourseDetail] = useState<CourseDetailResponse | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
 
   const {
     snackbarVisible,
@@ -30,6 +23,7 @@ export default function CourseDetail() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+  const { logout } = useAuth();
 
   const router = useRouter();
   const [courseDetail, setCourseDetail] = useState<any>(null);
@@ -44,7 +38,12 @@ export default function CourseDetail() {
         const data = await fetchCourseDetail(id);
         setCourseDetail(data);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Failed to load course data.");
+        handleApiError(
+          error,
+          showSnackbar,
+          "Failed to load course data.",
+          logout
+        );
         router.back();
       } finally {
         setLoading(false);
@@ -62,7 +61,7 @@ export default function CourseDetail() {
         SNACKBAR_VARIANTS.SUCCESS
       );
     } catch (error) {
-      handleApiError(error, showSnackbar, "Could not join the course.");
+      handleApiError(error, showSnackbar, "Could not join the course.", logout);
     }
   };
 
@@ -126,7 +125,7 @@ export default function CourseDetail() {
           <Text style={styles.sectionText}>{teacher.description}</Text>
         </Card.Content>
       </Card>
-      
+
       {/* Botón para unirse al curso (solo para alumnos) */}
       {!isEnrolled && (
         <Button
@@ -140,7 +139,7 @@ export default function CourseDetail() {
           Join Course
         </Button>
       )}
-      
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
