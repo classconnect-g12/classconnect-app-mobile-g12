@@ -25,6 +25,7 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse, getMyCourses } from "@services/CourseService";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { CorrelativeSelector } from "@components/CorrelativeSelector";
 
 type CourseOption = { id: string; title: string };
 
@@ -193,79 +194,14 @@ export default function CreateCourse() {
             keyboardType="numeric"
           />
 
-          <View style={{ marginTop: 10 }}>
-            <Text style={styles.dateLabel}>Prerequisites (opcional)</Text>
-            <TextInput
-              placeholder="Buscar cursos..."
-              value={searchQuery}
-              onChangeText={async (text) => {
-                setSearchQuery(text);
-                if (text.trim().length > 0) {
-                  await fetchCourses(text);
-                } else {
-                  setAllCourses([]);
-                }
-              }}
-              mode="outlined"
-              style={styles.input}
-            />
-
-            {searchQuery.length > 0 && allCourses.length > 0 && (
-              <View style={{ marginTop: 6 }}>
-                {allCourses.map((course) => (
-                  <Pressable
-                    key={course.id}
-                    onPress={() => {
-                      if (!selectedCourses.some((c) => c.id === course.id)) {
-                        setSelectedCourses((prev) => [...prev, course]);
-                      }
-                      setSearchQuery("");
-                      setAllCourses([]);
-                    }}
-                    style={{
-                      paddingVertical: 6,
-                      borderBottomWidth: 1,
-                      borderBottomColor: "#ccc",
-                    }}
-                  >
-                    <Text>{course.title}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
-            {selectedCourses.length > 0 && (
-              <View style={{ marginTop: 10 }}>
-                <Text style={styles.dateLabel}>Seleccionadas:</Text>
-                {selectedCourses.map((course) => (
-                  <View
-                    key={course.id}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <Text>{course.title}</Text>
-                    <Pressable
-                      onPress={() =>
-                        setSelectedCourses((prev) =>
-                          prev.filter((c) => c.id !== course.id)
-                        )
-                      }
-                    >
-                      <MaterialIcons
-                        name="close"
-                        size={20}
-                        color={colors.primary}
-                      />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
+          <CorrelativeSelector
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            allCourses={allCourses}
+            setAllCourses={setAllCourses}
+            selectedCourses={selectedCourses}
+            setSelectedCourses={setSelectedCourses}
+          />
 
           <View style={styles.datePickerContainer}>
             <Text style={styles.dateLabel}>Start Date</Text>
