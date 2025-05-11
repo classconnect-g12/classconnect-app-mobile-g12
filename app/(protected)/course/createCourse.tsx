@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
 import {
   DateTimePickerAndroid,
@@ -10,20 +10,24 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Pressable,
+  FlatList,
 } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { TextInput, Button, Checkbox } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
+import { TextInput as RNTextInput } from "react-native";
 import { colors } from "@theme/colors";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateCourse } from "@utils/validators";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { createCourse } from "@services/CourseService";
+import { createCourse, getMyCourses } from "@services/CourseService";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { CorrelativeSelector } from "@components/CorrelativeSelector";
+
+type CourseOption = { id: string; title: string };
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
@@ -34,6 +38,9 @@ export default function CreateCourse() {
   const [modality, setModality] = useState<"ONLINE" | "ONSITE" | "HYBRID">(
     "ONLINE"
   );
+  const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     snackbarVisible,
@@ -42,6 +49,19 @@ export default function CreateCourse() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  const fetchCourses = async (query = "") => {
+    try {
+      const data = await getMyCourses(0, 10, query);
+      setAllCourses(data.courses);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error fetching courses");
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   const handleCreateCourse = async () => {
     const error = validateCourse(courseName);
@@ -90,7 +110,10 @@ export default function CreateCourse() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         modality,
+        correlativeCourseIds: selectedCourses.map((c) => c.id),
       };
+      console.log(courseData);
+
       await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
@@ -169,6 +192,15 @@ export default function CreateCourse() {
             mode="outlined"
             style={styles.input}
             keyboardType="numeric"
+          />
+
+          <CorrelativeSelector
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            allCourses={allCourses}
+            setAllCourses={setAllCourses}
+            selectedCourses={selectedCourses}
+            setSelectedCourses={setSelectedCourses}
           />
 
           <View style={styles.datePickerContainer}>
