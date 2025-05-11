@@ -13,11 +13,13 @@ import { colors } from "@theme/colors";
 import { editCourseStyles as styles } from "@styles/editCourseStyles";
 import { Button } from "react-native-paper";
 import { AppSnackbar } from "@components/AppSnackbar";
+import { CorrelativeSelector } from "@components/CorrelativeSelector";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+
+type CourseOption = { id: string; title: string };
 
 export default function EditCourse() {
   const { id } = useLocalSearchParams();
@@ -30,15 +32,18 @@ export default function EditCourse() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
-
+  const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
   const { logout } = useAuth();
-
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [initialCourse, setInitialCourse] = useState<CourseRequestBody>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [objectives, setObjectives] = useState("");
   const [syllabus, setSyllabus] = useState("");
-  const [prerequisites, setPrerequisites] = useState("");
+  const [selectedCorrelatives, setSelectedCorrelatives] = useState<string[]>(
+    []
+  );
   const [modality, setModality] =
     useState<CourseRequestBody["modality"]>("HYBRID");
   const [startDate, setStartDate] = useState(new Date().toISOString());
@@ -57,7 +62,9 @@ export default function EditCourse() {
         setDescription(course.description);
         setObjectives(course.objectives);
         setSyllabus(course.syllabus);
-        setPrerequisites(course.prerequisites);
+        setSelectedCourses(
+          course.correlatives?.map((c) => ({ id: c.id, title: c.title })) || []
+        );
         setModality(course.modality);
 
         const parsedStartDate = new Date(course.startDate);
@@ -134,8 +141,14 @@ export default function EditCourse() {
     if (objectives !== initialCourse.objectives)
       updatedFields.objectives = objectives;
     if (syllabus !== initialCourse.syllabus) updatedFields.syllabus = syllabus;
-    if (prerequisites !== initialCourse.prerequisites)
-      updatedFields.prerequisites = prerequisites;
+    const selectedIds = selectedCourses.map((c) => c.id);
+    if (
+      JSON.stringify(selectedIds.sort()) !==
+      JSON.stringify((initialCourse.correlativeCourseIds ?? []).sort())
+    ) {
+      updatedFields.correlativeCourseIds = selectedIds;
+    }
+
     if (modality !== initialCourse.modality) updatedFields.modality = modality;
     if (startDate !== initialCourse.startDate)
       updatedFields.startDate = startDate;
@@ -237,12 +250,13 @@ export default function EditCourse() {
         multiline
       />
 
-      <Text style={styles.label}>Prerequisites</Text>
-      <TextInput
-        value={prerequisites}
-        onChangeText={setPrerequisites}
-        style={styles.input}
-        multiline
+      <CorrelativeSelector
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        allCourses={allCourses}
+        setAllCourses={setAllCourses}
+        selectedCourses={selectedCourses}
+        setSelectedCourses={setSelectedCourses}
       />
 
       <Picker

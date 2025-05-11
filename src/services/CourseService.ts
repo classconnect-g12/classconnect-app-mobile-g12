@@ -44,11 +44,22 @@ export async function fetchCourseDetail(
 
 export async function getMyCourses(
   page = 0,
-  limit = 10
+  limit = 10,
+  title?: string
 ): Promise<GetCoursesResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (title) {
+    params.append("title", title);
+  }
+
   const response = await privateClient.get<GetCoursesResponse>(
-    `/course/mycourses?page=${page}&limit=${limit}`
+    `/course/mycourses?${params.toString()}`
   );
+
   return response.data;
 }
 
