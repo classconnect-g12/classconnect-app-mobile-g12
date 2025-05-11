@@ -17,6 +17,7 @@ import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 export default function EditCourse() {
   const { id } = useLocalSearchParams();
@@ -29,6 +30,8 @@ export default function EditCourse() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  const { logout } = useAuth();
 
   const [initialCourse, setInitialCourse] = useState<CourseRequestBody>({});
   const [title, setTitle] = useState("");
@@ -74,7 +77,12 @@ export default function EditCourse() {
 
         setInitialCourse(course);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading course data");
+        handleApiError(
+          error,
+          showSnackbar,
+          "Error loading course data",
+          logout
+        );
       }
     };
 
@@ -145,7 +153,7 @@ export default function EditCourse() {
       showSnackbar("Course updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error updating course");
+      handleApiError(error, showSnackbar, "Error updating course", logout);
     }
   };
 
@@ -173,7 +181,7 @@ export default function EditCourse() {
         negativeButton: { label: "Cancel", textColor: colors.text },
       });
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error opening datepicker");
+      handleApiError(error, showSnackbar, "Error opening datepicker", logout);
     }
   };
 
@@ -189,7 +197,7 @@ export default function EditCourse() {
         negativeButton: { label: "Cancel", textColor: colors.text },
       });
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error opening datepicker");
+      handleApiError(error, showSnackbar, "Error opening datepicker", logout);
     }
   };
 

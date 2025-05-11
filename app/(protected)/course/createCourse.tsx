@@ -24,6 +24,7 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse } from "@services/CourseService";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
@@ -34,6 +35,8 @@ export default function CreateCourse() {
   const [modality, setModality] = useState<"ONLINE" | "ONSITE" | "HYBRID">(
     "ONLINE"
   );
+
+  const { logout } = useAuth();
 
   const {
     snackbarVisible,
@@ -95,7 +98,7 @@ export default function CreateCourse() {
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error creating the course");
+      handleApiError(error, showSnackbar, "Error creating the course", logout);
     }
   };
 
