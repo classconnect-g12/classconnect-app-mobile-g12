@@ -8,6 +8,11 @@ export const detailCourseStyles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 8,
   },
+  container: {
+    padding: 16,
+    paddingBottom: 32,
+    backgroundColor: "#fff",
+  },
   bannerImage: {
     width: "100%",
     height: "100%",
