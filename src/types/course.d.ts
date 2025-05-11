@@ -43,7 +43,11 @@ export type CourseData = Omit<FullCourse, "id" | "available"> & {
   prerequisites?: string;
 };
 
-export type CourseRequestBody = Partial<Omit<CourseData, "teacherId">>;
+export type CourseRequestBody = Partial<
+  Omit<CourseData, "correlatives" | "teacher"> & {
+    correlativeCourseIds?: string[];
+  }
+>;
 
 export interface GetCoursesResponse {
   courses: ApiCourse[];
