@@ -25,6 +25,7 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse, getMyCourses } from "@services/CourseService";
 import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 import { CorrelativeSelector } from "@components/CorrelativeSelector";
 
 type CourseOption = { id: string; title: string };
@@ -41,6 +42,8 @@ export default function CreateCourse() {
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { logout } = useAuth();
 
   const {
     snackbarVisible,
@@ -118,7 +121,7 @@ export default function CreateCourse() {
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error creating the course");
+      handleApiError(error, showSnackbar, "Error creating the course", logout);
     }
   };
 

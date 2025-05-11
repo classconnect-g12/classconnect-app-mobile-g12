@@ -18,6 +18,7 @@ import MyCourseFilter from "@components/MyCoursesFilter";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { handleApiError } from "@utils/handleApiError";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useAuth } from "@context/authContext";
 
 export default function MyCourses() {
   const now = new Date();
@@ -25,6 +26,7 @@ export default function MyCourses() {
   const [tab, setTab] = useState<"created" | "enrolled">("created");
 
   const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
   const [createdCourses, setCreatedCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<ApiCourse[]>([]);
@@ -43,7 +45,12 @@ export default function MyCourses() {
       const data = await getMyCourses(0, 10);
       setCreatedCourses(data.courses);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error loading your created courses");
+      handleApiError(
+        error,
+        showSnackbar,
+        "Error loading your created courses",
+        logout
+      );
     } finally {
       setLoading(false);
     }
@@ -58,7 +65,8 @@ export default function MyCourses() {
       handleApiError(
         error,
         showSnackbar,
-        "Error loading your enrolled courses"
+        "Error loading your enrolled courses",
+        logout
       );
     } finally {
       setLoading(false);
@@ -91,7 +99,8 @@ export default function MyCourses() {
               handleApiError(
                 error,
                 showSnackbar,
-                "Ocurrió un error al eliminar el curso"
+                "Ocurrió un error al eliminar el curso",
+                logout
               );
             }
           },
