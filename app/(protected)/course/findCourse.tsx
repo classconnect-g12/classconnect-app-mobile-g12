@@ -20,6 +20,7 @@ import { ApiCourse } from "@src/types/course";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
 import { enrollInCourse } from "@services/EnrollmentService";
+import { useAuth } from "@context/authContext";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +33,8 @@ export default function FindCourse() {
   const [dateFilter, setDateFilter] = useState<
     "all" | "active" | "upcoming" | "finished"
   >("all");
+
+  const { logout } = useAuth();
 
   const {
     snackbarVisible,
@@ -93,7 +96,7 @@ export default function FindCourse() {
       );
       setTotalPages(response.pagination.totalPages);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching courses");
+      handleApiError(error, showSnackbar, "Error fetching courses", logout);
     } finally {
       if (pageNumber === 0) {
         setIsLoadingInitial(false);
@@ -131,7 +134,8 @@ export default function FindCourse() {
       handleApiError(
         error,
         showSnackbar,
-        "There was a problem joinin the course"
+        "There was a problem joinin the course",
+        logout
       );
     }
   };

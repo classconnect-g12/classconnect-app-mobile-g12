@@ -19,8 +19,7 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import { useAuth } from "@context/authContext";
 
 export default function ProfileScreen() {
   const { profileId } = useLocalSearchParams();
@@ -46,6 +45,8 @@ export default function ProfileScreen() {
     hideSnackbar,
   } = useSnackbar();
 
+  const { logout } = useAuth();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -53,7 +54,12 @@ export default function ProfileScreen() {
         setProfile(fetchedProfile);
         setOriginalProfile(fetchedProfile);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading the profile");
+        handleApiError(
+          error,
+          showSnackbar,
+          "Error loading the profile",
+          logout
+        );
       } finally {
         setLoading(false);
       }
@@ -101,7 +107,7 @@ export default function ProfileScreen() {
       setOriginalProfile(updated);
       showSnackbar("Profile updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error saving changes");
+      handleApiError(error, showSnackbar, "Error saving changes", logout);
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, ScrollView, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchCourseDetail } from "@services/CourseService";
@@ -10,6 +10,8 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { enrollInCourse } from "@services/EnrollmentService";
 import { AppSnackbar } from "@components/AppSnackbar";
+
+import { useCourse } from "@context/CourseContext";
 import { CourseDetailResponse } from "@src/types/course";
 
 export default function CourseDetail() {
@@ -28,6 +30,11 @@ export default function CourseDetail() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  const router = useRouter();
+  const [courseDetail, setCourseDetail] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const isEnrolled = useCourse().isEnrolled;
 
   useEffect(() => {
     if (!id) return;
@@ -119,15 +126,21 @@ export default function CourseDetail() {
           <Text style={styles.sectionText}>{teacher.description}</Text>
         </Card.Content>
       </Card>
-
-      <Button
-        mode="contained"
-        onPress={() => handleJoinCourse(course.id)}
-        style={styles.joinButton}
-      >
-        Join Course
-      </Button>
-
+      
+      {/* Botón para unirse al curso (solo para alumnos) */}
+      {!isEnrolled && (
+        <Button
+          mode="contained"
+          onPress={(e) => {
+            e.stopPropagation();
+            handleJoinCourse(course.id);
+          }}
+          style={styles.joinButton}
+        >
+          Join Course
+        </Button>
+      )}
+      
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}

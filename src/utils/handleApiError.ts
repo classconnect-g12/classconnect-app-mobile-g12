@@ -7,7 +7,8 @@ export const handleApiError = (
     message: string,
     variant: "error" | "success" | "info"
   ) => void,
-  defaultMessage = "An error occurred"
+  defaultMessage = "An error occurred",
+  logout: () => void
 ) => {
   const apiError = error as ApiError;
   let errorMessage = apiError.detail || apiError.title || defaultMessage;
@@ -16,6 +17,13 @@ export const handleApiError = (
     errorMessage = "Please log in to continue";
   } else if (apiError.status === 404) {
     errorMessage = `${apiError.title}: Resource not found`;
+  } else if (apiError.status === 423) {
+    showSnackbar(
+      "Your session is locked. Please log in again.",
+      SNACKBAR_VARIANTS.ERROR
+    );
+    setTimeout(() => logout(), 2000);
+    return;
   }
 
   showSnackbar(errorMessage, SNACKBAR_VARIANTS.ERROR);

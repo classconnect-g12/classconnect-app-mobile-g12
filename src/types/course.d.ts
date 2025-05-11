@@ -22,6 +22,10 @@ export interface FullCourse extends BaseCourse {
   available: boolean;
   objectives: string;
   syllabus: string;
+  prerequisites: string;
+  teacherId: number;
+  isTeacher: boolean;
+  isEnrolled: boolean;
   correlatives: FullCourse[];
   teacher: Teacher;
 }
@@ -35,6 +39,8 @@ export type ApiCourse = Pick<
   | "available"
   | "startDate"
   | "endDate"
+  | "isTeacher"
+  | "isEnrolled"
 >;
 
 export type CourseData = Omit<FullCourse, "id" | "available"> & {

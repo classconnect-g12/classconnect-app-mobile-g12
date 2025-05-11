@@ -11,6 +11,7 @@ import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "../../../src/hooks/useSnackbar";
 import { AxiosError } from "axios";
 import { ApiError } from "@src/types/apiError";
+import { useAuth } from "@context/authContext";
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -18,6 +19,7 @@ const UserProfile: React.FC = () => {
   const { profileId } = useLocalSearchParams();
 
   const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -30,15 +32,21 @@ const UserProfile: React.FC = () => {
         const status = axiosError.response?.status;
 
         if (status === 404) {
-          handleApiError(axiosError, showSnackbar, "Profile not found");
+          handleApiError(axiosError, showSnackbar, "Profile not found", logout);
         } else if (status === 401) {
           handleApiError(
             axiosError,
             showSnackbar,
-            "Unauthorized. Please log in."
+            "Unauthorized. Please log in.",
+            logout
           );
         } else {
-          handleApiError(axiosError, showSnackbar, "Error loading profile");
+          handleApiError(
+            axiosError,
+            showSnackbar,
+            "Error loading profile",
+            logout
+          );
         }
       } finally {
         setLoading(false);
