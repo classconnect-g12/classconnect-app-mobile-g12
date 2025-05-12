@@ -32,6 +32,7 @@ import { handleApiError } from "@utils/handleApiError";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useAuth } from "@context/authContext";
 
 export default function ModulePage() {
   const {
@@ -72,13 +73,15 @@ export default function ModulePage() {
 
   const isTeacher = useCourse().isTeacher;
 
+    const { logout } = useAuth();
+    
   // Cargar los recursos al montar el componente y después de crear uno nuevo
   const loadResources = async () => {
     try {
       const fetchedResources = await fetchResources(id, moduleId);
       setResources(fetchedResources);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching resources");
+      handleApiError(error, showSnackbar, "Error fetching resources", logout);
     }
   };
 
@@ -129,7 +132,7 @@ export default function ModulePage() {
       showSnackbar("Resource created successfully", SNACKBAR_VARIANTS.SUCCESS);
       await loadResources();
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error creating resource");
+      handleApiError(error, showSnackbar, "Error creating resource", logout);
     } finally {
       setIsSubmitting(false);
       setModalVisible(false);
@@ -343,7 +346,7 @@ export default function ModulePage() {
                 setEditedResources(initialEditedResources);
                 setEditModalVisible(true);
               } catch (e) {
-                handleApiError(e, showSnackbar, "Error loading module info");
+                handleApiError(e, showSnackbar, "Error loading module info", logout);
               }
             }}
             style={[viewModulesStyles.fab, { right: 80 }]}
@@ -517,7 +520,8 @@ export default function ModulePage() {
                           handleApiError(
                             e,
                             showSnackbar,
-                            "Error updating module"
+                            "Error updating module",
+                            logout
                           );
                         } finally {
                           setIsSavingModule(false);
