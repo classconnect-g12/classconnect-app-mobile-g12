@@ -101,6 +101,12 @@ const NotificationHandler = () => {
     };
   }, []);
 
+  messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+    console.log("🌙 NOTIFICACIÓN RECIBIDA (segundo plano):", remoteMessage);
+    showNotification(remoteMessage, setHasNewNotifications, notifications, setNotifications);
+  });
+
+
   notifee.onBackgroundEvent(async ({ type, detail }) => {
     if (type === EventType.PRESS && detail.notification) {
       console.log("🟢 Notificación presionada:", detail.notification);
