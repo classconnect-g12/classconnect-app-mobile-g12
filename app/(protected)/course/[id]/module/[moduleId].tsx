@@ -73,13 +73,20 @@ export default function ModulePage() {
 
   const isTeacher = useCourse().isTeacher;
 
-    const { logout } = useAuth();
-    
-  // Cargar los recursos al montar el componente y después de crear uno nuevo
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    loadResources();
+  }, [id, moduleId]);
+
   const loadResources = async () => {
     try {
       const fetchedResources = await fetchResources(id, moduleId);
       setResources(fetchedResources);
+
+      if (fetchedResources.length === 0) {
+        showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
+      }
     } catch (error) {
       handleApiError(error, showSnackbar, "Error fetching resources", logout);
     }
@@ -142,6 +149,52 @@ export default function ModulePage() {
         order: "1",
         file: null,
       });
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!moduleData) return;
+
+    if (!moduleData.title.trim()) {
+      showSnackbar("Title cannot be empty", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (
+      moduleData.description.length < 55 ||
+      moduleData.description.length > 255
+    ) {
+      showSnackbar(
+        "Description must be between 55 and 255 characters",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (isNaN(moduleData.order) || moduleData.order <= 0) {
+      showSnackbar(
+        "Order must be a number greater than 0",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    setIsSavingModule(true);
+    try {
+      await updateModule(
+        id,
+        moduleId,
+        moduleData.title,
+        moduleData.description,
+        editedResources
+      );
+      showSnackbar("Module updated successfully", SNACKBAR_VARIANTS.SUCCESS);
+      await loadResources();
+      setEditModalVisible(false);
+    } catch (e) {
+      handleApiError(e, showSnackbar, "Error updating module", logout);
+    } finally {
+      setIsSavingModule(false);
     }
   };
 
@@ -346,7 +399,12 @@ export default function ModulePage() {
                 setEditedResources(initialEditedResources);
                 setEditModalVisible(true);
               } catch (e) {
-                handleApiError(e, showSnackbar, "Error loading module info", logout);
+                handleApiError(
+                  e,
+                  showSnackbar,
+                  "Error loading module info",
+                  logout
+                );
               }
             }}
             style={[viewModulesStyles.fab, { right: 80 }]}
@@ -497,37 +555,7 @@ export default function ModulePage() {
                       style={{ marginTop: 10 }}
                     />
                   ) : (
-                    <Button
-                      title="Save"
-                      onPress={async () => {
-                        try {
-                          if (!moduleData) return;
-                          setIsSavingModule(true);
-                          await updateModule(
-                            id,
-                            moduleId,
-                            moduleData.title,
-                            moduleData.description,
-                            editedResources
-                          );
-                          showSnackbar(
-                            "Module updated successfully",
-                            SNACKBAR_VARIANTS.SUCCESS
-                          );
-                          await loadResources();
-                          setEditModalVisible(false);
-                        } catch (e) {
-                          handleApiError(
-                            e,
-                            showSnackbar,
-                            "Error updating module",
-                            logout
-                          );
-                        } finally {
-                          setIsSavingModule(false);
-                        }
-                      }}
-                    />
+                    <Button title="Save" onPress={handleEditSubmit} />
                   )}
                 </View>
               </>
