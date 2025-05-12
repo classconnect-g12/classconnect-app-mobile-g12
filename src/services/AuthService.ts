@@ -1,4 +1,4 @@
-import { publicClient } from "@utils/apiClient";
+import { privateClient, publicClient } from "@utils/apiClient";
 import { storeToken } from "@utils/tokenUtils";
 import messaging from "@react-native-firebase/messaging";
 
@@ -96,4 +96,25 @@ export const registerWithGoogle = async (
     console.error("Google registration error:", error?.response?.data || error.message);
     throw error?.response?.data || { message: "Google registration failed" };
   }
+};
+
+
+export const resetPassword = async (email: string): Promise<string> => {
+  const response = await publicClient.post("/auth/reset-password", { email });
+
+  return response.data.message || "Password reset email sent successfully";
+};
+
+export const resetPasswordWithCode = async (
+  email: string,
+  resetCode: string,
+  newPassword: string
+): Promise<string> => {
+  const response = await publicClient.post("/auth/reset-password/verify", {
+    email,
+    resetCode,
+    newPassword,
+  });
+
+  return response.data.message || "Password reset successfully";
 };
