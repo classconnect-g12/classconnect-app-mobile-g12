@@ -76,18 +76,18 @@ export default function CreateCourse() {
       return;
     }
 
-    const parsedCapacity = parseInt(capacity, 10);
-    if (isNaN(parsedCapacity) || parsedCapacity <= 0) {
+    if (description.length < 50 || description.length > 255) {
       showSnackbar(
-        "Capacity must be a valid positive number",
+        "Description must be between 50 and 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
     }
 
-    if (description.length < 50 || description.length > 255) {
+    const parsedCapacity = parseInt(capacity, 10);
+    if (isNaN(parsedCapacity) || parsedCapacity <= 0) {
       showSnackbar(
-        "Description must be between 50 and 255 characters",
+        "Capacity must be a valid positive number",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -208,6 +208,20 @@ export default function CreateCourse() {
             setSelectedCourses={setSelectedCourses}
           />
 
+          <View style={styles.input}>
+            <Picker
+              selectedValue={modality}
+              onValueChange={(itemValue) =>
+                setModality(itemValue as "ONLINE" | "ONSITE" | "HYBRID")
+              }
+              style={{ color: colors.text }}
+            >
+              <Picker.Item label="Online" value="ONLINE" />
+              <Picker.Item label="Onsite" value="ONSITE" />
+              <Picker.Item label="Hybrid" value="HYBRID" />
+            </Picker>
+          </View>
+
           <View style={styles.datePickerContainer}>
             <Text style={styles.dateLabel}>Start Date</Text>
             <Pressable
@@ -240,20 +254,6 @@ export default function CreateCourse() {
                 style={styles.datePickerIcon}
               />
             </Pressable>
-          </View>
-
-          <View style={styles.input}>
-            <Picker
-              selectedValue={modality}
-              onValueChange={(itemValue) =>
-                setModality(itemValue as "ONLINE" | "ONSITE" | "HYBRID")
-              }
-              style={{ color: colors.text }}
-            >
-              <Picker.Item label="Online" value="ONLINE" />
-              <Picker.Item label="Onsite" value="ONSITE" />
-              <Picker.Item label="Hybrid" value="HYBRID" />
-            </Picker>
           </View>
 
           <Button
