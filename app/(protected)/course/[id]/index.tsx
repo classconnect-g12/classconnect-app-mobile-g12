@@ -106,7 +106,7 @@ export default function CourseDetail() {
         <Card style={styles.card}>
           <Card.Content>
             <Text style={styles.cardTitle}>Correlatives</Text>
-            {course.correlatives.map((correlative) => (
+            {course.correlatives.map((correlative: { id: string; title: string }) => (
               <Text key={correlative.id} style={styles.sectionText}>
                 • {correlative.title}
               </Text>

@@ -32,9 +32,17 @@ function InnerTabs() {
     fetchData();
   }, [id]);
 
-  const DisabledTabButton = ({ children }: { children: React.ReactNode }) => (
-    <View style={{ opacity: 0.4 }}>{children}</View>
+  const DisabledTabButton = (props: any) => (
+    <Pressable {...props} disabled style={[props.style, styles.disabled]}>
+      {props.children}
+    </Pressable>
   );
+
+  const styles = StyleSheet.create({
+    disabled: {
+      opacity: 0.4,
+    },
+  });
 
   return (
     <Tabs
@@ -65,7 +73,11 @@ function InnerTabs() {
             <Ionicons name="list-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? <Pressable {...props} /> : <DisabledTabButton {...props} />,
+            isEnrolled ? (
+              <Pressable {...props} />
+            ) : (
+              <DisabledTabButton {...props} />
+            ),
         }}
       />
       <Tabs.Screen
@@ -76,7 +88,11 @@ function InnerTabs() {
             <Ionicons name="checkmark-done-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? <Pressable {...props} /> : <DisabledTabButton {...props} />,
+            isEnrolled ? (
+              <Pressable {...props} />
+            ) : (
+              <DisabledTabButton {...props} />
+            ),
         }}
       />
       <Tabs.Screen
@@ -87,7 +103,11 @@ function InnerTabs() {
             <Ionicons name="school-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? <Pressable {...props} /> : <DisabledTabButton {...props} />,
+            isEnrolled ? (
+              <Pressable {...props} />
+            ) : (
+              <DisabledTabButton {...props} />
+            ),
         }}
       />
       <Tabs.Screen
@@ -98,7 +118,11 @@ function InnerTabs() {
             <Ionicons name="people-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? <Pressable {...props} /> : <DisabledTabButton {...props} />,
+            isEnrolled ? (
+              <Pressable {...props} />
+            ) : (
+              <DisabledTabButton {...props} />
+            ),
         }}
       />
     </Tabs>

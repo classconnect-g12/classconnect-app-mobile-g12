@@ -74,7 +74,7 @@ const CourseItem: React.FC<CourseItemProps> = ({
             </Button>
 
             {showActions && (
-              <>
+              <View style={{ flexDirection: "row", gap: 8 }}>
                 <Button
                   mode="outlined"
                   onPress={(e) => {
@@ -97,7 +97,7 @@ const CourseItem: React.FC<CourseItemProps> = ({
                 >
                   Eliminar
                 </Button>
-              </>
+              </View>
             )}
           </Card.Actions>
         </Card>

@@ -16,6 +16,7 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { colors } from "@theme/colors";
 import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
+import { useAuth } from "@context/authContext";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -35,6 +36,10 @@ const CourseModulesScreen = () => {
   const [description, setDescription] = useState("");
   const [order, setOrder] = useState("");
 
+  const [creating, setCreating] = useState(false);
+
+  const { logout } = useAuth();
+
   useEffect(() => {
     const loadModules = async () => {
       try {
@@ -44,7 +49,7 @@ const CourseModulesScreen = () => {
           setModules(data);
         }
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading modules");
+        handleApiError(error, showSnackbar, "Error loading modules", logout);
         setModules([]);
       } finally {
         setLoading(false);
@@ -55,11 +60,46 @@ const CourseModulesScreen = () => {
   }, [courseId]);
 
   const handleAddModule = async () => {
-    await createModule(courseId ?? "", title, description, parseInt(order));
-    setModalVisible(false);
-    setTitle("");
-    setDescription("");
-    setOrder("");
+    if (!title.trim()) {
+      showSnackbar("Title is required", "error");
+      return;
+    }
+
+    if (!description.trim()) {
+      showSnackbar("Description is required", "error");
+      return;
+    }
+
+    if (description.length < 55 || description.length > 255) {
+      showSnackbar(
+        "Description must be between 55 and 255 characters",
+        "error"
+      );
+      return;
+    }
+
+    const parsedOrder = parseInt(order);
+    if (isNaN(parsedOrder) || parsedOrder <= 0) {
+      showSnackbar("Order must be a number greater than 0", "error");
+      return;
+    }
+
+    try {
+      setCreating(true);
+      await createModule(courseId ?? "", title, description, parsedOrder);
+      setModalVisible(false);
+      setTitle("");
+      setDescription("");
+      setOrder("");
+      showSnackbar("Module created successfully", "success");
+
+      const updatedModules = await fetchModules(courseId ?? "");
+      setModules(updatedModules);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error creating module", logout);
+    } finally {
+      setCreating(false);
+    }
   };
 
   const renderItem = ({ item }: { item: Module }) => (
@@ -106,6 +146,7 @@ const CourseModulesScreen = () => {
         order={order}
         setOrder={setOrder}
         onSubmit={handleAddModule}
+        loading={creating}
       />
 
       {isTeacher && (

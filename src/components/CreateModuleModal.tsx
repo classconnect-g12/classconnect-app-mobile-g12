@@ -12,6 +12,7 @@ type Props = {
   order: string;
   setOrder: (text: string) => void;
   onSubmit: () => void;
+  loading?: boolean;
 };
 
 export const CreateModuleModal: React.FC<Props> = ({
@@ -24,6 +25,7 @@ export const CreateModuleModal: React.FC<Props> = ({
   order,
   setOrder,
   onSubmit,
+  loading,
 }) => {
   return (
     <Modal
@@ -62,6 +64,8 @@ export const CreateModuleModal: React.FC<Props> = ({
         mode="contained"
         style={{ backgroundColor: colors.primary }}
         onPress={onSubmit}
+        disabled={loading}
+        loading={loading}
       >
         Crear módulo
       </Button>
