@@ -42,6 +42,7 @@ export default function CreateCourse() {
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { logout } = useAuth();
 
@@ -58,7 +59,7 @@ export default function CreateCourse() {
       const data = await getMyCourses(0, 10, query);
       setAllCourses(data.courses);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching courses");
+      handleApiError(error, showSnackbar, "Error fetching courses", logout);
     }
   };
 
@@ -67,6 +68,8 @@ export default function CreateCourse() {
   }, []);
 
   const handleCreateCourse = async () => {
+    if (isLoading) return; // Evita spameo
+
     const error = validateCourse(courseName);
     if (error) {
       showSnackbar(error, SNACKBAR_VARIANTS.ERROR);
@@ -82,11 +85,7 @@ export default function CreateCourse() {
       return;
     }
 
-    if (
-      description.length < 0 ||
-      description.length < 50 ||
-      description.length > 255
-    ) {
+    if (description.length < 50 || description.length > 255) {
       showSnackbar(
         "Description must be between 50 and 255 characters",
         SNACKBAR_VARIANTS.ERROR
@@ -103,25 +102,28 @@ export default function CreateCourse() {
     }
 
     const teacherId = 123;
+    const courseData = {
+      title: courseName,
+      description,
+      teacherId,
+      capacity: parsedCapacity,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      modality,
+      correlativeCourseIds: selectedCourses.map((c) => c.id),
+    };
 
     try {
-      const courseData = {
-        title: courseName,
-        description,
-        teacherId,
-        capacity: parsedCapacity,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        modality,
-        correlativeCourseIds: selectedCourses.map((c) => c.id),
-      };
-      console.log(courseData);
-
+      setIsLoading(true);
       await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
-      router.back();
+      setTimeout(() => {
+        router.back();
+      }, 1500);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating the course", logout);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -259,8 +261,10 @@ export default function CreateCourse() {
             onPress={handleCreateCourse}
             style={styles.button}
             labelStyle={{ color: colors.buttonText }}
+            disabled={isLoading}
+            loading={isLoading}
           >
-            Create Course
+            {isLoading ? "Creating..." : "Create Course"}
           </Button>
         </View>
       </ScrollView>
