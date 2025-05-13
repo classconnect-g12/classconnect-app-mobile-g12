@@ -17,6 +17,7 @@ import { colors } from "@theme/colors";
 import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -49,7 +50,8 @@ const CourseModulesScreen = () => {
           setModules(data);
         }
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading modules", logout);
+        showSnackbar("No modules available", SNACKBAR_VARIANTS.INFO);
+        //handleApiError(error, showSnackbar, "Error loading modules", logout);
         setModules([]);
       } finally {
         setLoading(false);
