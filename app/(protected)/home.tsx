@@ -41,12 +41,10 @@ export default function HomeScreen() {
   };
 
   const handleAddCourse = () => {
-    // TODO: implement
     router.push("/(protected)/course/createCourse");
   };
 
   const handleJoinClass = () => {
-    // TODO: implement
     router.push("/(protected)/course/findCourse");
   };
 
@@ -63,6 +61,7 @@ export default function HomeScreen() {
             </Text>
 
             <View style={styles.mainContent}>
+              {/*
               <View style={styles.searchSection}>
                 <Text style={styles.sectionLabel}>Find a User</Text>
                 <View style={styles.searchContainer}>
@@ -87,6 +86,7 @@ export default function HomeScreen() {
                   </Button>
                 </View>
               </View>
+              */}
 
               <View style={styles.booksContainer}>
                 <Image

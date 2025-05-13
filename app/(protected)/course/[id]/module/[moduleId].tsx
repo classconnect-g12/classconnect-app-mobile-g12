@@ -87,7 +87,8 @@ export default function ModulePage() {
         showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
       }
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching resources", logout);
+      showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
+      //handleApiError(error, showSnackbar, "Error fetching resources", logout);
     }
   };
 

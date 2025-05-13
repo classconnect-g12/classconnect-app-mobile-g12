@@ -108,9 +108,9 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           onDismiss={() => setMenuVisible(false)}
           anchor={<Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
         >
-          <Menu.Item onPress={() => router.push("/profile/profileEdit")} title="My Profile" titleStyle={{ fontWeight: "bold" }} />
-          <Menu.Item onPress={() => router.push("/course/myCourses")} title="My Courses" titleStyle={{ fontWeight: "bold" }} />
-          <Menu.Item onPress={logout} title="Log out" titleStyle={{ fontWeight: "bold", color: "#d9534f" }} />
+          <Menu.Item onPress={() => {setMenuVisible(false); router.push("/profile/profileEdit")}} title="My Profile" titleStyle={{ fontWeight: "bold" }} />
+          <Menu.Item onPress={() => {setMenuVisible(false); router.push("/course/myCourses")}} title="My Courses" titleStyle={{ fontWeight: "bold" }} />
+          <Menu.Item onPress={() => {setMenuVisible(false); logout}} title="Log out" titleStyle={{ fontWeight: "bold", color: "#d9534f" }} />
         </Menu>
       </Appbar.Header>
 
