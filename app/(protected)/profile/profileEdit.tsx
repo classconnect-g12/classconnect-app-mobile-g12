@@ -18,8 +18,8 @@ import { getUserProfile, updateUserProfile } from "@services/ProfileService";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 export default function ProfileScreen() {
   const { profileId } = useLocalSearchParams();
@@ -36,7 +36,6 @@ export default function ProfileScreen() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     snackbarVisible,
@@ -46,14 +45,21 @@ export default function ProfileScreen() {
     hideSnackbar,
   } = useSnackbar();
 
+  const { logout } = useAuth();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const fetchedProfile = await getUserProfile();
         setProfile(fetchedProfile);
         setOriginalProfile(fetchedProfile);
-      } catch (err) {
-        setError("Error al cargar el perfil.");
+      } catch (error) {
+        handleApiError(
+          error,
+          showSnackbar,
+          "Error loading the profile",
+          logout
+        );
       } finally {
         setLoading(false);
       }
@@ -100,8 +106,8 @@ export default function ProfileScreen() {
       setProfile(updated);
       setOriginalProfile(updated);
       showSnackbar("Profile updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
-    } catch (err) {
-      setError("Error saving changes.");
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error saving changes", logout);
     } finally {
       setSaving(false);
     }
@@ -112,13 +118,6 @@ export default function ProfileScreen() {
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color={colors.text} />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
-
-  if (error)
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
 

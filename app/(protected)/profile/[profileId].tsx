@@ -2,27 +2,51 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, ScrollView } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
-import { getUserProfileByUsername, UserProfileResponse } from "@services/ProfileService";
+import {
+  getUserProfileByUsername,
+  UserProfileResponse,
+} from "@services/ProfileService";
 import { profileIdStyles as styles } from "@styles/profileIdStyles";
+import { handleApiError } from "@utils/handleApiError";
+import { useSnackbar } from "../../../src/hooks/useSnackbar";
+import { AxiosError } from "axios";
+import { ApiError } from "@src/types/apiError";
+import { useAuth } from "@context/authContext";
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { profileId } = useLocalSearchParams();
+
+  const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const data = await getUserProfileByUsername(profileId as string);
         setProfile(data);
-      } catch (err: any) {
-        if (err.response?.status === 404) {
-          setError("Profile not found.");
-        } else if (err.response?.status === 401) {
-          setError("Unauthorized. Please log in.");
+      } catch (error) {
+        const axiosError = error as AxiosError<ApiError>;
+
+        const status = axiosError.response?.status;
+
+        if (status === 404) {
+          handleApiError(axiosError, showSnackbar, "Profile not found", logout);
+        } else if (status === 401) {
+          handleApiError(
+            axiosError,
+            showSnackbar,
+            "Unauthorized. Please log in.",
+            logout
+          );
         } else {
-          setError(err.message || "Error loading profile.");
+          handleApiError(
+            axiosError,
+            showSnackbar,
+            "Error loading profile",
+            logout
+          );
         }
       } finally {
         setLoading(false);
@@ -37,13 +61,6 @@ const UserProfile: React.FC = () => {
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color="#000" />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
-
-  if (error)
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
 

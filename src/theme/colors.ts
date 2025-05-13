@@ -11,6 +11,7 @@ export const colors = {
   cardBackground: '#f4f6f8',
   inputBackground: '#e0e0e0',
   buttonText: '#FFF',
+  textMuted: "#a1a1a1",
 };
 
 export const theme = {

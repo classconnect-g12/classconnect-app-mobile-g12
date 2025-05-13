@@ -1,30 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
 } from "react-native";
-import { TextInput, Button, Snackbar, Card } from "react-native-paper";
+import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-
-interface Course {
-  id: string;
-  name: string;
-  description: string;
-  instructor: string;
-}
+import { fetchCourses } from "@services/CourseService";
+import { ApiCourse } from "@src/types/course";
+import { handleApiError } from "@utils/handleApiError";
+import CourseFilter from "@components/CourseFilter";
+import { enrollInCourse } from "@services/EnrollmentService";
+import { useAuth } from "@context/authContext";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [courses, setCourses] = useState<ApiCourse[]>([]);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [dateFilter, setDateFilter] = useState<
+    "all" | "active" | "upcoming" | "finished"
+  >("all");
+
+  const { logout } = useAuth();
 
   const {
     snackbarVisible,
@@ -34,59 +44,174 @@ export default function FindCourse() {
     hideSnackbar,
   } = useSnackbar();
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      showSnackbar("Please enter a search term", SNACKBAR_VARIANTS.INFO);
-      return;
+  const loadCourses = async (pageNumber = 0, reset = false) => {
+    if (reset) {
+      setCourses([]);
+      setPage(0);
+      setTotalPages(1);
     }
 
-    setIsLoading(true);
-    // TODO: Implement course search API call
-    // Simulated API response
-    setTimeout(() => {
-      setCourses([
-        {
-          id: "1",
-          name: "Introduction to React Native",
-          description: "Learn the basics of React Native development",
-          instructor: "John Doe",
-        },
-        {
-          id: "2",
-          name: "Advanced JavaScript",
-          description: "Deep dive into JavaScript concepts",
-          instructor: "Jane Smith",
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    try {
+      if (pageNumber === 0) {
+        setIsLoadingInitial(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      // Fetch courses with title filter if searchQuery exists
+      const response = await fetchCourses(pageNumber, 10, {
+        title: searchQuery,
+      });
+
+      // Apply client-side filtering
+      let filteredCourses = response.courses.filter((course) => {
+        // Filter by availability
+        if (!course.available) return false;
+
+        // Filter by searchQuery in description (since backend only filters title)
+        if (searchQuery) {
+          return (
+            course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+        return true;
+      });
+
+      // Apply date filter
+      if (dateFilter !== "all") {
+        const now = new Date();
+        filteredCourses = filteredCourses.filter((course) => {
+          const start = new Date(course.startDate);
+          const end = new Date(course.endDate);
+          if (dateFilter === "active") return start <= now && end >= now;
+          if (dateFilter === "upcoming") return start > now;
+          if (dateFilter === "finished") return end < now;
+          return true;
+        });
+      }
+
+      setCourses((prev) =>
+        pageNumber === 0 ? filteredCourses : [...prev, ...filteredCourses]
+      );
+      setTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error fetching courses", logout);
+    } finally {
+      if (pageNumber === 0) {
+        setIsLoadingInitial(false);
+      } else {
+        setIsLoadingMore(false);
+      }
+    }
   };
 
-  const handleJoinCourse = (courseId: string) => {
-    // TODO: Implement join course API call
-    showSnackbar("Successfully joined the course!", SNACKBAR_VARIANTS.SUCCESS);
-    router.back();
+  useEffect(() => {
+    loadCourses(0, true);
+  }, [dateFilter]);
+
+  const handleSearch = () => {
+    setIsSearching(true);
+    loadCourses(0, true).finally(() => setIsSearching(false));
   };
 
-  const renderCourse = ({ item }: { item: Course }) => (
-    <Card style={styles.courseCard}>
-      <Card.Content>
-        <Text style={styles.courseName}>{item.name}</Text>
-        <Text style={styles.courseDescription}>{item.description}</Text>
-        <Text style={styles.instructor}>Instructor: {item.instructor}</Text>
-      </Card.Content>
-      <Card.Actions>
-        <Button
-          mode="contained"
-          onPress={() => handleJoinCourse(item.id)}
-          style={styles.joinButton}
-          labelStyle={{ color: colors.buttonText }}
-        >
-          Join Course
-        </Button>
-      </Card.Actions>
-    </Card>
-  );
+  const loadMore = () => {
+    if (!isSearching && !isLoadingMore && page + 1 < totalPages) {
+      const nextPage = page + 1;
+      loadCourses(nextPage);
+      setPage(nextPage);
+    }
+  };
+
+  const handleJoinCourse = async (courseId: string) => {
+    try {
+      await enrollInCourse(courseId);
+      showSnackbar(
+        "Successfully joined the course!",
+        SNACKBAR_VARIANTS.SUCCESS
+      );
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "There was a problem joinin the course",
+        logout
+      );
+    }
+  };
+
+  const renderCourse = ({ item }: { item: ApiCourse }) => {
+    // Check for limited capacity (5 or fewer spots)
+    const isLimitedCapacity = item.capacity <= 5;
+    // Check if course is about to start (within 3 days)
+    const now = new Date();
+    const startDate = new Date(item.startDate);
+    const daysUntilStart =
+      (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
+    // Check if course has already started
+    const hasStarted = startDate < now;
+
+    return (
+      <TouchableWithoutFeedback
+        onPress={() => router.push(`/course/${item.id}` as any)}
+      >
+        <View>
+          <Card style={styles.courseCard}>
+            <Card.Content>
+              <Text style={styles.courseName}>{item.title}</Text>
+              <Text style={styles.courseDescription}>{item.description}</Text>
+              <Text style={styles.courseDetails}>
+                Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
+                {new Date(item.endDate).toLocaleDateString()}
+              </Text>
+              {isLimitedCapacity && (
+                <Text style={styles.availabilityIndicator}>
+                  Limited spots remaining
+                </Text>
+              )}
+              {isStartingSoon && (
+                <Text style={styles.availabilityIndicator}>
+                  Last days to register
+                </Text>
+              )}
+              {hasStarted && (
+                <Text style={styles.alreadyStartedIndicator}>
+                  Already started
+                </Text>
+              )}
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                mode="contained"
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleJoinCourse(item.id);
+                }}
+                style={styles.joinButton}
+                labelStyle={{ color: colors.buttonText }}
+              >
+                Join Course
+              </Button>
+            </Card.Actions>
+          </Card>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  };
+
+  if (isLoadingInitial) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -100,9 +225,10 @@ export default function FindCourse() {
 
       <View style={styles.searchContainer}>
         <TextInput
-          label="Search Courses"
+          label="Search by Title or Description"
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
           mode="outlined"
           style={styles.searchInput}
           theme={{ colors: { primary: colors.primary } }}
@@ -112,26 +238,31 @@ export default function FindCourse() {
           onPress={handleSearch}
           style={styles.searchButton}
           labelStyle={{ color: colors.buttonText }}
-          loading={isLoading}
+          loading={isSearching}
         >
           Search
         </Button>
       </View>
+
+      <CourseFilter dateFilter={dateFilter} setDateFilter={setDateFilter} />
 
       <FlatList
         data={courses}
         renderItem={renderCourse}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.courseList}
-        ListEmptyComponent={() =>
-          !isLoading ? (
-            <Text style={styles.emptyText}>
-              {searchQuery
-                ? "No courses found. Try a different search term."
-                : "Search for courses to join"}
-            </Text>
-          ) : null
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isLoadingMore ? <ActivityIndicator color={colors.primary} /> : null
         }
+        ListEmptyComponent={() => (
+          <Text style={styles.emptyText}>
+            {searchQuery || dateFilter !== "all"
+              ? "No courses found. Try different search terms or filters."
+              : "Search for courses to join"}
+          </Text>
+        )}
       />
 
       <AppSnackbar
