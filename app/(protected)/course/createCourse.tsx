@@ -1,32 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Picker } from "@react-native-picker/picker";
-import {
-  DateTimePickerAndroid,
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
-import {
-  View,
-  Text,
-  KeyboardAvoidingView,
-  ScrollView,
-  Pressable,
-  FlatList,
-} from "react-native";
-import { TextInput, Button, Checkbox } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { TextInput as RNTextInput } from "react-native";
-import { colors } from "@theme/colors";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateCourse } from "@utils/validators";
-import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse, getMyCourses } from "@services/CourseService";
-import { ApiError } from "@src/types/apiError";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
-import { CorrelativeSelector } from "@components/CorrelativeSelector";
+import { CourseForm } from "@components/CourseForm";
 
 type CourseOption = { id: string; title: string };
 
@@ -42,6 +23,7 @@ export default function CreateCourse() {
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { logout } = useAuth();
 
@@ -58,7 +40,7 @@ export default function CreateCourse() {
       const data = await getMyCourses(0, 10, query);
       setAllCourses(data.courses);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching courses");
+      handleApiError(error, showSnackbar, "Error fetching courses", logout);
     }
   };
 
@@ -67,9 +49,19 @@ export default function CreateCourse() {
   }, []);
 
   const handleCreateCourse = async () => {
+    if (isLoading) return; // Evita spameo
+
     const error = validateCourse(courseName);
     if (error) {
       showSnackbar(error, SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (description.length < 50 || description.length > 255) {
+      showSnackbar(
+        "Description must be between 50 and 255 characters",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
@@ -77,18 +69,6 @@ export default function CreateCourse() {
     if (isNaN(parsedCapacity) || parsedCapacity <= 0) {
       showSnackbar(
         "Capacity must be a valid positive number",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (
-      description.length < 0 ||
-      description.length < 50 ||
-      description.length > 255
-    ) {
-      showSnackbar(
-        "Description must be between 50 and 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -103,174 +83,67 @@ export default function CreateCourse() {
     }
 
     const teacherId = 123;
+    const courseData = {
+      title: courseName,
+      description,
+      teacherId,
+      capacity: parsedCapacity,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      modality,
+      correlativeCourseIds: selectedCourses.map((c) => c.id),
+    };
 
     try {
-      const courseData = {
-        title: courseName,
-        description,
-        teacherId,
-        capacity: parsedCapacity,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        modality,
-        correlativeCourseIds: selectedCourses.map((c) => c.id),
-      };
-      console.log(courseData);
-
+      setIsLoading(true);
       await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
-      router.back();
+      setTimeout(() => {
+        router.back();
+      }, 1500);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating the course", logout);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const onChangeStart = (event: DateTimePickerEvent, date?: Date) => {
-    if (date) {
-      setStartDate(date);
-    }
-  };
-
-  const onChangeEnd = (event: DateTimePickerEvent, date?: Date) => {
-    if (date) {
-      setEndDate(date);
-    }
-  };
-
-  const openStartDatePickerAndroid = () => {
-    DateTimePickerAndroid.open({
-      value: startDate,
-      onChange: onChangeStart,
-      mode: "date",
-      display: "spinner",
-      minimumDate: new Date(),
-      positiveButton: { label: "Confirmar", textColor: colors.primary },
-      negativeButton: { label: "Cancelar", textColor: colors.text },
-    });
-  };
-
-  const openEndDatePickerAndroid = () => {
-    DateTimePickerAndroid.open({
-      value: endDate,
-      onChange: onChangeEnd,
-      mode: "date",
-      display: "spinner",
-      minimumDate: new Date(),
-      positiveButton: { label: "Confirmar", textColor: colors.primary },
-      negativeButton: { label: "Cancelar", textColor: colors.text },
-    });
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="height">
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Create New Course</Text>
-        <Text style={styles.subtitle}>Fill in the course details</Text>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Course Name"
-            value={courseName}
-            onChangeText={setCourseName}
-            mode="outlined"
-            style={styles.input}
-            theme={{ colors: { primary: colors.primary } }}
-          />
-
-          <TextInput
-            label="Description"
-            value={description}
-            onChangeText={setDescription}
-            mode="outlined"
-            multiline
-            numberOfLines={4}
-            style={styles.input}
-            theme={{ colors: { primary: colors.primary } }}
-          />
-
-          <TextInput
-            label="Capacity"
-            value={capacity}
-            onChangeText={setCapacity}
-            mode="outlined"
-            style={styles.input}
-            keyboardType="numeric"
-          />
-
-          <CorrelativeSelector
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            allCourses={allCourses}
-            setAllCourses={setAllCourses}
-            selectedCourses={selectedCourses}
-            setSelectedCourses={setSelectedCourses}
-          />
-
-          <View style={styles.datePickerContainer}>
-            <Text style={styles.dateLabel}>Start Date</Text>
-            <Pressable
-              onPress={openStartDatePickerAndroid}
-              style={styles.datePicker}
-            >
-              <Text style={styles.datePickerText}>
-                {startDate.toISOString().split("T")[0]}
-              </Text>
-              <MaterialIcons
-                name="calendar-today"
-                size={24}
-                color={colors.primary}
-                style={styles.datePickerIcon}
-              />
-            </Pressable>
-
-            <Text style={styles.dateLabel}>End Date</Text>
-            <Pressable
-              onPress={openEndDatePickerAndroid}
-              style={styles.datePicker}
-            >
-              <Text style={styles.datePickerText}>
-                {endDate.toISOString().split("T")[0]}
-              </Text>
-              <MaterialIcons
-                name="calendar-today"
-                size={24}
-                color={colors.primary}
-                style={styles.datePickerIcon}
-              />
-            </Pressable>
-          </View>
-
-          <View style={styles.input}>
-            <Picker
-              selectedValue={modality}
-              onValueChange={(itemValue) =>
-                setModality(itemValue as "ONLINE" | "ONSITE" | "HYBRID")
-              }
-              style={{ color: colors.text }}
-            >
-              <Picker.Item label="Online" value="ONLINE" />
-              <Picker.Item label="Onsite" value="ONSITE" />
-              <Picker.Item label="Hybrid" value="HYBRID" />
-            </Picker>
-          </View>
-
-          <Button
-            mode="contained"
-            onPress={handleCreateCourse}
-            style={styles.button}
-            labelStyle={{ color: colors.buttonText }}
-          >
-            Create Course
-          </Button>
-        </View>
-      </ScrollView>
-
+    <>
+      <CourseForm
+        courseName={courseName}
+        setCourseName={setCourseName}
+        description={description}
+        setDescription={setDescription}
+        capacity={capacity}
+        setCapacity={setCapacity}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        modality={modality}
+        setModality={setModality}
+        objectives={null}
+        setObjectives={null}
+        syllabus={null}
+        setSyllabus={null}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        allCourses={allCourses}
+        setAllCourses={setAllCourses}
+        selectedCourses={selectedCourses}
+        setSelectedCourses={setSelectedCourses}
+        handleCreateCourse={handleCreateCourse}
+        isLoading={isLoading}
+        buttonMessageActive={"Creating..."}
+        buttonMessageInactive={"Create Course"}
+      />
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
         onDismiss={hideSnackbar}
         variant={snackbarVariant}
       />
-    </KeyboardAvoidingView>
+    </>
   );
 }

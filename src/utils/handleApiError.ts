@@ -17,7 +17,7 @@ export const handleApiError = (
   if (apiError.status === 401) {
     errorMessage = "Please log in to continue";
   } else if (apiError.status === 404) {
-    errorMessage = `${apiError.title}: Resource not found`;
+    return;
   } else if (apiError.status === 423) {
     showSnackbar(
       "Your session is locked. Please log in again.",

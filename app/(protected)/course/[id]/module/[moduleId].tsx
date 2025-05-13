@@ -50,7 +50,6 @@ export default function ModulePage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [formData, setFormData] = useState({
     title: "",
-    resource_type: "DOCUMENT",
     order: "1",
     file: null as DocumentPicker.DocumentPickerResult | null,
   });
@@ -132,10 +131,10 @@ export default function ModulePage() {
         id,
         moduleId,
         formData.title,
-        formData.resource_type,
         formData.order,
         formData.file
       );
+
       showSnackbar("Resource created successfully", SNACKBAR_VARIANTS.SUCCESS);
       await loadResources();
     } catch (error) {
@@ -145,7 +144,6 @@ export default function ModulePage() {
       setModalVisible(false);
       setFormData({
         title: "",
-        resource_type: "DOCUMENT",
         order: "1",
         file: null,
       });
@@ -306,32 +304,6 @@ export default function ModulePage() {
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
             />
-
-            {/* Campo: Tipo de recurso */}
-            <Text>Resource Type</Text>
-            <RadioButton.Group
-              onValueChange={(value) =>
-                setFormData({ ...formData, resource_type: value })
-              }
-              value={formData.resource_type}
-            >
-              <View style={moduleDetailStyle.radioOption}>
-                <RadioButton value="DOCUMENT " />
-                <Text>Document</Text>
-              </View>
-              <View style={moduleDetailStyle.radioOption}>
-                <RadioButton value="VIDEO" />
-                <Text>Video</Text>
-              </View>
-              <View style={moduleDetailStyle.radioOption}>
-                <RadioButton value="IMAGE" />
-                <Text>Image</Text>
-              </View>
-              <View style={moduleDetailStyle.radioOption}>
-                <RadioButton value="AUDIO" />
-                <Text>Audio</Text>
-              </View>
-            </RadioButton.Group>
 
             {/* Campo: Orden */}
             <TextInput

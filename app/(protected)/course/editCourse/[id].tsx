@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, ScrollView, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchCourseDetail, updateCourse } from "@services/CourseService";
-import { CourseRequestBody, FullCourse } from "@src/types/course";
-import { Picker } from "@react-native-picker/picker";
-import {
-  DateTimePickerAndroid,
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
-import { MaterialIcons } from "@expo/vector-icons";
-import { colors } from "@theme/colors";
-import { editCourseStyles as styles } from "@styles/editCourseStyles";
-import { Button } from "react-native-paper";
+import { CourseRequestBody, FullCourse, Modality } from "@src/types/course";
 import { AppSnackbar } from "@components/AppSnackbar";
-import { CorrelativeSelector } from "@components/CorrelativeSelector";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import { CourseForm } from "@components/CourseForm";
 
 type CourseOption = { id: string; title: string };
 
@@ -32,6 +22,8 @@ export default function EditCourse() {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
+
+  const [isLoading, setIsLoading] = useState(false);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<CourseOption[]>([]);
   const { logout } = useAuth();
@@ -41,14 +33,10 @@ export default function EditCourse() {
   const [description, setDescription] = useState("");
   const [objectives, setObjectives] = useState("");
   const [syllabus, setSyllabus] = useState("");
-  const [selectedCorrelatives, setSelectedCorrelatives] = useState<string[]>(
-    []
-  );
-  const [modality, setModality] =
-    useState<CourseRequestBody["modality"]>("HYBRID");
-  const [startDate, setStartDate] = useState(new Date().toISOString());
+  const [modality, setModality] = useState<Modality>("HYBRID");
+  const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   );
 
   useEffect(() => {
@@ -71,13 +59,13 @@ export default function EditCourse() {
         const parsedEndDate = new Date(course.endDate);
 
         if (!isNaN(parsedStartDate.getTime())) {
-          setStartDate(parsedStartDate.toISOString());
+          setStartDate(parsedStartDate);
         } else {
           console.warn("Invalid startDate, using default");
         }
 
         if (!isNaN(parsedEndDate.getTime())) {
-          setEndDate(parsedEndDate.toISOString());
+          setEndDate(parsedEndDate);
         } else {
           console.warn("Invalid endDate, using default");
         }
@@ -150,9 +138,6 @@ export default function EditCourse() {
     }
 
     if (modality !== initialCourse.modality) updatedFields.modality = modality;
-    if (startDate !== initialCourse.startDate)
-      updatedFields.startDate = startDate;
-    if (endDate !== initialCourse.endDate) updatedFields.endDate = endDate;
 
     if (Object.keys(updatedFields).length === 0) {
       showSnackbar("No changes to save.", SNACKBAR_VARIANTS.ERROR);
@@ -160,142 +145,51 @@ export default function EditCourse() {
     }
 
     try {
+      setIsLoading(true);
       const parsedId = Array.isArray(id) ? id[0] : id;
       await updateCourse(parsedId, updatedFields);
 
       showSnackbar("Course updated successfully!", SNACKBAR_VARIANTS.SUCCESS);
-      router.back();
+      setTimeout(() => {
+        router.replace("/(protected)/course/myCourses");
+      }, 1500);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error updating course", logout);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const onChangeStart = (event: DateTimePickerEvent, date?: Date) => {
-    if (date && !isNaN(date.getTime())) {
-      setStartDate(date.toISOString());
-    }
-  };
-
-  const onChangeEnd = (event: DateTimePickerEvent, date?: Date) => {
-    if (date && !isNaN(date.getTime())) {
-      setEndDate(date.toISOString());
-    }
-  };
-
-  const openStartDatePickerAndroid = () => {
-    try {
-      DateTimePickerAndroid.open({
-        value: new Date(startDate),
-        onChange: onChangeStart,
-        mode: "date",
-        display: "spinner",
-        minimumDate: new Date(),
-        positiveButton: { label: "Confirm", textColor: colors.primary },
-        negativeButton: { label: "Cancel", textColor: colors.text },
-      });
-    } catch (error) {
-      handleApiError(error, showSnackbar, "Error opening datepicker", logout);
-    }
-  };
-
-  const openEndDatePickerAndroid = () => {
-    try {
-      DateTimePickerAndroid.open({
-        value: new Date(endDate),
-        onChange: onChangeEnd,
-        mode: "date",
-        display: "spinner",
-        minimumDate: new Date(),
-        positiveButton: { label: "Confirm", textColor: colors.primary },
-        negativeButton: { label: "Cancel", textColor: colors.text },
-      });
-    } catch (error) {
-      handleApiError(error, showSnackbar, "Error opening datepicker", logout);
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return !isNaN(date.getTime())
-      ? date.toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0];
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Title</Text>
-      <TextInput value={title} onChangeText={setTitle} style={styles.input} />
-
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        value={description}
-        onChangeText={setDescription}
-        style={styles.input}
-        multiline
-      />
-
-      <Text style={styles.label}>Objectives</Text>
-      <TextInput
-        value={objectives}
-        onChangeText={setObjectives}
-        style={styles.input}
-        multiline
-      />
-
-      <Text style={styles.label}>Syllabus</Text>
-      <TextInput
-        value={syllabus}
-        onChangeText={setSyllabus}
-        style={styles.input}
-        multiline
-      />
-
-      <CorrelativeSelector
+    <>
+      <CourseForm
+        courseName={title}
+        setCourseName={setTitle}
+        description={description}
+        setDescription={setDescription}
+        objectives={objectives}
+        setObjectives={setObjectives}
+        syllabus={syllabus}
+        setSyllabus={setSyllabus}
+        capacity={null}
+        setCapacity={null}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        modality={modality}
+        setModality={setModality}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         allCourses={allCourses}
         setAllCourses={setAllCourses}
         selectedCourses={selectedCourses}
         setSelectedCourses={setSelectedCourses}
+        handleCreateCourse={handleSave}
+        isLoading={isLoading}
+        buttonMessageActive="Saving..."
+        buttonMessageInactive="Save Course"
       />
-
-      <Picker
-        selectedValue={modality}
-        onValueChange={(itemValue) => setModality(itemValue)}
-        style={styles.input}
-      >
-        <Picker.Item label="Hybrid" value="HYBRID" />
-        <Picker.Item label="Online" value="ONLINE" />
-        <Picker.Item label="Onsite" value="ONSITE" />
-      </Picker>
-
-      <Text style={styles.label}>Start Date</Text>
-      <Pressable onPress={openStartDatePickerAndroid} style={styles.datePicker}>
-        <Text style={styles.datePickerText}>{formatDate(startDate)}</Text>
-        <MaterialIcons
-          name="calendar-today"
-          size={24}
-          color={colors.primary}
-          style={styles.datePickerIcon}
-        />
-      </Pressable>
-
-      <Text style={styles.label}>End Date</Text>
-      <Pressable onPress={openEndDatePickerAndroid} style={styles.datePicker}>
-        <Text style={styles.datePickerText}>{formatDate(endDate)}</Text>
-        <MaterialIcons
-          name="calendar-today"
-          size={24}
-          color={colors.primary}
-          style={styles.datePickerIcon}
-        />
-      </Pressable>
-
-      <View style={{ marginTop: 20 }}>
-        <Button mode="contained" onPress={handleSave} buttonColor="#007bff">
-          Save Changes
-        </Button>
-      </View>
 
       <AppSnackbar
         visible={snackbarVisible}
@@ -303,6 +197,6 @@ export default function EditCourse() {
         onDismiss={hideSnackbar}
         variant={snackbarVariant}
       />
-    </ScrollView>
+    </>
   );
 }
