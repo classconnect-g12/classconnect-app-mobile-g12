@@ -20,7 +20,8 @@ export const login = async (
 export const register = async (
   username: string,
   email: string,
-  password: string
+  password: string,
+  location: { latitude: number; longitude: number }
 ): Promise<string> => {
   try {
     const fcmToken = await messaging().getToken();
@@ -30,6 +31,7 @@ export const register = async (
       email,
       password,
       fcm_token: fcmToken,
+      location,
     });
 
     if (response.status === 201) {
@@ -65,7 +67,10 @@ export const loginWithGoogle = async (
       `Error ${response.status}: ${JSON.stringify(response.data)}`
     );
   } catch (error: any) {
-    console.error("Google login error:", error?.response?.data || error.message);
+    console.error(
+      "Google login error:",
+      error?.response?.data || error.message
+    );
     throw error?.response?.data || { message: "Google login failed" };
   }
 };
@@ -93,11 +98,13 @@ export const registerWithGoogle = async (
       `Error ${response.status}: ${JSON.stringify(response.data)}`
     );
   } catch (error: any) {
-    console.error("Google registration error:", error?.response?.data || error.message);
+    console.error(
+      "Google registration error:",
+      error?.response?.data || error.message
+    );
     throw error?.response?.data || { message: "Google registration failed" };
   }
 };
-
 
 export const resetPassword = async (email: string): Promise<string> => {
   const response = await publicClient.post("/auth/reset-password", { email });

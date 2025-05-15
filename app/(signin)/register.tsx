@@ -1,5 +1,6 @@
 import { register } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
+import * as Location from "expo-location";
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-paper";
@@ -58,7 +59,22 @@ export default function SignUp() {
       return showSnackbar("Passwords do not match", SNACKBAR_VARIANTS.ERROR);
 
     try {
-      const token = await register(username, email, password);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        return showSnackbar(
+          "Permission to access location was denied",
+          SNACKBAR_VARIANTS.ERROR
+        );
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      const token = await register(username, email, password, {
+        latitude,
+        longitude,
+      });
+
       await authLogin(token);
       router.replace("../home");
       showSnackbar("Account created successfully!", SNACKBAR_VARIANTS.SUCCESS);
