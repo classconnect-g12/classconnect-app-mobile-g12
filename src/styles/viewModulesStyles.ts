@@ -70,4 +70,14 @@ export const viewModulesStyles = StyleSheet.create({
     bottom: 16,
     backgroundColor: colors.primary,
   },
+  backButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignSelf: "flex-start",
+    marginBottom: 8,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: colors.primary,
+  },
 });
