@@ -8,6 +8,7 @@ import { createCourse, getMyCourses } from "@services/CourseService";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
 import { CourseForm } from "@components/CourseForm";
+import { View, Text, StyleSheet } from "react-native";
 
 type CourseOption = { id: string; title: string };
 
@@ -110,6 +111,10 @@ export default function CreateCourse() {
 
   return (
     <>
+      <View>
+        <Text style={styles.title}>Edit Course</Text>
+        <Text style={styles.subtitle}>Update the course details</Text>
+      </View>
       <CourseForm
         courseName={courseName}
         setCourseName={setCourseName}
@@ -147,3 +152,19 @@ export default function CreateCourse() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  title: {
+    marginTop: 20,
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  subtitle: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 20,
+  },
+});
