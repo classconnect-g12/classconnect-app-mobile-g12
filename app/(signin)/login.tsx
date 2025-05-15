@@ -1,20 +1,41 @@
-import { login, loginWithGoogle, registerWithGoogle } from "@services/AuthService";
+import {
+  login,
+  loginWithGoogle,
+  registerWithGoogle,
+} from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState, useContext } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+} from "react-native";
 import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { signInStyles as styles } from "@styles/signInStyles";
 import { colors } from "@theme/colors";
-import { validateEmail, validatePasswordLength, validateUsername } from "@utils/validators";
+import {
+  validateEmail,
+  validatePasswordLength,
+  validateUsername,
+} from "@utils/validators";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "src/hooks/useSnackbar";
 import auth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { getAllNotifications, getNotificationPreferences } from "@services/NotificationService";
-import { NotificationContext, defaultPreferences } from "@context/notificationContext";
+import {
+  getAllNotifications,
+  getNotificationPreferences,
+} from "@services/NotificationService";
+import {
+  NotificationContext,
+  defaultPreferences,
+} from "@context/notificationContext";
 import { PreferencesResponse, NotificationType } from "@src/types/notification";
+import { images } from "@assets/images";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -23,6 +44,9 @@ export default function SignIn() {
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [username, setUsername] = useState("");
   const [pendingIdToken, setPendingIdToken] = useState("");
+  const [activeButton, setActiveButton] = useState<
+    "email" | "google" | "register" | null
+  >(null);
 
   const { login: authLogin } = useAuth();
   const router = useRouter();
@@ -35,7 +59,7 @@ export default function SignIn() {
     hideSnackbar,
   } = useSnackbar();
   const notificationContext = useContext(NotificationContext);
-  
+
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
@@ -48,21 +72,29 @@ export default function SignIn() {
       console.error("⚠️ NotificationContext no está disponible.");
       return;
     }
-  
-    const { setNotifications, setNotificationPreferences, setHasNewNotifications } = notificationContext;
-  
+
+    const {
+      setNotifications,
+      setNotificationPreferences,
+      setHasNewNotifications,
+    } = notificationContext;
+
     try {
       const response: PreferencesResponse = await getNotificationPreferences();
       const prefs = response.preferences;
-  
-      const newPrefs: { [key in NotificationType]: boolean } = { ...defaultPreferences };
-  
+
+      const newPrefs: { [key in NotificationType]: boolean } = {
+        ...defaultPreferences,
+      };
+
       Object.keys(newPrefs).forEach((key) => {
-        newPrefs[key as NotificationType] = prefs.includes(key as NotificationType);
+        newPrefs[key as NotificationType] = prefs.includes(
+          key as NotificationType
+        );
       });
-  
-      setNotificationPreferences(newPrefs); 
-  
+
+      setNotificationPreferences(newPrefs);
+
       const loadedNotifications = await getAllNotifications();
       setNotifications(loadedNotifications);
       setHasNewNotifications(loadedNotifications.length > 0);
@@ -72,50 +104,60 @@ export default function SignIn() {
   };
 
   const handleSubmit = async () => {
-    if (!email || !validateEmail(email)) return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
-    if (!password || !validatePasswordLength(password)) return showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
+    if (!email || !validateEmail(email))
+      return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
+    if (!password || !validatePasswordLength(password))
+      return showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
 
     try {
+      setActiveButton("email");
       setIsLoading(true);
       const token = await login(email, password);
       await authLogin(token);
 
-      await syncUserData(); 
+      await syncUserData();
 
       router.replace("../home");
     } catch (error: any) {
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
     } finally {
       setIsLoading(false);
+      setActiveButton(null);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
+      setActiveButton("google");
       setIsLoading(true);
       await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
 
       const userInfo: any = await GoogleSignin.signIn();
       const idToken = userInfo.idToken || userInfo.data?.idToken;
 
-      if (!idToken) throw new Error("Google Sign-In failed: no ID token returned.");
+      if (!idToken)
+        throw new Error("Google Sign-In failed: no ID token returned.");
 
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const userCredential = await auth().signInWithCredential(
+        googleCredential
+      );
       const firebaseIdToken = await userCredential.user.getIdToken();
 
       try {
         const backendToken = await loginWithGoogle(firebaseIdToken);
         await authLogin(backendToken);
 
-        await syncUserData(); 
+        await syncUserData();
 
         router.replace("../home");
       } catch (error: any) {
         if (error?.status === 404) {
           setShowUsernameInput(true);
-          setPendingIdToken(firebaseIdToken); 
+          setPendingIdToken(firebaseIdToken);
           return;
         }
 
@@ -123,30 +165,33 @@ export default function SignIn() {
         showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
       }
     } finally {
+      setActiveButton(null);
       setIsLoading(false);
     }
   };
 
   const handleGoogleRegister = async () => {
-    const validationError = validateUsername(username); 
+    const validationError = validateUsername(username);
 
     if (validationError) {
-      showSnackbar(validationError, SNACKBAR_VARIANTS.ERROR); 
+      showSnackbar(validationError, SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     try {
+      setActiveButton("register");
       setIsLoading(true);
       const token = await registerWithGoogle(pendingIdToken, username);
       await authLogin(token);
 
-      await syncUserData(); 
+      await syncUserData();
 
       router.replace("../home");
     } catch (error: any) {
       console.error("Google registration error:", error);
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
     } finally {
+      setActiveButton(null);
       setIsLoading(false);
     }
   };
@@ -154,8 +199,10 @@ export default function SignIn() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome!</Text>
+      <View>
+        <Image source={images.logo} style={styles.logo} resizeMode="contain" />
+      </View>
       <Text style={styles.subtitle}>Sign in to continue</Text>
-
       {!showUsernameInput ? (
         <>
           <TextInput
@@ -177,11 +224,34 @@ export default function SignIn() {
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleSubmit} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+          <TouchableOpacity
+            style={[
+              styles.button,
+              isLoading && activeButton !== "email" && { opacity: 0.6 },
+            ]}
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading && activeButton === "email" ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleGoogleLogin} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign in with Google</Text>}
+
+          <TouchableOpacity
+            style={[
+              styles.buttonGoogle,
+              isLoading && activeButton !== "google" && { opacity: 0.6 },
+            ]}
+            onPress={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            {isLoading && activeButton === "google" ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign in with Google</Text>
+            )}
           </TouchableOpacity>
         </>
       ) : (
@@ -194,8 +264,19 @@ export default function SignIn() {
             value={username}
             onChangeText={setUsername}
           />
-          <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]} onPress={handleGoogleRegister} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Continue</Text>}
+          <TouchableOpacity
+            style={[
+              styles.button,
+              isLoading && activeButton !== "register" && { opacity: 0.6 },
+            ]}
+            onPress={handleGoogleRegister}
+            disabled={isLoading}
+          >
+            {isLoading && activeButton === "register" ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Continue</Text>
+            )}
           </TouchableOpacity>
         </>
       )}
@@ -212,7 +293,12 @@ export default function SignIn() {
           Sign up
         </Link>
       </Text>
-      <AppSnackbar visible={snackbarVisible} message={snackbarMessage} onDismiss={hideSnackbar} variant={snackbarVariant} />
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
+      />
     </View>
   );
 }
