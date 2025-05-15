@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
-  TextInput,
   ImageBackground,
   TouchableWithoutFeedback,
   Keyboard,
@@ -14,32 +13,8 @@ import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { images } from "@assets/images";
 import { protectedHomeStyles as styles } from "@styles/protectedHomeStyles";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { validateUsername } from "@utils/validators";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function HomeScreen() {
-  const [search, setSearch] = useState("");
-
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
-
-  const handleSearch = () => {
-    const validationError = validateUsername(search);
-    if (validationError) {
-      showSnackbar(validationError, SNACKBAR_VARIANTS.INFO);
-      return;
-    }
-
-    router.push(`/profile/${search}`);
-  };
-
   const handleAddCourse = () => {
     router.push("/(protected)/course/createCourse");
   };
@@ -61,33 +36,6 @@ export default function HomeScreen() {
             </Text>
 
             <View style={styles.mainContent}>
-              {/*
-              <View style={styles.searchSection}>
-                <Text style={styles.sectionLabel}>Find a User</Text>
-                <View style={styles.searchContainer}>
-                  <TextInput
-                    placeholder="Enter username"
-                    value={search}
-                    onChangeText={setSearch}
-                    style={styles.searchInput}
-                    placeholderTextColor={colors.text}
-                  />
-                  <Button
-                    mode="contained"
-                    onPress={handleSearch}
-                    style={styles.searchButton}
-                    icon="magnify"
-                    labelStyle={{
-                      fontWeight: "bold",
-                      color: colors.buttonText,
-                    }}
-                  >
-                    Search
-                  </Button>
-                </View>
-              </View>
-              */}
-
               <View style={styles.booksContainer}>
                 <Image
                   source={images.book}
@@ -120,16 +68,9 @@ export default function HomeScreen() {
             extended={false}
             onPress={handleAddCourse}
             style={styles.fab}
-            visible
+            visible={true}
             animateFrom="right"
             color={colors.buttonText}
-          />
-
-          <AppSnackbar
-            visible={snackbarVisible}
-            message={snackbarMessage}
-            onDismiss={hideSnackbar}
-            variant={snackbarVariant}
           />
         </View>
       </ImageBackground>
