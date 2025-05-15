@@ -1,3 +1,4 @@
+import AppbarMenu from "@components/AppbarMenu";
 import { Stack } from "expo-router";
 
 export default function ProfileLayout() {
@@ -13,13 +14,14 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="[profileId]"
         options={{
-          headerTitle: "Profile",
+          header: () => <AppbarMenu title="Profile" />,
         }}
       />
+
       <Stack.Screen
         name="profileEdit"
         options={{
-          headerTitle: "My Profile",
+          header: () => <AppbarMenu title="My Profile" />,
         }}
       />
     </Stack>

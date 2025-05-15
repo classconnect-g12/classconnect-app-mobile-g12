@@ -31,6 +31,14 @@ export const signInStyles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
+    buttonGoogle: {
+    width: "80%",
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    marginTop: 10,
+  },
   buttonText: {
     color: colors.background,
     fontSize: 16,
@@ -43,5 +51,10 @@ export const signInStyles = StyleSheet.create({
   footerLink: {
     color: colors.primary,
     fontWeight: "bold",
+  },
+    logo: {
+    width: 800,
+    height: 140,
+    marginBottom: 20,
   },
 });

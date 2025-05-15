@@ -8,12 +8,12 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { moduleDetailStyle } from "@styles/moduleDetailStyle";
 import { useState, useEffect, use } from "react";
 import { useCourse } from "@context/CourseContext";
-import { AnimatedFAB, RadioButton } from "react-native-paper";
+import { AnimatedFAB, IconButton } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
@@ -33,6 +33,7 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function ModulePage() {
   const {
@@ -82,9 +83,8 @@ export default function ModulePage() {
     try {
       const fetchedResources = await fetchResources(id, moduleId);
       setResources(fetchedResources);
-
       if (fetchedResources.length === 0) {
-        showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
+      showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
       }
     } catch (error) {
       showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
@@ -237,40 +237,86 @@ export default function ModulePage() {
     };
 
     return (
-      <TouchableOpacity
-        style={moduleDetailStyle.resourceItem}
-        onPress={handlePress}
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: "#ddd",
+          padding: 12,
+          marginBottom: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 2,
+        }}
       >
-        <View style={moduleDetailStyle.resourceHeader}>
-          <Text style={moduleDetailStyle.resourceTitle}>
-            {item.order}. {item.title}
-          </Text>
-        </View>
-        <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
+        <TouchableOpacity onPress={handlePress}>
+          <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.title}</Text>
 
-        {item.resourceType === "IMAGE" && (
-          <Image
-            source={{ uri: item.url }}
+          <View
             style={{
-              width: "100%",
-              height: 200,
-              marginTop: 10,
-              borderRadius: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 4,
+              marginBottom: 8,
             }}
-            resizeMode={ResizeMode.CONTAIN}
-          />
-        )}
+          >
+            <MaterialCommunityIcons
+              name={
+                item.resourceType === "IMAGE"
+                  ? "image"
+                  : item.resourceType === "VIDEO"
+                  ? "video"
+                  : item.resourceType === "DOCUMENT"
+                  ? "file-document"
+                  : "music"
+              }
+              size={20}
+              color="#555"
+            />
+            <Text style={{ marginLeft: 8, color: "#555" }}>
+              {item.resourceType}
+            </Text>
+          </View>
 
-        {item.resourceType === "AUDIO" &&
-          playingAudio === item.resourceId.toString() && (
-            <Text>Playing audio...</Text>
+          {item.resourceType === "IMAGE" && (
+            <Image
+              source={{ uri: item.url }}
+              style={{
+                width: "100%",
+                height: 200,
+                marginTop: 10,
+                borderRadius: 8,
+              }}
+              resizeMode={ResizeMode.CONTAIN}
+            />
           )}
-      </TouchableOpacity>
+
+          {item.resourceType === "AUDIO" &&
+            playingAudio === item.resourceId.toString() && (
+              <Text>Playing audio...</Text>
+            )}
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
     <View style={viewModulesStyles.container}>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}
+      >
+        <IconButton icon="arrow-left" size={24} onPress={() => router.back()} />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={{ fontSize: 16, color: colors.primary }}>
+            Back to Modules
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={viewModulesStyles.heading}>Resources</Text>
       {/* Lista de recursos */}
       {resources.length > 0 ? (
         <FlatList
@@ -284,7 +330,6 @@ export default function ModulePage() {
           No resources available
         </Text>
       )}
-
       {/* Modal para el formulario */}
       <Modal
         animationType="slide"
@@ -342,7 +387,6 @@ export default function ModulePage() {
           </View>
         </View>
       </Modal>
-
       {/* Botones FAB visibles solo para docentes */}
       {isTeacher && (
         <>
@@ -387,7 +431,6 @@ export default function ModulePage() {
           />
         </>
       )}
-
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
@@ -414,7 +457,6 @@ export default function ModulePage() {
           </TouchableOpacity>
         </View>
       </Modal>
-
       {/* Modal de video */}
       <Modal
         visible={!!selectedVideo}
@@ -441,7 +483,6 @@ export default function ModulePage() {
           </TouchableOpacity>
         </View>
       </Modal>
-
       <Modal
         animationType="slide"
         transparent={true}

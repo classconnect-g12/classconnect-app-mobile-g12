@@ -6,7 +6,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { Chip } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { fetchModules, createModule, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
@@ -28,7 +30,7 @@ const CourseModulesScreen = () => {
     showSnackbar,
     hideSnackbar,
   } = useSnackbar();
-  const { courseId, isTeacher } = useCourse();
+  const { courseId, isTeacher, courseTitle } = useCourse();
 
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,9 +111,17 @@ const CourseModulesScreen = () => {
       onPress={() => router.push(`/course/${courseId}/module/${item.moduleId}`)}
     >
       <View style={viewModulesStyles.moduleCard}>
-        <Text style={viewModulesStyles.title}>{item.title}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialCommunityIcons
+            name="book-open-page-variant"
+            size={24}
+            color={colors.primary}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={viewModulesStyles.title}>{item.title}</Text>
+        </View>
         <Text style={viewModulesStyles.description}>{item.description}</Text>
-        <Text style={viewModulesStyles.order}>Orden: {item.order}</Text>
+        <Chip style={viewModulesStyles.order}>{item.order}</Chip>
       </View>
     </TouchableOpacity>
   );
@@ -128,6 +138,7 @@ const CourseModulesScreen = () => {
 
   return (
     <View style={viewModulesStyles.container}>
+      <Text style={viewModulesStyles.courseTitle}>{courseTitle}</Text>
       <Text style={viewModulesStyles.heading}>Modules</Text>
       <FlatList
         data={modules}
