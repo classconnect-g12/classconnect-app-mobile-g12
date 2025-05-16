@@ -20,6 +20,7 @@ import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useModule } from "@context/ModuleContext";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -42,6 +43,7 @@ const CourseModulesScreen = () => {
   const [creating, setCreating] = useState(false);
 
   const { logout } = useAuth();
+  const { setModuleTitle } = useModule();
 
   useEffect(() => {
     const loadModules = async () => {
@@ -75,10 +77,7 @@ const CourseModulesScreen = () => {
     }
 
     if (description.length > 255) {
-      showSnackbar(
-        "Description must be at most 255 characters",
-        "error"
-      );
+      showSnackbar("Description must be at most 255 characters", "error");
       return;
     }
 
@@ -108,7 +107,10 @@ const CourseModulesScreen = () => {
 
   const renderItem = ({ item }: { item: Module }) => (
     <TouchableOpacity
-      onPress={() => router.push(`/course/${courseId}/module/${item.moduleId}`)}
+      onPress={() => {
+        setModuleTitle(item.title);
+        router.push(`/course/${courseId}/module/${item.moduleId}`);
+      }}
     >
       <View style={viewModulesStyles.moduleCard}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
