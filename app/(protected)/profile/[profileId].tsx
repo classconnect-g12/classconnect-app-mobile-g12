@@ -97,10 +97,12 @@ const UserProfile: React.FC = () => {
         <Text style={styles.readOnlyText}>{profile.last_name}</Text>
       </View>
 
+      {/* INFO SENSIBLE
       <View style={{ width: "100%" }}>
         <Text style={styles.label}>Email</Text>
         <Text style={styles.email}>{profile.email}</Text>
       </View>
+      */}
     </ScrollView>
   );
 };

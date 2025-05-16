@@ -31,9 +31,8 @@ export const createCourseStyles = StyleSheet.create({
     backgroundColor: colors.inputBackground,
   },
   button: {
-    marginTop: 20,
+    borderRadius: 6,
     backgroundColor: colors.primary,
-    paddingVertical: 8,
   },
   datePickerContainer: {
     marginVertical: 10,

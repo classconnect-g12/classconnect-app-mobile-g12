@@ -58,9 +58,9 @@ export default function CreateCourse() {
       return;
     }
 
-    if (description.length < 50 || description.length > 255) {
+    if (description.length > 255) {
       showSnackbar(
-        "Description must be between 50 and 255 characters",
+        "Description must be at most 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -111,9 +111,6 @@ export default function CreateCourse() {
 
   return (
     <>
-      <View>
-        <Text style={styles.title}>Create Course</Text>
-      </View>
       <CourseForm
         courseName={courseName}
         setCourseName={setCourseName}

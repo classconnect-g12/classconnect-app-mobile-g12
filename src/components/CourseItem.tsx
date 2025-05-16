@@ -47,11 +47,11 @@ const CourseItem: React.FC<CourseItemProps> = ({
               {new Date(item.endDate).toLocaleDateString()}
             </Text>
             {isLimitedCapacity && (
-              <Text style={styles.availabilityIndicator}>Cupos limitados</Text>
+              <Text style={styles.availabilityIndicator}>Limited spots</Text>
             )}
             {isStartingSoon && (
               <Text style={styles.availabilityIndicator}>
-                Últimos días para inscribirse
+                Last days to enroll
               </Text>
             )}
             {hasStarted && (
@@ -70,7 +70,7 @@ const CourseItem: React.FC<CourseItemProps> = ({
               style={styles.joinButton}
               labelStyle={{ color: colors.buttonText }}
             >
-              {tab === "created" ? "View Course" : "Go to Course"}
+              {tab === "created" ? "View course" : "Go to course"}
             </Button>
 
             {showActions && (
@@ -81,10 +81,14 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onEdit?.();
                   }}
-                  style={{ borderColor: colors.primary }}
-                  labelStyle={{ color: colors.primary }}
+                  style={{
+                    borderColor: colors.primary,
+                    borderRadius: 6,
+                    backgroundColor: colors.secondary,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
-                  Editar
+                  Edit
                 </Button>
                 <Button
                   mode="outlined"
@@ -92,10 +96,14 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onDelete?.();
                   }}
-                  style={{ borderColor: colors.error }}
-                  labelStyle={{ color: colors.error }}
+                  style={{
+                    borderColor: colors.error,
+                    borderRadius: 6,
+                    backgroundColor: colors.error,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
-                  Eliminar
+                  Delete
                 </Button>
               </View>
             )}

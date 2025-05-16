@@ -39,21 +39,21 @@ export const CreateModuleModal: React.FC<Props> = ({
       }}
     >
       <TextInput
-        label="Título"
+        label="Title"
         value={title}
         onChangeText={setTitle}
         mode="outlined"
         style={{ marginBottom: 10 }}
       />
       <TextInput
-        label="Descripción"
+        label="Description"
         value={description}
         onChangeText={setDescription}
         mode="outlined"
         style={{ marginBottom: 10 }}
       />
       <TextInput
-        label="Orden"
+        label="Order"
         value={order}
         onChangeText={setOrder}
         mode="outlined"
@@ -62,12 +62,12 @@ export const CreateModuleModal: React.FC<Props> = ({
       />
       <Button
         mode="contained"
-        style={{ backgroundColor: colors.primary }}
+        style={{ backgroundColor: colors.primary, borderRadius: 6 }}
         onPress={onSubmit}
         disabled={loading}
         loading={loading}
       >
-        Crear módulo
+        Create module
       </Button>
     </Modal>
   );

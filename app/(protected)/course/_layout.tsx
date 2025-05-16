@@ -14,31 +14,31 @@ export default function CourseLayout() {
       <Stack.Screen
         name="createCourse"
         options={{
-          header: () => <AppbarMenu title="ClassConnect" />,
+          header: () => <AppbarMenu title="Create course" viewNavigation={true} />,
         }}
       />
       <Stack.Screen
         name="findCourse"
         options={{
-          header: () => <AppbarMenu title="ClassConnect" />,
+          header: () => <AppbarMenu title="Find a course" viewNavigation={true}/>,
         }}
       />
       <Stack.Screen
         name="[id]"
         options={{
-          header: () => <AppbarMenu title="ClassConnect" />,
+          header: () => <AppbarMenu title="Course" viewNavigation={true}/>,
         }}
       />
       <Stack.Screen
         name="myCourses"
         options={{
-          header: () => <AppbarMenu title="ClassConnect" />,
+          header: () => <AppbarMenu title="My courses" viewNavigation={true}/>,
         }}
       />
       <Stack.Screen
         name="editCourse/[id]"
         options={{
-          header: () => <AppbarMenu title="ClassConnect" />,
+          header: () => <AppbarMenu title="Edit course" viewNavigation={true}/>,
         }}
       />
     </Stack>

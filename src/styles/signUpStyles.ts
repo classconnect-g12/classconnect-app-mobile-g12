@@ -37,6 +37,7 @@ export const signUpStyles = StyleSheet.create({
     fontWeight: "600",
   },
   footerText: {
+    fontSize: 16,
     marginTop: 20,
     color: colors.text,
   },

@@ -16,6 +16,7 @@ export const signInStyles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+    fontWeight: "bold",
     marginBottom: 30,
     color: colors.text,
   },
@@ -45,6 +46,7 @@ export const signInStyles = StyleSheet.create({
     fontWeight: "600",
   },
   footerText: {
+    fontSize: 16,
     marginTop: 20,
     color: colors.text,
   },

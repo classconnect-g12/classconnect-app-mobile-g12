@@ -198,7 +198,6 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome!</Text>
       <View>
         <Image source={images.logo} style={styles.logo} resizeMode="contain" />
       </View>

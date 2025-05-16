@@ -34,6 +34,7 @@ import { useSnackbar } from "@hooks/useSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useModule } from "@context/ModuleContext";
 
 export default function ModulePage() {
   const {
@@ -72,7 +73,7 @@ export default function ModulePage() {
   const [isSavingModule, setIsSavingModule] = useState(false);
 
   const isTeacher = useCourse().isTeacher;
-
+  const moduleTitle = useModule().moduleTitle;
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -315,8 +316,8 @@ export default function ModulePage() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      <Text style={viewModulesStyles.heading}>Resources</Text>
+      <Text style={viewModulesStyles.heading}>{moduleTitle}</Text>
+      <Text style={viewModulesStyles.headingSec}>Resources</Text>
       {/* Lista de recursos */}
       {resources.length > 0 ? (
         <FlatList

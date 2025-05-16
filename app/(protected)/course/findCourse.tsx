@@ -186,12 +186,12 @@ export default function FindCourse() {
                 mode="contained"
                 onPress={(e) => {
                   e.stopPropagation();
-                  handleJoinCourse(item.id);
+                  router.push(`/course/${item.id}` as any);
                 }}
                 style={styles.joinButton}
                 labelStyle={{ color: colors.buttonText }}
               >
-                Join Course
+                View course
               </Button>
             </Card.Actions>
           </Card>
@@ -218,8 +218,7 @@ export default function FindCourse() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Find a Course</Text>
+      <View>
         <Text style={styles.subtitle}>Search for courses to join</Text>
       </View>
 

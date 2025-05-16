@@ -14,6 +14,13 @@ export const viewModulesStyles = StyleSheet.create({
     textAlign: "center",
     textDecorationLine: "underline",
   },
+    headingSec: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    textDecorationLine: "underline",
+  },
   moduleCard: {
     backgroundColor: "#f9f9f9",
     borderWidth: 1,
@@ -32,10 +39,10 @@ export const viewModulesStyles = StyleSheet.create({
     fontWeight: "600",
   },
   courseTitle: {
+    color: colors.primary,
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
-    textAlign: "center",
   },
   description: {
     fontSize: 14,
