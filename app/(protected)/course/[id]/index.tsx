@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, ScrollView, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchCourseDetail } from "@services/CourseService";
@@ -28,6 +28,11 @@ export default function CourseDetail() {
   const router = useRouter();
   const [courseDetail, setCourseDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const [joiningStatus, setJoiningStatus] = useState<
+    "idle" | "joining" | "redirecting"
+  >("idle");
+
   const isEnrolled = useCourse().isEnrolled;
 
   useEffect(() => {
@@ -54,14 +59,21 @@ export default function CourseDetail() {
   }, [id]);
 
   const handleJoinCourse = async (courseId: string) => {
+    setJoiningStatus("joining");
     try {
       await enrollInCourse(courseId);
       showSnackbar(
         "Successfully joined the course!",
         SNACKBAR_VARIANTS.SUCCESS
       );
+
+      setJoiningStatus("redirecting");
+      setTimeout(() => {
+        router.replace(`/course/myCourses`);
+      }, 2000);
     } catch (error) {
       handleApiError(error, showSnackbar, "Could not join the course.", logout);
+      setJoiningStatus("idle");
     }
   };
 
@@ -106,11 +118,13 @@ export default function CourseDetail() {
         <Card style={styles.card}>
           <Card.Content>
             <Text style={styles.cardTitle}>Correlatives</Text>
-            {course.correlatives.map((correlative: { id: string; title: string }) => (
-              <Text key={correlative.id} style={styles.sectionText}>
-                • {correlative.title}
-              </Text>
-            ))}
+            {course.correlatives.map(
+              (correlative: { id: string; title: string }) => (
+                <Text key={correlative.id} style={styles.sectionText}>
+                  • {correlative.title}
+                </Text>
+              )
+            )}
           </Card.Content>
         </Card>
       )}
@@ -132,11 +146,18 @@ export default function CourseDetail() {
           mode="contained"
           onPress={(e) => {
             e.stopPropagation();
-            handleJoinCourse(course.id);
+            if (joiningStatus === "idle") {
+              handleJoinCourse(course.id);
+            }
           }}
           style={styles.joinButton}
+          disabled={joiningStatus !== "idle"}
         >
-          Join Course
+          {joiningStatus === "joining" && <ActivityIndicator color="white" />}
+          {joiningStatus === "redirecting" && (
+            <Text style={{ color: "white" }}>Redirecting...</Text>
+          )}
+          {joiningStatus === "idle" && "Join Course"}
         </Button>
       )}
 
