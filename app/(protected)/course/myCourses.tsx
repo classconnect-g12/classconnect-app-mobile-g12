@@ -75,21 +75,21 @@ export default function MyCourses() {
 
   const handleDeletion = (courseId: string) => {
     Alert.alert(
-      "Confirmar eliminación",
-      "¿Estás seguro de que querés eliminar este curso?",
+      "Confirm deletion",
+      "Are you sure you want to delete this course?",
       [
         {
-          text: "Cancelar",
+          text: "Cancel",
           style: "cancel",
         },
         {
-          text: "Eliminar",
+          text: "Delete",
           style: "destructive",
           onPress: async () => {
             try {
               await deleteCourse(courseId);
               showSnackbar(
-                "Curso eliminado con éxito",
+                "Course deleted successfully",
                 SNACKBAR_VARIANTS.SUCCESS
               );
               setCreatedCourses((prev) =>
@@ -99,7 +99,7 @@ export default function MyCourses() {
               handleApiError(
                 error,
                 showSnackbar,
-                "Ocurrió un error al eliminar el curso",
+                "An error occurred while deleting the course",
                 logout
               );
             }
