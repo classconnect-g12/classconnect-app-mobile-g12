@@ -97,46 +97,59 @@ export default function CourseDetail() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {teacher.banner ? (
-        <View style={styles.bannerContainer}>
-          <Image source={{ uri: teacher.banner }} style={styles.bannerImage} />
-        </View>
-      ) : null}
-
       <Text style={styles.title}>{course.title}</Text>
+      <Text style={styles.description}>{course.description}</Text>
+      <View style={styles.divider} />
+      {renderSection("Objectives", course.objectives)}
+      <View style={styles.divider} />
+      {renderSection("Syllabus", course.syllabus)}
+      <View style={styles.divider} />
 
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.cardTitle}>Course Description</Text>
-          <Text style={styles.description}>{course.description}</Text>
+          <Text style={styles.cardTitle}>Teacher Information</Text>
+
+          <View style={styles.teacherInfoContainer}>
+            {teacher.banner && (
+              <Image
+                source={{ uri: teacher.banner }}
+                style={styles.bannerImage}
+              />
+            )}
+            <View style={styles.teacherTextContainer}>
+              <Text style={styles.sectionText}>
+                {teacher.first_name || teacher.last_name
+                  ? `${teacher.first_name || ""} ${
+                      teacher.last_name || ""
+                    }`.trim()
+                  : "Unnamed teacher"}
+              </Text>
+              <Text style={styles.sectionText}>
+                {teacher.description?.trim()
+                  ? teacher.description
+                  : "No information available."}
+              </Text>
+            </View>
+          </View>
         </Card.Content>
       </Card>
 
-      {renderSection("Objectives", course.objectives)}
-      {renderSection("Syllabus", course.syllabus)}
-      {course.correlatives.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.cardTitle}>Correlatives</Text>
-            {course.correlatives.map(
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.cardTitle}>Correlatives</Text>
+          {course.correlatives.length > 0 ? (
+            course.correlatives.map(
               (correlative: { id: string; title: string }) => (
                 <Text key={correlative.id} style={styles.sectionText}>
                   • {correlative.title}
                 </Text>
               )
-            )}
-          </Card.Content>
-        </Card>
-      )}
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.cardTitle}>Teacher Information</Text>
-          <Text style={styles.sectionText}>
-            {teacher.first_name} {teacher.last_name}
-          </Text>
-          <Text style={styles.sectionText}>{teacher.email}</Text>
-          <Text style={styles.sectionText}>{teacher.description}</Text>
+            )
+          ) : (
+            <Text style={styles.sectionEmptyText}>
+              No prerequisites required.
+            </Text>
+          )}
         </Card.Content>
       </Card>
 
@@ -171,9 +184,17 @@ export default function CourseDetail() {
   );
 }
 
-const renderSection = (title: string, content: string) => (
-  <View style={styles.sectionContainer}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <Text style={styles.sectionText}>{content}</Text>
-  </View>
-);
+const renderSection = (title: string, content: string) => {
+  const isEmpty = !content?.trim();
+
+  return (
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text
+        style={isEmpty ? styles.sectionEmptyText : styles.sectionText}
+      >
+        {isEmpty ? "No information available." : content}
+      </Text>
+    </View>
+  );
+};

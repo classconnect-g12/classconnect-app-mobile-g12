@@ -34,6 +34,8 @@ export const findCourseStyles = StyleSheet.create({
     flex: 1,
   },
   searchButton: {
+    marginTop: 7,
+    borderRadius: 6,
     backgroundColor: colors.primary,
   },
   filterContainer: {
@@ -97,6 +99,7 @@ export const findCourseStyles = StyleSheet.create({
     opacity: 0.6,
   },
   joinButton: {
+    borderRadius: 6,
     backgroundColor: colors.primary,
   },
   emptyText: {

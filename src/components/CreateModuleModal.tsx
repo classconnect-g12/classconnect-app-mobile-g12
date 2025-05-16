@@ -62,7 +62,7 @@ export const CreateModuleModal: React.FC<Props> = ({
       />
       <Button
         mode="contained"
-        style={{ backgroundColor: colors.primary }}
+        style={{ backgroundColor: colors.primary, borderRadius: 6 }}
         onPress={onSubmit}
         disabled={loading}
         loading={loading}

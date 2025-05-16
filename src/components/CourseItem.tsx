@@ -81,8 +81,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onEdit?.();
                   }}
-                  style={{ borderColor: colors.primary }}
-                  labelStyle={{ color: colors.primary }}
+                  style={{
+                    borderColor: colors.primary,
+                    borderRadius: 6,
+                    backgroundColor: colors.secondary,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
                   Edit
                 </Button>
@@ -92,8 +96,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onDelete?.();
                   }}
-                  style={{ borderColor: colors.error }}
-                  labelStyle={{ color: colors.error }}
+                  style={{
+                    borderColor: colors.error,
+                    borderRadius: 6,
+                    backgroundColor: colors.error,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
                   Delete
                 </Button>
