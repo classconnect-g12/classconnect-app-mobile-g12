@@ -17,6 +17,8 @@ export const findCourseStyles = StyleSheet.create({
     marginBottom: 5,
   },
   subtitle: {
+    marginTop: 10,
+    textAlign: "center",
     fontSize: 16,
     color: colors.text,
     opacity: 0.7,

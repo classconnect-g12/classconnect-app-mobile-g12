@@ -12,6 +12,7 @@ import {
   Badge,
 } from "react-native-paper";
 import { RelativePathString, useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/authContext";
 import { colors } from "@theme/colors";
 import { NotificationContext } from "../context/notificationContext";
@@ -38,12 +39,17 @@ const getDaysAgo = (createdAt: string) => {
   return differenceInDays === 0 ? "Today" : `${differenceInDays} days ago`;
 };
 
-const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
+const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
+  title,
+  viewNavigation,
+}) => {
   const { logout } = useAuth();
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+
+  const navigation = useNavigation();
 
   const context = useContext(NotificationContext);
   if (!context) {
@@ -112,7 +118,10 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           onPress={() => router.push("/home")}
           iconColor="black"
         />
-        <Appbar.Content title={title} titleStyle={appbarMenuStyles.title} />
+        <Appbar.Content
+          title={"ClassConnect"}
+          titleStyle={appbarMenuStyles.title}
+        />
         <View style={appbarMenuStyles.notificationContainer}>
           <IconButton
             icon={hasNewNotifications ? "bell-badge" : "bell-outline"}
@@ -127,10 +136,7 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
           anchor={
-            <Appbar.Action
-              icon="menu"
-              onPress={() => setMenuVisible(true)}
-            />
+            <Appbar.Action icon="menu" onPress={() => setMenuVisible(true)} />
           }
         >
           <Menu.Item
@@ -159,6 +165,33 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           />
         </Menu>
       </Appbar.Header>
+
+      {navigation.canGoBack() && viewNavigation && (
+        <View
+          style={[
+            appbarMenuStyles.secondHeaderStyle,
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 10,
+            },
+          ]}
+        >
+          <IconButton
+            icon="arrow-left"
+            size={24}
+            iconColor="black"
+            onPress={() => navigation.goBack()}
+            style={{ position: "absolute", left: 5 }}
+          />
+          <Text
+            style={{ fontSize: 20, fontWeight: "bold", textAlign: "center" }}
+          >
+            {title}
+          </Text>
+        </View>
+      )}
 
       <Portal>
         {/* Modal de Notificaciones */}

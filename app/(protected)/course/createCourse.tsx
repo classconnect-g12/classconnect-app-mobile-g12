@@ -111,10 +111,6 @@ export default function CreateCourse() {
 
   return (
     <>
-      <View>
-        <Text style={styles.title}>Edit Course</Text>
-        <Text style={styles.subtitle}>Update the course details</Text>
-      </View>
       <CourseForm
         courseName={courseName}
         setCourseName={setCourseName}

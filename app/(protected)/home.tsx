@@ -27,7 +27,7 @@ export default function HomeScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground style={styles.background} resizeMode="cover">
         <View style={styles.overlay}>
-          <AppbarMenu title="ClassConnect" />
+          <AppbarMenu title="ClassConnect" viewNavigation={false}/>
 
           <View style={styles.content}>
             <Text style={styles.welcome}>Welcome</Text>

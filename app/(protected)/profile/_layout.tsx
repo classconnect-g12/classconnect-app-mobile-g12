@@ -14,14 +14,14 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="[profileId]"
         options={{
-          header: () => <AppbarMenu title="Profile" />,
+          header: () => <AppbarMenu title="Profile" viewNavigation={true}/>,
         }}
       />
 
       <Stack.Screen
         name="profileEdit"
         options={{
-          header: () => <AppbarMenu title="My Profile" />,
+          header: () => <AppbarMenu title="My profile" viewNavigation={true}/>,
         }}
       />
     </Stack>
