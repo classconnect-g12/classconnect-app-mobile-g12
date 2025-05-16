@@ -87,6 +87,7 @@ export default function Members() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Members</Text>
       {loading ? (
         <ActivityIndicator style={{ marginTop: 20 }} />
       ) : members.length === 0 ? (

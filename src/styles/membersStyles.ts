@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { colors } from "@theme/colors";
+import { Title } from "react-native-paper";
 
 export const membersStyles = StyleSheet.create({
   container: {
@@ -42,4 +43,13 @@ export const membersStyles = StyleSheet.create({
     fontSize: 12,
     fontStyle: "italic",
   },
+  title:{
+    marginTop: 10,
+    marginBottom: 10,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.primary,
+    textDecorationLine: "underline"
+  }
 });
