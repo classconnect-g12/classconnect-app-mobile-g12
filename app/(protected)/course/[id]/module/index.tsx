@@ -74,9 +74,9 @@ const CourseModulesScreen = () => {
       return;
     }
 
-    if (description.length < 55 || description.length > 255) {
+    if (description.length > 255) {
       showSnackbar(
-        "Description must be between 55 and 255 characters",
+        "Description must be at most 255 characters",
         "error"
       );
       return;
