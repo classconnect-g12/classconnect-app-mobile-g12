@@ -22,22 +22,31 @@ import {
 } from "@services/NotificationService";
 import { NotificationType, PreferencesResponse } from "@src/types/notification";
 import { appbarMenuStyles } from "@styles/appBarMenuStyles";
+import { formatDistanceToNow } from 'date-fns';
+
 
 const getDaysAgo = (createdAt: string) => {
-  let cleanedDate = createdAt;
-  if (createdAt.includes("UTC")) {
-    cleanedDate = createdAt.split(" ")[0] + "T" + createdAt.split(" ")[1] + "Z";
-  }
-  const notificationDate = new Date(cleanedDate);
-  if (isNaN(notificationDate.getTime())) {
-    console.warn("⚠️ Fecha inválida después de limpiar:", cleanedDate);
+  try {
+    let cleanedDate = createdAt;
+    if (createdAt.includes("UTC")) {
+      const [date, time] = createdAt.split(" ");
+      cleanedDate = `${date}T${time}Z`;
+    }
+
+    const parsedDate = new Date(cleanedDate);
+
+    if (isNaN(parsedDate.getTime())) {
+      console.warn("⚠️ Fecha inválida:", createdAt);
+      return "Unknown";
+    }
+
+    return formatDistanceToNow(parsedDate, { addSuffix: true }); 
+  } catch (error) {
+    console.error("⚠️ Error parsing createdAt:", error);
     return "Unknown";
   }
-  const today = new Date();
-  const differenceInTime = today.getTime() - notificationDate.getTime();
-  const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
-  return differenceInDays === 0 ? "Today" : `${differenceInDays} days ago`;
 };
+
 
 const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
   title,
