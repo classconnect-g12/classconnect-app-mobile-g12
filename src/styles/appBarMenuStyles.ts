@@ -85,7 +85,7 @@ export const appbarMenuStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    backgroundColor: "white",
+    backgroundColor: colors.background,
     borderTopWidth: 0.5,
     borderTopColor: "#e0e0e0",
     borderBottomWidth: 1.5,

@@ -11,9 +11,11 @@ export const membersStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderBottomWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.cardBackground,
+    backgroundColor: "white",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   avatar: {
     width: 60,
@@ -28,6 +30,7 @@ export const membersStyles = StyleSheet.create({
     marginLeft: 12,
   },
   name: {
+    fontSize: 16,
     color: colors.text,
     fontWeight: "bold",
   },
@@ -43,13 +46,23 @@ export const membersStyles = StyleSheet.create({
     fontSize: 12,
     fontStyle: "italic",
   },
-  title:{
+  title: {
     marginTop: 10,
     marginBottom: 10,
     textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
+    textDecorationLine: "underline",
+  },
+  sectionHeader: {
     color: colors.primary,
-    textDecorationLine: "underline"
-  }
+    fontSize: 18,
+    fontWeight: "bold",
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 16,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
 });

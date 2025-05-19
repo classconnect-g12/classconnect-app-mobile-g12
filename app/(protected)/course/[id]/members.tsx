@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, View, TouchableOpacity, Image } from "react-native";
+import { SectionList, View, TouchableOpacity, Image } from "react-native";
 import { Text, ActivityIndicator } from "react-native-paper";
 import { router } from "expo-router";
 import { getAcceptedMembers } from "@services/EnrollmentService";
@@ -20,9 +20,14 @@ type Member = {
   };
 };
 
+type Section = {
+  title: string;
+  data: Member[];
+};
+
 export default function Members() {
   const { courseId } = useCourse();
-  const [members, setMembers] = useState<Member[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,7 +40,27 @@ export default function Members() {
         const validMembers = response.enrollments.filter(
           (m: Member) => m.userProfile.user_name?.trim() !== ""
         );
-        setMembers(validMembers);
+
+        const grouped: Record<string, Member[]> = {
+          TEACHER: [],
+          ASSISTANT: [],
+          STUDENT: [],
+        };
+
+        validMembers.forEach((member: Member) => {
+          grouped[member.createdByRole]?.push(member);
+        });
+
+        const newSections: Section[] = [];
+
+        if (grouped.TEACHER.length > 0)
+          newSections.push({ title: "Teacher", data: grouped.TEACHER });
+        if (grouped.ASSISTANT.length > 0)
+          newSections.push({ title: "Assistants", data: grouped.ASSISTANT });
+        if (grouped.STUDENT.length > 0)
+          newSections.push({ title: "Students", data: grouped.STUDENT });
+
+        setSections(newSections);
       } catch (error) {
         console.error("Error fetching members:", error);
       } finally {
@@ -52,9 +77,6 @@ export default function Members() {
       [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
       profile.user_name;
 
-    const roleText =
-      item.createdByRole === "ASSISTANT" ? "ASSISTANT" : "STUDENT";
-
     return (
       <TouchableOpacity
         onPress={() => router.push(`/profile/${profile.user_name}`)}
@@ -66,19 +88,18 @@ export default function Members() {
               ? { uri: profile.banner }
               : item.createdByRole === "ASSISTANT"
               ? require("@assets/images/default-assistant.png")
+              : item.createdByRole === "TEACHER"
+              ? require("@assets/images/default-assistant.png")
               : require("@assets/images/default-student.png")
           }
           style={styles.avatar}
         />
         <View style={styles.memberInfo}>
-          <Text variant="titleLarge" style={styles.name}>
+          <Text style={styles.name}>
             {fullName}
           </Text>
           <Text variant="bodyMedium" style={styles.username}>
             @{profile.user_name}
-          </Text>
-          <Text variant="labelSmall" style={styles.role}>
-            {roleText}
           </Text>
         </View>
       </TouchableOpacity>
@@ -90,15 +111,18 @@ export default function Members() {
       <Text style={styles.title}>Members</Text>
       {loading ? (
         <ActivityIndicator style={{ marginTop: 20 }} />
-      ) : members.length === 0 ? (
+      ) : sections.length === 0 ? (
         <Text style={{ marginTop: 20, textAlign: "center" }}>
           No students enrolled yet.
         </Text>
       ) : (
-        <FlatList
-          data={members}
-          renderItem={renderMember}
+        <SectionList
+          sections={sections}
           keyExtractor={(item) => String(item.enrollmentId)}
+          renderItem={renderMember}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.sectionHeader}>{title}</Text>
+          )}
         />
       )}
     </View>
