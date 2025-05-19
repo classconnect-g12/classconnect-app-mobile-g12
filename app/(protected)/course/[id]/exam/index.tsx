@@ -17,7 +17,7 @@ export default function ExamsScreen() {
   const [exams, setExams] = useState<Assesment[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { courseId, courseTitle, isTeacher } = useCourse();
+  const { courseId, isTeacher } = useCourse();
   const {
     snackbarVisible,
     snackbarMessage,
@@ -38,7 +38,7 @@ export default function ExamsScreen() {
       );
       setExams(assessments);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error al cargar exámenes", logout);
+      handleApiError(error, showSnackbar, "Error loading exams", logout);
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function ExamsScreen() {
       </View>
       <Text style={styles.description}>{item.instructions}</Text>
       <Text style={styles.order}>
-        Inicio: {new Date(item.startDate).toLocaleString()}
+        Start: {new Date(item.startDate).toLocaleString()}
       </Text>
     </Card>
   );
@@ -79,7 +79,7 @@ export default function ExamsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Exámenes</Text>
+      <Text style={styles.heading}>Exams</Text>
 
       <FlatList
         data={exams}
@@ -87,7 +87,7 @@ export default function ExamsScreen() {
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.empty}>No hay exámenes disponibles.</Text>
+          <Text style={styles.empty}>No exams available</Text>
         }
       />
 

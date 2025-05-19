@@ -97,10 +97,7 @@ export default function NewExamScreen() {
 
   const handleSubmit = async () => {
     if (!title || !instructions || questions.length === 0) {
-      showSnackbar(
-        "Por favor completa todos los campos.",
-        SNACKBAR_VARIANTS.INFO
-      );
+      showSnackbar("Please complete all the fields", SNACKBAR_VARIANTS.INFO);
       return;
     }
 
@@ -121,10 +118,10 @@ export default function NewExamScreen() {
         questions,
       });
 
-      showSnackbar("Examen creado correctamente.", SNACKBAR_VARIANTS.SUCCESS);
+      showSnackbar("Exam created", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error creando examen", logout);
+      handleApiError(error, showSnackbar, "Error creating exam", logout);
     } finally {
       setLoading(false);
     }
@@ -148,7 +145,7 @@ export default function NewExamScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.inputContainer}>
           <TextInput
-            label="Título del examen"
+            label="Exam title"
             value={title}
             onChangeText={setTitle}
             style={styles.input}
@@ -156,7 +153,7 @@ export default function NewExamScreen() {
           />
           <TextInput
             theme={{ colors: { primary: colors.primary } }}
-            label="Instrucciones"
+            label="Instructions"
             value={instructions}
             onChangeText={setInstructions}
             multiline
@@ -165,7 +162,7 @@ export default function NewExamScreen() {
           />
           <TextInput
             theme={{ colors: { primary: colors.primary } }}
-            label="Puntaje máximo"
+            label="Max score"
             keyboardType="numeric"
             value={maxScore}
             onChangeText={setMaxScore}
@@ -173,7 +170,7 @@ export default function NewExamScreen() {
           />
           <TextInput
             theme={{ colors: { primary: colors.primary } }}
-            label="Puntaje mínimo"
+            label="Min score"
             keyboardType="numeric"
             value={minScore}
             onChangeText={setMinScore}
@@ -181,7 +178,7 @@ export default function NewExamScreen() {
           />
           <TextInput
             theme={{ colors: { primary: colors.primary } }}
-            label="Minutos de tolerancia"
+            label="Minutes of tolerance"
             keyboardType="numeric"
             value={gracePeriodMinutes}
             onChangeText={setGracePeriodMinutes}
@@ -189,21 +186,21 @@ export default function NewExamScreen() {
           />
           <TextInput
             theme={{ colors: { primary: colors.primary } }}
-            label="Penalización por entrega tardía (%)"
+            label="Late delivery penalty (%)"
             keyboardType="numeric"
             value={latePenaltyPercentage}
             onChangeText={setLatePenaltyPercentage}
             style={styles.input}
           />
           <View style={styles.switchRow}>
-            <Text>Permitir entregas tardías</Text>
+            <Text>Allow late deliveries</Text>
             <Switch
               value={allowLateSubmission}
               onValueChange={setAllowLateSubmission}
             />
           </View>
 
-          <Text style={styles.label}>Fecha de inicio:</Text>
+          <Text style={styles.label}>Start date:</Text>
           <Pressable
             onPress={() => {
               DateTimePickerAndroid.open({
@@ -227,7 +224,7 @@ export default function NewExamScreen() {
             />
           </Pressable>
 
-          <Text style={styles.label}>Fecha de fin:</Text>
+          <Text style={styles.label}>End date:</Text>
           <Pressable
             onPress={() => {
               DateTimePickerAndroid.open({
@@ -251,13 +248,13 @@ export default function NewExamScreen() {
             />
           </Pressable>
 
-          <Text style={styles.label}>Preguntas</Text>
+          <Text style={styles.label}>Questions</Text>
           <View style={styles.inputContainer}>
             {questions.map((q, index) => (
               <View key={index} style={styles.questionBox}>
                 <TextInput
                   theme={{ colors: { primary: colors.primary } }}
-                  label={`Pregunta #${index + 1}`}
+                  label={`Question #${index + 1}`}
                   value={q.text}
                   onChangeText={(text) =>
                     handleQuestionChange(index, "text", text)
@@ -266,7 +263,7 @@ export default function NewExamScreen() {
                 />
                 <TextInput
                   theme={{ colors: { primary: colors.primary } }}
-                  label="Puntaje"
+                  label="Score"
                   keyboardType="numeric"
                   value={String(q.score)}
                   onChangeText={(score) =>
@@ -303,7 +300,7 @@ export default function NewExamScreen() {
                       <TextInput
                         theme={{ colors: { primary: colors.primary } }}
                         key={i}
-                        label={`Opción ${String.fromCharCode(65 + i)}`}
+                        label={`Option ${String.fromCharCode(65 + i)}`}
                         value={opt}
                         onChangeText={(text) =>
                           handleOptionChange(index, i, text)
@@ -313,7 +310,7 @@ export default function NewExamScreen() {
                     ))}
                     <TextInput
                       theme={{ colors: { primary: colors.primary } }}
-                      label="Opción correcta (A, B, C, D)"
+                      label="Correct option (A, B, C, D)"
                       value={q.correctOption}
                       onChangeText={(text) =>
                         handleQuestionChange(index, "correctOption", text)
@@ -325,7 +322,7 @@ export default function NewExamScreen() {
                 {q.type === "WRITTEN_ANSWER" && (
                   <TextInput
                     theme={{ colors: { primary: colors.primary } }}
-                    label="Respuesta de ejemplo"
+                    label="Example answer"
                     value={q.sampleAnswer}
                     onChangeText={(text) =>
                       handleQuestionChange(index, "sampleAnswer", text)
@@ -334,7 +331,7 @@ export default function NewExamScreen() {
                   />
                 )}
                 <View style={styles.switchRow}>
-                  <Text>¿Tiene imagen?</Text>
+                  <Text>Has image?</Text>
                   <Switch
                     value={q.hasImage}
                     onValueChange={(value) =>
@@ -348,7 +345,7 @@ export default function NewExamScreen() {
                         onPress={() => handlePickImage(index)}
                         style={{ marginVertical: 8 }}
                       >
-                        Seleccionar imagen
+                        Select image
                       </Button>
                       {q.imageUri && (
                         <Image
@@ -374,7 +371,7 @@ export default function NewExamScreen() {
           </View>
 
           <Button mode="contained" onPress={addQuestion} style={styles.button}>
-            Agregar pregunta
+            Add question
           </Button>
 
           {loading ? (
@@ -385,7 +382,7 @@ export default function NewExamScreen() {
               onPress={handleSubmit}
               style={styles.button}
             >
-              Crear examen
+              Create exam
             </Button>
           )}
           <AppSnackbar
