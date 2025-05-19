@@ -1,35 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
 import { Text, Card, FAB, ActivityIndicator } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { getExamsByCourse } from "@services/AssesmentService";
+import { Assesment, getAssesmentsByCourse } from "@services/AssesmentService";
 import { useCourse } from "@context/CourseContext";
 import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { useAuth } from "@context/authContext";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { useFocusEffect } from "@react-navigation/native"; // <-- Importa el hook
 
 export default function ExamsScreen() {
-  const [exams, setExams] = useState([]);
+  const [exams, setExams] = useState<Assesment[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { courseId } = useCourse();
-  const { showSnackbar } = useSnackbar();
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const { logout } = useAuth();
 
-  useEffect(() => {
-    const loadExams = async () => {
-      try {
-        const assessments = await getExamsByCourse(courseId as string);
-        setExams(assessments);
-      } catch (error) {
-        handleApiError(error, showSnackbar, "Error with exams", logout);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadExams = async () => {
+    setLoading(true);
+    try {
+      const assessments = await getAssesmentsByCourse(courseId as string);
+      setExams(assessments);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error con los exámenes", logout);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (courseId) loadExams();
-  }, [courseId]);
+  // Se recarga cada vez que se enfoca la pantalla
+  useFocusEffect(
+    useCallback(() => {
+      if (courseId) {
+        loadExams();
+      }
+    }, [courseId])
+  );
 
   if (loading) {
     return (
@@ -62,12 +76,13 @@ export default function ExamsScreen() {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() =>
-          router.push({
-            pathname: "/(protected)/course/[id]/exam/new",
-            params: { courseId },
-          })
-        }
+        onPress={() => router.push(`/(protected)/course/${courseId}/exam/new`)}
+      />
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
       />
     </View>
   );
