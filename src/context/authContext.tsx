@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationContext } from "./notificationContext";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -11,6 +12,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const notificationContext = useContext(NotificationContext);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,7 +47,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("userId");
+
     setIsAuthenticated(false);
+
+    if (notificationContext) {
+      notificationContext.setNotifications([]);
+      notificationContext.setHasNewNotifications(false);
+    }
   };
 
   return (
