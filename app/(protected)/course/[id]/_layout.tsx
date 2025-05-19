@@ -55,7 +55,7 @@ function InnerTabs() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Details",
           tabBarIcon: ({ color, size }) => (
             <Ionicons
               name="information-circle-outline"
@@ -70,7 +70,7 @@ function InnerTabs() {
         options={{
           title: "Modules",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+            <Ionicons name="book-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
             isEnrolled ? (
@@ -85,7 +85,7 @@ function InnerTabs() {
         options={{
           title: "Tasks",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="checkmark-done-outline" size={size} color={color} />
+            <Ionicons name="file-tray-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
             isEnrolled ? (
@@ -116,6 +116,21 @@ function InnerTabs() {
           title: "Members",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
+          ),
+          tabBarButton: (props) =>
+            isEnrolled ? (
+              <Pressable {...props} />
+            ) : (
+              <DisabledTabButton {...props} />
+            ),
+        }}
+      />
+        <Tabs.Screen
+        name="more"
+        options={{
+          title: "More",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="menu-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
             isEnrolled ? (

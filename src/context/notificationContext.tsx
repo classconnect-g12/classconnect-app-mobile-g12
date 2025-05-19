@@ -7,6 +7,8 @@ export const defaultPreferences = {
   COURSE_UPDATE: true,
   NEW_RESOURCE: true,
   NEW_ASSESSMENT: true,
+  NEW_ASSISTANT: true,
+  ASSISTANT_REMOVED: true,
 };
 
 interface NotificationContextType {
@@ -21,12 +23,6 @@ interface NotificationContextType {
 export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const defaultPreferences = {
-    NEW_ENROLLMENT: true,
-    COURSE_UPDATE: true,
-    NEW_RESOURCE: true,
-    NEW_ASSESSMENT: true,
-  };
 
   const [notificationPreferences, setNotificationPreferences] = useState<{ [key: string]: boolean }>(defaultPreferences);
   const [hasNewNotifications, setHasNewNotifications] = useState<boolean>(false);

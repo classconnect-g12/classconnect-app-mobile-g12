@@ -23,11 +23,9 @@ export const detailCourseStyles = StyleSheet.create({
     marginRight: 16,
   },
   title: {
-    textDecorationLine: "underline",
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-    color: colors.primary,
   },
   card: {
     marginBottom: 20,
