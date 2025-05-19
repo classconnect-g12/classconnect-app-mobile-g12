@@ -1,7 +1,7 @@
 import { AssesmentQuestion } from "@services/AssesmentService";
 
 export function questionFormatter(questions: AssesmentQuestion[]) {
-  questions.map((q: AssesmentQuestion) => {
+  return questions.map((q: AssesmentQuestion) => {
     const base = {
       text: q.text,
       score: Number(q.score),
