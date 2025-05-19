@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
-import { Text, Card, FAB, ActivityIndicator } from "react-native-paper";
+import { View, FlatList } from "react-native";
+import { Text, Card, ActivityIndicator, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Assesment, getAssesmentsByCourse } from "@services/AssesmentService";
 import { useCourse } from "@context/CourseContext";
@@ -8,13 +8,16 @@ import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { useAuth } from "@context/authContext";
 import { AppSnackbar } from "@components/AppSnackbar";
-import { useFocusEffect } from "@react-navigation/native"; // <-- Importa el hook
+import { useFocusEffect } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { colors } from "@theme/colors";
+import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 
 export default function ExamsScreen() {
   const [exams, setExams] = useState<Assesment[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { courseId } = useCourse();
+  const { courseId, courseTitle, isTeacher } = useCourse();
   const {
     snackbarVisible,
     snackbarMessage,
@@ -27,57 +30,82 @@ export default function ExamsScreen() {
   const loadExams = async () => {
     setLoading(true);
     try {
-      const assessments = await getAssesmentsByCourse(courseId as string);
+      const assessments = await getAssesmentsByCourse(
+        courseId as string,
+        0,
+        10,
+        "EXAM"
+      );
       setExams(assessments);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error con los exámenes", logout);
+      handleApiError(error, showSnackbar, "Error al cargar exámenes", logout);
     } finally {
       setLoading(false);
     }
   };
 
-  // Se recarga cada vez que se enfoca la pantalla
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
         loadExams();
+        console.log(exams);
       }
     }, [courseId])
   );
 
+  const renderItem = ({ item }: { item: Assesment }) => (
+    <Card style={styles.moduleCard}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <MaterialCommunityIcons
+          name="file-document-outline"
+          size={24}
+          color={colors.primary}
+          style={{ marginRight: 8 }}
+        />
+        <Text style={styles.title}>{item.title}</Text>
+      </View>
+      <Text style={styles.description}>{item.instructions}</Text>
+      <Text style={styles.order}>
+        Inicio: {new Date(item.startDate).toLocaleString()}
+      </Text>
+    </Card>
+  );
+
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator />
-      </View>
+      <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Exámenes</Text>
+
       <FlatList
         data={exams}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={exams.length === 0 && styles.centered}
-        renderItem={({ item }) => (
-          <Card style={styles.card}>
-            <Card.Title
-              title={item.title}
-              subtitle={`Inicio: ${new Date(item.startDate).toLocaleString()}`}
-            />
-            <Card.Content>
-              <Text variant="bodyMedium">{item.instructions}</Text>
-            </Card.Content>
-          </Card>
-        )}
-        ListEmptyComponent={<Text>No hay exámenes aún.</Text>}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No hay exámenes disponibles.</Text>
+        }
       />
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => router.push(`/(protected)/course/${courseId}/exam/new`)}
-      />
+      {isTeacher && (
+        <AnimatedFAB
+          icon="plus"
+          label=""
+          extended={false}
+          onPress={() =>
+            router.push(`/(protected)/course/${courseId}/exam/new`)
+          }
+          style={styles.fab}
+          visible
+          animateFrom="right"
+          color={colors.buttonText}
+        />
+      )}
+
       <AppSnackbar
         visible={snackbarVisible}
         message={snackbarMessage}
@@ -87,19 +115,3 @@ export default function ExamsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-  },
-  card: {
-    margin: 8,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
