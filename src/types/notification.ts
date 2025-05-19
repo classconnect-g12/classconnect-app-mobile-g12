@@ -2,6 +2,7 @@ export type NotificationType =
   | "NEW_ENROLLMENT"
   | "COURSE_UPDATE"
   | "NEW_RESOURCE"
+  | "NEW_ASSESSMENT"
   | "NEW_ASSISTANT"
   | "ASSISTANT_REMOVED";
 
