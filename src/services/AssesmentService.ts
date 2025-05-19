@@ -50,7 +50,7 @@ export async function getAssesmentsByCourse(
   courseId: string,
   page = 0,
   limit = 10,
-  type?: AssesmentStatus
+  type?: AssesmentType
 ): Promise<Assesment[]> {
   const params = new URLSearchParams({
     page: page.toString(),
