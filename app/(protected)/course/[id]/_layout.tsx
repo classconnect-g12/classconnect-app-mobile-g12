@@ -96,7 +96,7 @@ function InnerTabs() {
         }}
       />
       <Tabs.Screen
-        name="exams"
+        name="exam"
         options={{
           title: "Exams",
           tabBarIcon: ({ color, size }) => (
