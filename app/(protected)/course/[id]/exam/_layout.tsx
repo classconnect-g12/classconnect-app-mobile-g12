@@ -1,8 +1,8 @@
-// app/course/[courseId]/module/_layout.tsx
+// app/course/[courseId]/exam/_layout.tsx
 import { Stack } from "expo-router";
 import { ModuleProvider } from "@context/ModuleContext";
 
-export default function ModuleLayout() {
+export default function ExamLayout() {
   return (
     <ModuleProvider>
       <Stack
