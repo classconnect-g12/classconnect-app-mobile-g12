@@ -6,19 +6,24 @@ import {
   Text,
   ActivityIndicator,
   Switch,
-  HelperText,
   IconButton,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useCourse } from "@context/CourseContext";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { useAuth } from "@context/authContext";
-import { createAssessment } from "@services/AssesmentService";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  AssesmentQuestion,
+  AssesmentType,
+  createAssessment,
+  QuestionType,
+} from "@services/AssesmentService";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { AppSnackbar } from "@components/AppSnackbar";
 
 const defaultQuestion = {
   text: "",
@@ -41,14 +46,20 @@ export default function NewExamScreen() {
   const [gracePeriodMinutes, setGracePeriodMinutes] = useState("0");
   const [latePenaltyPercentage, setLatePenaltyPercentage] = useState("0");
   const [allowLateSubmission, setAllowLateSubmission] = useState(false);
-  const [questions, setQuestions] = useState([defaultQuestion]);
+  const [questions, setQuestions] = useState<AssesmentQuestion[]>([
+    defaultQuestion,
+  ]);
   const [loading, setLoading] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const router = useRouter();
   const { courseId } = useCourse();
-  const { showSnackbar } = useSnackbar();
+  const {
+    snackbarVisible,
+    snackbarMessage,
+    snackbarVariant,
+    showSnackbar,
+    hideSnackbar,
+  } = useSnackbar();
   const { logout } = useAuth();
 
   const handleQuestionChange = (index: number, field: string, value: any) => {
@@ -78,6 +89,10 @@ export default function NewExamScreen() {
   };
 
   const handleSubmit = async () => {
+    console.log("Pressed");
+
+    console.log(courseId);
+
     if (!title || !instructions || questions.length === 0) {
       showSnackbar(
         "Por favor completa todos los campos.",
@@ -91,9 +106,10 @@ export default function NewExamScreen() {
       await createAssessment(courseId as string, {
         title,
         instructions,
+        description: "description",
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        type: "EXAM",
+        type: "EXAM" as AssesmentType,
         maxScore: Number(maxScore),
         minScore: Number(minScore),
         gracePeriodMinutes: Number(gracePeriodMinutes),
@@ -111,10 +127,9 @@ export default function NewExamScreen() {
     }
   };
 
-  // Función para seleccionar imagen
   const handlePickImage = async (index: number) => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images", // ✅ forma moderna
       quality: 1,
     });
 
@@ -178,42 +193,50 @@ export default function NewExamScreen() {
       </View>
 
       <Text style={styles.label}>Fecha de inicio:</Text>
-      <Pressable onPress={() => setShowStartPicker(true)}>
+      <Pressable
+        onPress={() => {
+          DateTimePickerAndroid.open({
+            value: startDate,
+            mode: "date",
+            is24Hour: true,
+            onChange: (event, selectedDate) => {
+              if (event.type === "set" && selectedDate) {
+                setStartDate(selectedDate);
+              }
+            },
+          });
+        }}
+      >
         <TextInput
           value={startDate.toLocaleString()}
           editable={false}
           style={styles.input}
+          pointerEvents="none"
         />
       </Pressable>
-      {showStartPicker && (
-        <DateTimePicker
-          value={startDate}
-          mode="datetime"
-          onChange={(_, date) => {
-            setShowStartPicker(false);
-            if (date) setStartDate(date);
-          }}
-        />
-      )}
 
       <Text style={styles.label}>Fecha de fin:</Text>
-      <Pressable onPress={() => setShowEndPicker(true)}>
+      <Pressable
+        onPress={() => {
+          DateTimePickerAndroid.open({
+            value: endDate,
+            mode: "date",
+            is24Hour: true,
+            onChange: (event, selectedDate) => {
+              if (event.type === "set" && selectedDate) {
+                setEndDate(selectedDate);
+              }
+            },
+          });
+        }}
+      >
         <TextInput
           value={endDate.toLocaleString()}
           editable={false}
           style={styles.input}
+          pointerEvents="none"
         />
       </Pressable>
-      {showEndPicker && (
-        <DateTimePicker
-          value={endDate}
-          mode="datetime"
-          onChange={(_, date) => {
-            setShowEndPicker(false);
-            if (date) setEndDate(date);
-          }}
-        />
-      )}
 
       <Text style={styles.label}>Preguntas</Text>
       {questions.map((q, index) => (
@@ -241,7 +264,7 @@ export default function NewExamScreen() {
           />
           {q.type === "MULTIPLE_CHOICE" && (
             <>
-              {q.options.map((opt, i) => (
+              {q.options?.map((opt, i) => (
                 <TextInput
                   key={i}
                   label={`Opción ${String.fromCharCode(65 + i)}`}
@@ -278,6 +301,29 @@ export default function NewExamScreen() {
                 handleQuestionChange(index, "hasImage", value)
               }
             />
+            {q.hasImage && (
+              <>
+                <Button
+                  mode="outlined"
+                  onPress={() => handlePickImage(index)}
+                  style={{ marginVertical: 8 }}
+                >
+                  Seleccionar imagen
+                </Button>
+                {q.imageUri && (
+                  <Image
+                    source={{ uri: q.imageUri }}
+                    style={{
+                      width: "100%",
+                      height: 200,
+                      marginTop: 8,
+                      borderRadius: 8,
+                    }}
+                    resizeMode="contain"
+                  />
+                )}
+              </>
+            )}
           </View>
           <IconButton icon="delete" onPress={() => removeQuestion(index)} />
         </View>
@@ -294,6 +340,12 @@ export default function NewExamScreen() {
           Crear examen
         </Button>
       )}
+      <AppSnackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        onDismiss={hideSnackbar}
+        variant={snackbarVariant}
+      />
     </ScrollView>
   );
 }
