@@ -61,7 +61,7 @@ const showNotification = async (
   });
 
   setHasNewNotifications(true);
-  setNotifications((prev) => [...prev, newNotification]);
+  setNotifications((prev) => [newNotification, ...prev]);
 };
 
 const NotificationHandler = () => {
