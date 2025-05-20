@@ -79,6 +79,7 @@ export async function deleteCourse(courseId: string): Promise<void> {
 }
 
 
+
 export async function markOrUnmarkFavorite(courseId: string, favorite: boolean) {
   await privateClient.put(`/course/${courseId}/favorite?favorite=${favorite}`);
 }
@@ -93,5 +94,19 @@ export async function getFavoriteCourses(page = 0, limit = 10, title = ""): Prom
   const response = await privateClient.get<GetCoursesResponse>(
     `/course/favorites?${params.toString()}`
   );
+
+export async function getCourseActivityLogs(
+  courseId: string,
+  page = 0,
+  limit = 10
+) {
+  const response = await privateClient.get("/course/activity", {
+    params: {
+      courseId,
+      page,
+      limit,
+    },
+  });
+
   return response.data;
 }
