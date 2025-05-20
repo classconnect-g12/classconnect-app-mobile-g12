@@ -13,13 +13,19 @@ type IoniconName =
 
 export default function MoreScreen() {
   const router = useRouter();
-  const { courseId } = useCourse();
+  const { courseId, isTeacher } = useCourse();
 
-  const options: { title: string; route: string; icon: IoniconName }[] = [
+  const allOptions: {
+    title: string;
+    route: string;
+    icon: IoniconName;
+    requiresTeacher?: boolean;
+  }[] = [
     {
       title: "Feedback",
       route: `course/${courseId}/more/feedback`,
       icon: "chatbubble-ellipses-outline",
+      requiresTeacher: true,
     },
     {
       title: "Notes",
@@ -27,9 +33,10 @@ export default function MoreScreen() {
       icon: "document-text-outline",
     },
     {
-      title: "Help",
-      route: `course/${courseId}/more/help`,
+      title: "Activity",
+      route: `course/${courseId}/more/activity`,
       icon: "help-circle-outline",
+      requiresTeacher: true,
     },
     {
       title: "About",
@@ -38,9 +45,13 @@ export default function MoreScreen() {
     },
   ];
 
+  const visibleOptions = allOptions.filter(
+    (item) => !item.requiresTeacher || isTeacher
+  );
+
   return (
     <ScrollView contentContainerStyle={moreStyles.container}>
-      {options.map((item, index) => (
+      {visibleOptions.map((item, index) => (
         <TouchableOpacity
           key={index}
           style={moreStyles.button}

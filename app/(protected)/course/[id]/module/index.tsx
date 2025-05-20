@@ -140,8 +140,6 @@ const CourseModulesScreen = () => {
 
   return (
     <View style={viewModulesStyles.container}>
-      <Text style={viewModulesStyles.courseTitle}>{courseTitle}</Text>
-      <Text style={viewModulesStyles.heading}>Modules</Text>
       <FlatList
         data={modules}
         keyExtractor={(item) => item.moduleId.toString()}
