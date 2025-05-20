@@ -84,7 +84,12 @@ export default function NewExamScreen() {
     value: string
   ) => {
     const updated = [...questions];
-    updated[qIndex].options[oIndex] = value;
+
+    if (!updated[qIndex].options) {
+      updated[qIndex].options = ["", "", "", ""]; // o cualquier valor por defecto
+    }
+
+    updated[qIndex].options![oIndex] = value;
     setQuestions(updated);
   };
 
@@ -214,7 +219,7 @@ export default function NewExamScreen() {
             />
           </View>
 
-          <Text style={styles.label}>Start date:</Text>
+          <Text>Start date:</Text>
           <Pressable
             onPress={() => {
               DateTimePickerAndroid.open({
@@ -238,7 +243,7 @@ export default function NewExamScreen() {
             />
           </Pressable>
 
-          <Text style={styles.label}>End date:</Text>
+          <Text>End date:</Text>
           <Pressable
             onPress={() => {
               DateTimePickerAndroid.open({
@@ -262,10 +267,10 @@ export default function NewExamScreen() {
             />
           </Pressable>
 
-          <Text style={styles.label}>Questions</Text>
+          <Text>Questions</Text>
           <View style={styles.inputContainer}>
             {questions.map((q, index) => (
-              <View key={index} style={styles.questionBox}>
+              <View key={index}>
                 <TextInput
                   theme={{ colors: { primary: colors.primary } }}
                   label={`Question #${index + 1}`}
