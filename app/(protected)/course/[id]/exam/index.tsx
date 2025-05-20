@@ -127,22 +127,22 @@ export default function ExamsScreen() {
             }
             style={{ marginRight: 16 }}
           />
-          <MaterialCommunityIcons
-            name="trash-can-outline"
-            size={24}
-            color={colors.error}
-            onPress={() => {
-              const examStart = new Date(item.startDate).getTime();
-              if (examStart < Date.now()) {
-                showSnackbar(
-                  "You can't delete an exam that already started",
-                  SNACKBAR_VARIANTS.ERROR
-                );
-                return;
-              }
-              handleDelete(item.id);
-            }}
-          />
+          {new Date(item.startDate).getTime() < Date.now() ? (
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={24}
+              color={colors.error}
+              disabled={true}
+              style={{ opacity: 0.3 }}
+            />
+          ) : (
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={24}
+              color={colors.error}
+              onPress={() => handleDelete(item.id)}
+            />
+          )}
         </View>
       )}
     </Card>
