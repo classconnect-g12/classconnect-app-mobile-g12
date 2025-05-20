@@ -14,7 +14,7 @@ export default function CourseLayout() {
       <Stack.Screen
         name="createCourse"
         options={{
-          header: () => <AppbarMenu title="Create course" viewNavigation={true} />,
+          header: () => <AppbarMenu title="Create a course" viewNavigation={true} />,
         }}
       />
       <Stack.Screen
