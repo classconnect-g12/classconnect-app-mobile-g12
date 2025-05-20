@@ -32,6 +32,7 @@ import { AppSnackbar } from "@components/AppSnackbar";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { colors } from "@theme/colors";
 import { Picker } from "@react-native-picker/picker";
+import AssessmentForm from "@components/AssesmentForm";
 
 const defaultQuestion = {
   text: "",
@@ -266,240 +267,47 @@ export default function NewExamScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="height">
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Exam title"
-            value={title}
-            onChangeText={setTitle}
-            style={styles.input}
-            theme={{ colors: { primary: colors.primary } }}
-          />
-          <TextInput
-            theme={{ colors: { primary: colors.primary } }}
-            label="Instructions"
-            value={instructions}
-            onChangeText={setInstructions}
-            multiline
-            numberOfLines={4}
-            style={styles.input}
-          />
-          <TextInput
-            theme={{ colors: { primary: colors.primary } }}
-            label="Max score"
-            keyboardType="numeric"
-            value={maxScore}
-            onChangeText={setMaxScore}
-            style={styles.input}
-          />
-          <TextInput
-            theme={{ colors: { primary: colors.primary } }}
-            label="Min score"
-            keyboardType="numeric"
-            value={minScore}
-            onChangeText={setMinScore}
-            style={styles.input}
-          />
-          <TextInput
-            theme={{ colors: { primary: colors.primary } }}
-            label="Minutes of tolerance"
-            keyboardType="numeric"
-            value={gracePeriodMinutes}
-            onChangeText={setGracePeriodMinutes}
-            style={styles.input}
-          />
-          <TextInput
-            theme={{ colors: { primary: colors.primary } }}
-            label="Late delivery penalty (%)"
-            keyboardType="numeric"
-            value={latePenaltyPercentage}
-            onChangeText={setLatePenaltyPercentage}
-            style={styles.input}
-          />
-          <View style={styles.switchRow}>
-            <Text>Allow late deliveries</Text>
-            <Switch
-              value={allowLateSubmission}
-              onValueChange={setAllowLateSubmission}
-            />
-          </View>
-
-          <Text>Start date:</Text>
-          <Pressable
-            onPress={() => {
-              showDateTimePicker(startDate, setStartDate);
-            }}
-          >
-            <TextInput
-              theme={{ colors: { primary: colors.primary } }}
-              value={startDate.toLocaleString()}
-              editable={false}
-              style={styles.input}
-              pointerEvents="none"
-            />
-          </Pressable>
-
-          <Text>End date:</Text>
-          <Pressable
-            onPress={() => {
-              showDateTimePicker(endDate, setEndDate);
-            }}
-          >
-            <TextInput
-              theme={{ colors: { primary: colors.primary } }}
-              value={endDate.toLocaleString()}
-              editable={false}
-              style={styles.input}
-              pointerEvents="none"
-            />
-          </Pressable>
-
-          <Text>Questions</Text>
-          <View style={styles.inputContainer}>
-            {questions.map((q, index) => (
-              <View key={index}>
-                <TextInput
-                  theme={{ colors: { primary: colors.primary } }}
-                  label={`Question #${index + 1}`}
-                  value={q.text}
-                  onChangeText={(text) =>
-                    handleQuestionChange(index, "text", text)
-                  }
-                  style={styles.input}
-                />
-                <TextInput
-                  theme={{ colors: { primary: colors.primary } }}
-                  label="Score"
-                  keyboardType="numeric"
-                  value={String(q.score)}
-                  onChangeText={(score) =>
-                    handleQuestionChange(index, "score", Number(score))
-                  }
-                  style={styles.input}
-                />
-                <View style={styles.input}>
-                  <Picker
-                    selectedValue={q.type}
-                    onValueChange={(value) =>
-                      handleQuestionChange(index, "type", value)
-                    }
-                    style={{ color: colors.text }}
-                  >
-                    <Picker.Item
-                      label="Multiple Choice"
-                      value="MULTIPLE_CHOICE"
-                    />
-                    <Picker.Item
-                      label="Written answer"
-                      value="WRITTEN_ANSWER"
-                    />
-                    <Picker.Item
-                      label="File attachment"
-                      value="FILE_ATTACHMENT"
-                    />
-                  </Picker>
-                </View>
-
-                {q.type === "MULTIPLE_CHOICE" && (
-                  <>
-                    {q.options?.map((opt, i) => (
-                      <TextInput
-                        theme={{ colors: { primary: colors.primary } }}
-                        key={i}
-                        label={`Option ${String.fromCharCode(65 + i)}`}
-                        value={opt}
-                        onChangeText={(text) =>
-                          handleOptionChange(index, i, text)
-                        }
-                        style={styles.input}
-                      />
-                    ))}
-                    <TextInput
-                      theme={{ colors: { primary: colors.primary } }}
-                      label="Correct option (A, B, C, D)"
-                      value={q.correctOption}
-                      onChangeText={(text) =>
-                        handleQuestionChange(index, "correctOption", text)
-                      }
-                      style={styles.input}
-                    />
-                  </>
-                )}
-                {q.type === "WRITTEN_ANSWER" && (
-                  <TextInput
-                    theme={{ colors: { primary: colors.primary } }}
-                    label="Example answer"
-                    value={q.sampleAnswer}
-                    onChangeText={(text) =>
-                      handleQuestionChange(index, "sampleAnswer", text)
-                    }
-                    style={styles.input}
-                  />
-                )}
-                <View style={styles.switchRow}>
-                  <Text>Has image?</Text>
-                  <Switch
-                    value={q.hasImage}
-                    onValueChange={(value) =>
-                      handleQuestionChange(index, "hasImage", value)
-                    }
-                  />
-                  {q.hasImage && (
-                    <>
-                      <Button
-                        mode="outlined"
-                        onPress={() => handlePickImage(index)}
-                        style={{ marginVertical: 8 }}
-                      >
-                        Select image
-                      </Button>
-                      {questionImages[index] && (
-                        <Image
-                          source={{ uri: questionImages[index]!.uri }}
-                          style={{
-                            width: "100%",
-                            height: 200,
-                            marginTop: 8,
-                            borderRadius: 8,
-                          }}
-                          resizeMode="contain"
-                        />
-                      )}
-                    </>
-                  )}
-                </View>
-                <IconButton
-                  icon="delete"
-                  onPress={() => removeQuestion(index)}
-                />
-              </View>
-            ))}
-          </View>
-
-          <Button mode="contained" onPress={addQuestion} style={styles.button}>
-            Add question
-          </Button>
-
-          {loading ? (
-            <ActivityIndicator style={{ marginTop: 16 }} />
-          ) : (
-            <Button
-              mode="contained"
-              onPress={handleSubmit}
-              style={styles.button}
-            >
-              Create exam
-            </Button>
-          )}
-          <AppSnackbar
-            visible={snackbarVisible}
-            message={snackbarMessage}
-            onDismiss={hideSnackbar}
-            variant={snackbarVariant}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <AssessmentForm
+      type="EXAM"
+      values={{
+        title,
+        instructions,
+        maxScore,
+        minScore,
+        gracePeriodMinutes,
+        latePenaltyPercentage,
+        allowLateSubmission,
+        startDate,
+        endDate,
+        questions,
+        questionImages,
+      }}
+      onChange={{
+        setTitle,
+        setInstructions,
+        setMaxScore,
+        setMinScore,
+        setGracePeriodMinutes,
+        setLatePenaltyPercentage,
+        setAllowLateSubmission,
+        setStartDate,
+        setEndDate,
+        handleQuestionChange,
+        handleOptionChange,
+      }}
+      onSubmit={handleSubmit}
+      onPickImage={handlePickImage}
+      addQuestion={addQuestion}
+      removeQuestion={removeQuestion}
+      loading={loading}
+      submitButtonText="Create exam"
+      snackbar={{
+        visible: snackbarVisible,
+        message: snackbarMessage,
+        onDismiss: hideSnackbar,
+        variant: snackbarVariant,
+      }}
+      showDateTimePicker={showDateTimePicker}
+    />
   );
 }
