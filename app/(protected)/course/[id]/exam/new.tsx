@@ -57,7 +57,7 @@ export default function NewExamScreen() {
     defaultQuestion,
   ]);
   const [questionImages, setQuestionImages] = useState<
-    ({ uri: string; name: string; type: string } | null)[]
+    ({ uri: string; name: string; mimeType: string } | null)[]
   >([null]);
   const [loading, setLoading] = useState(false);
 
@@ -128,7 +128,7 @@ export default function NewExamScreen() {
       });
 
       showSnackbar("Exam created", SNACKBAR_VARIANTS.SUCCESS);
-      //router.back();
+      router.back();
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating exam", logout);
     } finally {
@@ -148,7 +148,7 @@ export default function NewExamScreen() {
       updatedImages[index] = {
         uri: asset.uri,
         name: asset.fileName || `image${index}.jpg`,
-        type: asset.type || "image/jpeg",
+        mimeType: asset.mimeType || "image/jpeg",
       };
       setQuestionImages(updatedImages);
     }

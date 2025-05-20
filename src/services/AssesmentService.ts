@@ -28,7 +28,7 @@ export type AssesmentCreationBody = {
   latePenaltyPercentage: number;
   allowLateSubmission: boolean;
   questions: AssesmentQuestion[];
-  questionImages?: ({ uri: string; name: string; type: string } | null)[];
+  questionImages?: ({ uri: string; name: string; mimeType: string } | null)[];
 };
 
 export type QuestionType =
@@ -100,7 +100,7 @@ export async function createAssessment(
         formData.append(`questionImages[${index}]`, {
           uri: image.uri,
           name: image.name || `image${index}.jpg`,
-          type: image.type || "image/jpeg",
+          type: image.mimeType || "image/jpeg",
         } as any);
       }
     });
