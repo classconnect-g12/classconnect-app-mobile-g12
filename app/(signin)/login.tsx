@@ -155,13 +155,15 @@ export default function SignIn() {
 
         router.replace("../home");
       } catch (error: any) {
+        
         if (error?.status === 404) {
           setShowUsernameInput(true);
           setPendingIdToken(firebaseIdToken);
           return;
         }
+        
 
-        console.error("Google login error:", error);
+        console.error("Google login error:", error.status);
         showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
       }
     } finally {

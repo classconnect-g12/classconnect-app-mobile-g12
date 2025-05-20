@@ -41,6 +41,7 @@ export type ApiCourse = Pick<
   | "endDate"
   | "isTeacher"
   | "isEnrolled"
+  | "isFavorite"
 >;
 
 export type CourseData = Omit<FullCourse, "id" | "available"> & {

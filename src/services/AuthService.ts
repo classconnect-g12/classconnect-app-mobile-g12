@@ -50,7 +50,6 @@ export const register = async (
 export const loginWithGoogle = async (
   firebaseIdToken: string
 ): Promise<string> => {
-  try {
     const response = await publicClient.post(`/auth/google`, {
       idToken: firebaseIdToken,
     });
@@ -61,20 +60,13 @@ export const loginWithGoogle = async (
       return token;
     }
 
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Google login error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Google login failed" };
-  }
+    return response.data
 };
 
 export const registerWithGoogle = async (
   firebaseIdToken: string,
   user_name: string
 ): Promise<string> => {
-  try {
     const fcmToken = await messaging().getToken();
 
     const response = await publicClient.post(`/auth/google-register`, {
@@ -89,13 +81,7 @@ export const registerWithGoogle = async (
       return token;
     }
 
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Google registration error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Google registration failed" };
-  }
+    return response.data
 };
 
 
