@@ -1,8 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, FlatList } from "react-native";
+import { View, FlatList, Alert } from "react-native";
 import { Text, Card, ActivityIndicator, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { Assesment, getAssesmentsByCourse } from "@services/AssesmentService";
+import {
+  Assesment,
+  deleteAssesment,
+  getAssesmentsByCourse,
+} from "@services/AssesmentService";
 import { useCourse } from "@context/CourseContext";
 import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@hooks/useSnackbar";
@@ -12,6 +16,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
 export default function ExamsScreen() {
   const [exams, setExams] = useState<Assesment[]>([]);
@@ -48,10 +53,43 @@ export default function ExamsScreen() {
     useCallback(() => {
       if (courseId) {
         loadExams();
-        console.log(exams);
       }
     }, [courseId])
   );
+
+  const handleDelete = (examId: number) => {
+    Alert.alert(
+      "Confirm delete",
+      "Are you sure you want to delete this exam?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAssesment(courseId as string, examId);
+              showSnackbar("Exam deleted", SNACKBAR_VARIANTS.SUCCESS);
+              setExams((prevExams) =>
+                prevExams.filter((exam) => exam.id !== examId)
+              );
+            } catch (error) {
+              handleApiError(
+                error,
+                showSnackbar,
+                "Error deleting exam",
+                logout
+              );
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const renderItem = ({ item }: { item: Assesment }) => (
     <Card style={styles.moduleCard}>
@@ -64,10 +102,49 @@ export default function ExamsScreen() {
         />
         <Text style={styles.title}>{item.title}</Text>
       </View>
+
       <Text style={styles.description}>{item.instructions}</Text>
       <Text style={styles.order}>
         Start: {new Date(item.startDate).toLocaleString()}
       </Text>
+
+      {isTeacher && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            marginTop: 8,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="pencil-outline"
+            size={24}
+            color={colors.primary}
+            onPress={() =>
+              router.push(
+                `/(protected)/course/${courseId}/exam/${item.id}/edit`
+              )
+            }
+            style={{ marginRight: 16 }}
+          />
+          <MaterialCommunityIcons
+            name="trash-can-outline"
+            size={24}
+            color={colors.error}
+            onPress={() => {
+              const examStart = new Date(item.startDate).getTime();
+              if (examStart < Date.now()) {
+                showSnackbar(
+                  "You can't delete an exam that already started",
+                  SNACKBAR_VARIANTS.ERROR
+                );
+                return;
+              }
+              handleDelete(item.id);
+            }}
+          />
+        </View>
+      )}
     </Card>
   );
 

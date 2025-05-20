@@ -118,3 +118,7 @@ export async function createAssessment(
 
   return response.data;
 }
+
+export async function deleteAssesment(courseId: string, assesmentId: number) {
+  await privateClient.delete(`course/${courseId}/assessments/${assesmentId}`);
+}
