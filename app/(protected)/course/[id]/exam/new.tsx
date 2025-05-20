@@ -109,8 +109,85 @@ export default function NewExamScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!title || !instructions || questions.length === 0) {
-      showSnackbar("Please complete all the fields", SNACKBAR_VARIANTS.INFO);
+    if (!title) {
+      showSnackbar("Please complete the exam title", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (!instructions) {
+      showSnackbar(
+        "Please complete the exam instructions",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(maxScore) <= 0) {
+      showSnackbar(
+        "Max score can't be less or equal than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(minScore) < 0) {
+      showSnackbar(
+        "Min score can't be less or equal than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(maxScore) < parseInt(minScore)) {
+      showSnackbar(
+        "Max score can't be smaller than min score",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(gracePeriodMinutes) < 0) {
+      showSnackbar(
+        "Tolerance minutes can't be less than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseFloat(latePenaltyPercentage) < 0.0) {
+      showSnackbar(
+        "Late delivery pentalty can't be less than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (startDate >= endDate) {
+      showSnackbar(
+        "End date must be after start date",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (questions.length === 0) {
+      showSnackbar(
+        "Please add at least one question to the exam",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    let totalQuestionsScore = questions.reduce(
+      (total, question) => total + question.score,
+      0
+    );
+
+    if (totalQuestionsScore !== parseInt(maxScore)) {
+      showSnackbar(
+        "The total question scores must equal the maximum score",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
