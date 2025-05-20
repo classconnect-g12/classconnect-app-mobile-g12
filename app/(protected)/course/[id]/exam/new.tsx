@@ -159,6 +159,35 @@ export default function NewExamScreen() {
     }
   };
 
+  const showDateTimePicker = (
+    currentDate: Date,
+    onConfirm: (selectedDateTime: Date) => void
+  ) => {
+    DateTimePickerAndroid.open({
+      value: currentDate,
+      mode: "date",
+      is24Hour: true,
+      onChange: (event, selectedDate) => {
+        if (event.type === "set" && selectedDate) {
+          // Abre el selector de hora después de elegir fecha
+          DateTimePickerAndroid.open({
+            value: selectedDate,
+            mode: "time",
+            is24Hour: true,
+            onChange: (e, selectedTime) => {
+              if (e.type === "set" && selectedTime) {
+                const newDateTime = new Date(selectedDate);
+                newDateTime.setHours(selectedTime.getHours());
+                newDateTime.setMinutes(selectedTime.getMinutes());
+                onConfirm(newDateTime);
+              }
+            },
+          });
+        }
+      },
+    });
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior="height">
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -222,16 +251,7 @@ export default function NewExamScreen() {
           <Text>Start date:</Text>
           <Pressable
             onPress={() => {
-              DateTimePickerAndroid.open({
-                value: startDate,
-                mode: "date",
-                is24Hour: true,
-                onChange: (event, selectedDate) => {
-                  if (event.type === "set" && selectedDate) {
-                    setStartDate(selectedDate);
-                  }
-                },
-              });
+              showDateTimePicker(startDate, setStartDate);
             }}
           >
             <TextInput
@@ -246,16 +266,7 @@ export default function NewExamScreen() {
           <Text>End date:</Text>
           <Pressable
             onPress={() => {
-              DateTimePickerAndroid.open({
-                value: endDate,
-                mode: "date",
-                is24Hour: true,
-                onChange: (event, selectedDate) => {
-                  if (event.type === "set" && selectedDate) {
-                    setEndDate(selectedDate);
-                  }
-                },
-              });
+              showDateTimePicker(endDate, setEndDate);
             }}
           >
             <TextInput
