@@ -91,9 +91,11 @@ export async function getFavoriteCourses(page = 0, limit = 10, title = ""): Prom
   });
   if (title) params.append("title", title);
 
-  const response = await privateClient.get<GetCoursesResponse>(
-    `/course/favorites?${params.toString()}`
-  );
+    const response = await privateClient.get<GetCoursesResponse>(
+      `/course/favorites?${params.toString()}`
+    );
+    return response.data;
+  }
 
 export async function getCourseActivityLogs(
   courseId: string,
