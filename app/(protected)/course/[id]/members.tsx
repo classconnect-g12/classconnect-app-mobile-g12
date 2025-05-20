@@ -57,6 +57,7 @@ export default function Members() {
   const [loading, setLoading] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [permissionsModalVisible, setPermissionsModalVisible] = useState(false);
@@ -119,6 +120,12 @@ export default function Members() {
   useEffect(() => {
     fetchMembers();
   }, [courseId]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchMembers();
+    setRefreshing(false);
+  };
 
   const handlePromoteToAssistant = (member: Member) => {
     setSelectedMember(member);
@@ -296,6 +303,8 @@ export default function Members() {
           renderSectionHeader={({ section: { title } }) => (
             <Text style={styles.sectionHeader}>{title}</Text>
           )}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
         />
       )}
 
