@@ -28,7 +28,7 @@ export type AssesmentCreationBody = {
   latePenaltyPercentage: number;
   allowLateSubmission: boolean;
   questions: AssesmentQuestion[];
-  questionImages?: string[];
+  questionImages?: ({ uri: string; name: string; type: string } | null)[];
 };
 
 export type QuestionType =
@@ -69,7 +69,7 @@ export async function getAssesmentsByCourse(
 }
 
 export async function createAssessment(
-  courseId: string,
+  id: string,
   data: AssesmentCreationBody
 ) {
   const formData = new FormData();
@@ -107,7 +107,7 @@ export async function createAssessment(
   }
 
   const response = await privateClient.post(
-    `/course/assessments/${courseId}`,
+    `/course/assessments/${id}`,
     formData,
     {
       headers: {

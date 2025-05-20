@@ -21,6 +21,7 @@ import {
   AssesmentQuestion,
   AssesmentType,
   createAssessment,
+  QuestionType,
 } from "@services/AssesmentService";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
@@ -35,12 +36,11 @@ import { Picker } from "@react-native-picker/picker";
 const defaultQuestion = {
   text: "",
   score: 0,
-  type: "MULTIPLE_CHOICE",
+  type: "MULTIPLE_CHOICE" as QuestionType,
   correctOption: "",
   options: ["", "", "", ""],
   sampleAnswer: "",
   hasImage: false,
-  imageUri: null,
 };
 
 export default function NewExamScreen() {
@@ -56,6 +56,9 @@ export default function NewExamScreen() {
   const [questions, setQuestions] = useState<AssesmentQuestion[]>([
     defaultQuestion,
   ]);
+  const [questionImages, setQuestionImages] = useState<
+    ({ uri: string; name: string; type: string } | null)[]
+  >([null]);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -87,12 +90,17 @@ export default function NewExamScreen() {
 
   const addQuestion = () => {
     setQuestions([...questions, { ...defaultQuestion }]);
+    setQuestionImages([...questionImages, null]);
   };
 
   const removeQuestion = (index: number) => {
-    const updated = [...questions];
-    updated.splice(index, 1);
-    setQuestions(updated);
+    const updatedQuestions = [...questions];
+    updatedQuestions.splice(index, 1);
+    setQuestions(updatedQuestions);
+
+    const updatedImages = [...questionImages];
+    updatedImages.splice(index, 1);
+    setQuestionImages(updatedImages);
   };
 
   const handleSubmit = async () => {
@@ -116,10 +124,11 @@ export default function NewExamScreen() {
         latePenaltyPercentage: parseFloat(latePenaltyPercentage),
         allowLateSubmission,
         questions,
+        questionImages,
       });
 
       showSnackbar("Exam created", SNACKBAR_VARIANTS.SUCCESS);
-      router.back();
+      //router.back();
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating exam", logout);
     } finally {
@@ -129,14 +138,19 @@ export default function NewExamScreen() {
 
   const handlePickImage = async (index: number) => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "images", // ✅ forma moderna
+      mediaTypes: "images",
       quality: 1,
     });
 
     if (!result.canceled) {
-      const updated = [...questions];
-      updated[index].imageUri = result.assets[0].uri;
-      setQuestions(updated);
+      const asset = result.assets[0];
+      const updatedImages = [...questionImages];
+      updatedImages[index] = {
+        uri: asset.uri,
+        name: asset.fileName || `image${index}.jpg`,
+        type: asset.type || "image/jpeg",
+      };
+      setQuestionImages(updatedImages);
     }
   };
 
@@ -347,9 +361,9 @@ export default function NewExamScreen() {
                       >
                         Select image
                       </Button>
-                      {q.imageUri && (
+                      {questionImages[index] && (
                         <Image
-                          source={{ uri: q.imageUri }}
+                          source={{ uri: questionImages[index]!.uri }}
                           style={{
                             width: "100%",
                             height: 200,
