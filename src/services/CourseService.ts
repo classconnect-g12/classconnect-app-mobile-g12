@@ -77,3 +77,21 @@ export async function updateCourse(
 export async function deleteCourse(courseId: string): Promise<void> {
   await privateClient.delete(`/course/delete/${courseId}`);
 }
+
+
+export async function markOrUnmarkFavorite(courseId: string, favorite: boolean) {
+  await privateClient.put(`/course/${courseId}/favorite?favorite=${favorite}`);
+}
+
+export async function getFavoriteCourses(page = 0, limit = 10, title = ""): Promise<GetCoursesResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+  if (title) params.append("title", title);
+
+  const response = await privateClient.get<GetCoursesResponse>(
+    `/course/favorites?${params.toString()}`
+  );
+  return response.data;
+}
