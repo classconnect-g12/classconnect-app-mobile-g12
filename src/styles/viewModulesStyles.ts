@@ -39,10 +39,11 @@ export const viewModulesStyles = StyleSheet.create({
     fontWeight: "600",
   },
   courseTitle: {
+    textDecorationLine: "underline",
     color: colors.primary,
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   description: {
     fontSize: 14,

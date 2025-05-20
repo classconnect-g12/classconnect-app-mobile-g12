@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { deleteCourse, getMyCourses } from "@services/CourseService";
+import { deleteCourse, getMyCourses, markOrUnmarkFavorite, getFavoriteCourses } from "@services/CourseService";
 import { getMyEnrollments } from "@services/EnrollmentService";
 import { colors } from "@theme/colors";
 import { ApiCourse } from "@src/types/course";
@@ -23,13 +23,14 @@ import { useAuth } from "@context/authContext";
 export default function MyCourses() {
   const now = new Date();
   const router = useRouter();
-  const [tab, setTab] = useState<"created" | "enrolled">("created");
+  const [tab, setTab] = useState<"created" | "enrolled" | "favorites">("created");
 
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
   const [createdCourses, setCreatedCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<ApiCourse[]>([]);
+  const [favoriteCourses, setFavoriteCourses] = useState<ApiCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<{
     name: string;
@@ -73,6 +74,23 @@ export default function MyCourses() {
     }
   };
 
+  const fetchFavoriteCourses = async () => {
+    try {
+      setLoading(true);
+      const data = await getFavoriteCourses(0, 10, filters.name);
+      setFavoriteCourses(data.courses);
+    } catch (error) {
+      handleApiError(
+        error,
+        showSnackbar,
+        "Error loading your favorite courses",
+        logout
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeletion = (courseId: string) => {
     Alert.alert(
       "Confirm deletion",
@@ -109,9 +127,32 @@ export default function MyCourses() {
     );
   };
 
+  const handleToggleFavorite = async (course: ApiCourse) => {
+    try {
+      await markOrUnmarkFavorite(course.id, !course.isFavorite);
+      setEnrolledCourses((prev) =>
+        prev.map((c) =>
+          c.id === course.id ? { ...c, isFavorite: !c.isFavorite } : c
+        )
+      );
+      if (tab === "favorites") {
+        fetchFavoriteCourses();
+      }
+    } catch (error) {
+      showSnackbar("Error updating favorite", SNACKBAR_VARIANTS.ERROR);
+    }
+  };
+
   useEffect(() => {
-    tab === "created" ? fetchCreatedCourses() : fetchEnrolledCourses();
-  }, [tab]);
+    if (tab === "created") {
+      fetchCreatedCourses();
+    } else if (tab === "enrolled") {
+      fetchEnrolledCourses();
+    } else if (tab === "favorites") {
+      fetchFavoriteCourses();
+    }
+  }, [tab, filters.state]);
+
 
   const categorizeCourses = (courses: ApiCourse[]) => {
     const filteredByName = filters.name
@@ -147,13 +188,22 @@ export default function MyCourses() {
     return sections;
   };
 
-  const sections = categorizeCourses(
-    tab === "created" ? createdCourses : enrolledCourses
-  );
+  const sections =
+    tab === "favorites"
+      ? categorizeCourses(favoriteCourses)
+      : categorizeCourses(tab === "created" ? createdCourses : enrolledCourses);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Tab tab={tab} setTab={setTab} />
+      <Tab
+        tab={tab}
+        setTab={setTab}
+        options={[
+          { key: "created", label: "Created" },
+          { key: "enrolled", label: "Enrolled" },
+          { key: "favorites", label: "Favorites" },
+        ]}
+      />
 
       {loading ? (
         <View
@@ -186,13 +236,15 @@ export default function MyCourses() {
               renderItem={({ item }: { item: ApiCourse }) => (
                 <CourseItem
                   item={item}
-                  tab={tab}
+                  tab={tab === "favorites" ? "enrolled" : tab}
                   router={router}
                   showActions={tab === "created"}
                   onEdit={() => router.push(`/course/editCourse/${item.id}`)}
                   onDelete={() => {
                     handleDeletion(item.id);
                   }}
+                  isFavorite={Boolean(item.isFavorite)}
+                  onToggleFavorite={() => handleToggleFavorite(item)}
                 />
               )}
               renderSectionHeader={({ section: { title } }) => (
