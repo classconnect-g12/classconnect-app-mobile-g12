@@ -77,3 +77,19 @@ export async function updateCourse(
 export async function deleteCourse(courseId: string): Promise<void> {
   await privateClient.delete(`/course/delete/${courseId}`);
 }
+
+export async function getCourseActivityLogs(
+  courseId: string,
+  page = 0,
+  limit = 10
+) {
+  const response = await privateClient.get("/course/activity", {
+    params: {
+      courseId,
+      page,
+      limit,
+    },
+  });
+
+  return response.data;
+}

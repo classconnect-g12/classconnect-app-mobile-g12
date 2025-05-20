@@ -301,16 +301,6 @@ export default function ModulePage() {
 
   return (
     <View style={viewModulesStyles.container}>
-      <View
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}
-      >
-        <IconButton icon="arrow-left" size={24} onPress={() => router.back()} />
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ fontSize: 16, color: colors.primary }}>
-            Back to Modules
-          </Text>
-        </TouchableOpacity>
-      </View>
       <Text style={viewModulesStyles.heading}>{moduleTitle}</Text>
 
       {/* Lista de recursos */}
