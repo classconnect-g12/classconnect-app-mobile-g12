@@ -61,4 +61,10 @@ export const createCourseStyles = StyleSheet.create({
   datePickerIcon: {
     marginLeft: 8,
   },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 8,
+  },
 });
