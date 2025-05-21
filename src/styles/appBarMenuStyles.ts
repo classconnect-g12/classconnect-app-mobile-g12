@@ -15,8 +15,8 @@ export const appbarMenuStyles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: 0,
-    right: 0,
+    top: 10,
+    right: 10,
     backgroundColor: "red",
   },
   modalContainer: {

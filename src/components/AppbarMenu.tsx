@@ -22,8 +22,7 @@ import {
 } from "@services/NotificationService";
 import { NotificationType, PreferencesResponse } from "@src/types/notification";
 import { appbarMenuStyles } from "@styles/appBarMenuStyles";
-import { formatDistanceToNow } from 'date-fns';
-
+import { formatDistanceToNow } from "date-fns";
 
 const getDaysAgo = (createdAt: string) => {
   try {
@@ -40,13 +39,12 @@ const getDaysAgo = (createdAt: string) => {
       return "Unknown";
     }
 
-    return formatDistanceToNow(parsedDate, { addSuffix: true }); 
+    return formatDistanceToNow(parsedDate, { addSuffix: true });
   } catch (error) {
     console.error("⚠️ Error parsing createdAt:", error);
     return "Unknown";
   }
 };
-
 
 const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
   title,
@@ -133,7 +131,7 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
         />
         <View style={appbarMenuStyles.notificationContainer}>
           <IconButton
-            icon={hasNewNotifications ? "bell-badge" : "bell-outline"}
+            icon={hasNewNotifications ? "bell" : "bell-outline"}
             size={24}
             onPress={handleNotifications}
           />
@@ -147,30 +145,45 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
           anchor={
             <Appbar.Action icon="menu" onPress={() => setMenuVisible(true)} />
           }
+          contentStyle={{
+            backgroundColor: "white",
+            borderWidth: 1,
+            borderColor: "gray",
+          }}
         >
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
               router.push("/profile/profileEdit");
             }}
-            title="My Profile"
+            title="My profile"
+            leadingIcon="account-circle"
             titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
           />
+
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
               router.push("/course/myCourses");
             }}
-            title="My Courses"
+            title="My courses"
+            leadingIcon="book-open-page-variant"
             titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
           />
+
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
               logout();
             }}
             title="Log out"
-            titleStyle={{ fontWeight: "bold", color: "#d9534f" }}
+            leadingIcon="exit-to-app"
+            titleStyle={{
+              fontWeight: "bold",
+              color: "#d9534f",
+            }}
           />
         </Menu>
       </Appbar.Header>
