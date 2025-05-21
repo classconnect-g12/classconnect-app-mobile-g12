@@ -37,6 +37,7 @@ export default function EditExamScreen() {
 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -59,6 +60,7 @@ export default function EditExamScreen() {
 
         const data = await getAssessmentById(id as string, examId as string);
         setTitle(data.title);
+        setDescription(data.description);
         setInstructions(data.instructions);
         setStartDate(new Date(data.startDate));
         setEndDate(new Date(data.endDate));
@@ -169,6 +171,14 @@ export default function EditExamScreen() {
       return;
     }
 
+    if (!description) {
+      showSnackbar(
+        "Please complete the exam description",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
     if (!instructions) {
       showSnackbar(
         "Please complete the exam instructions",
@@ -249,6 +259,7 @@ export default function EditExamScreen() {
     try {
       await updateAssessment(id as string, examId as string, {
         title,
+        description,
         instructions,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -274,6 +285,7 @@ export default function EditExamScreen() {
       type="EXAM"
       values={{
         title,
+        description,
         instructions,
         maxScore,
         minScore,
@@ -287,6 +299,7 @@ export default function EditExamScreen() {
       }}
       onChange={{
         setTitle,
+        setDescription,
         setInstructions,
         setMaxScore,
         setMinScore,

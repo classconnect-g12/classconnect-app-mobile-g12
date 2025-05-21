@@ -1,18 +1,4 @@
 import { useState } from "react";
-import {
-  View,
-  Pressable,
-  ScrollView,
-  KeyboardAvoidingView,
-} from "react-native";
-import {
-  TextInput,
-  Button,
-  Text,
-  ActivityIndicator,
-  Switch,
-  IconButton,
-} from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useCourse } from "@context/CourseContext";
 import { useSnackbar } from "@hooks/useSnackbar";
@@ -41,6 +27,7 @@ const defaultQuestion = {
 
 export default function NewExamScreen() {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -107,6 +94,14 @@ export default function NewExamScreen() {
   const handleSubmit = async () => {
     if (!title) {
       showSnackbar("Please complete the exam title", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (!description) {
+      showSnackbar(
+        "Please complete the exam description",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
@@ -192,7 +187,7 @@ export default function NewExamScreen() {
       await createAssessment(courseId as string, {
         title,
         instructions,
-        description: "description",
+        description: description,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         type: "EXAM" as AssessmentType,
@@ -266,6 +261,7 @@ export default function NewExamScreen() {
       type="EXAM"
       values={{
         title,
+        description,
         instructions,
         maxScore,
         minScore,
@@ -279,6 +275,7 @@ export default function NewExamScreen() {
       }}
       onChange={{
         setTitle,
+        setDescription,
         setInstructions,
         setMaxScore,
         setMinScore,

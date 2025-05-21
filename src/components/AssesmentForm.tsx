@@ -32,6 +32,7 @@ type QuestionImages = ({
 
 type Values = {
   title: string;
+  description: string;
   instructions: string;
   maxScore: string;
   minScore: string;
@@ -46,6 +47,7 @@ type Values = {
 
 type OnChangeHandlers = {
   setTitle: Dispatch<SetStateAction<string>>;
+  setDescription: Dispatch<SetStateAction<string>>;
   setInstructions: Dispatch<SetStateAction<string>>;
   setMaxScore: Dispatch<SetStateAction<string>>;
   setMinScore: Dispatch<SetStateAction<string>>;
@@ -101,6 +103,7 @@ const AssessmentForm = ({
 }: AssessmentFormProps) => {
   const {
     title,
+    description,
     instructions,
     maxScore,
     minScore,
@@ -115,6 +118,7 @@ const AssessmentForm = ({
 
   const {
     setTitle,
+    setDescription,
     setInstructions,
     setMaxScore,
     setMinScore,
@@ -145,6 +149,15 @@ const AssessmentForm = ({
             } title`}
             value={title}
             onChangeText={setTitle}
+            style={styles.input}
+            theme={{ colors: { primary: colors.primary } }}
+          />
+          <TextInput
+            label="Description"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
             style={styles.input}
             theme={{ colors: { primary: colors.primary } }}
           />

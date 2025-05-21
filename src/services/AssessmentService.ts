@@ -91,11 +91,7 @@ export async function createAssessment(
   const formData = new FormData();
 
   formData.append("title", data.title);
-  if (data.description) {
-    formData.append("description", data.description);
-  } else {
-    formData.append("description", "description");
-  }
+  formData.append("description", data.description);
   formData.append("instructions", data.instructions);
   formData.append("type", data.type);
   formData.append("startDate", data.startDate);
