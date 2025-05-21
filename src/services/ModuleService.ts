@@ -114,8 +114,6 @@ export async function fetchResources(
   const response = await privateClient.get<Resource[]>(
     `/course/${courseId}/modules/${moduleId}/resources`
   );
-  console.log(response.data);
-
   return response.data.sort((a, b) => a.order - b.order);
 }
 

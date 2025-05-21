@@ -1,3 +1,4 @@
+import { colors } from "@theme/colors";
 import { StyleSheet } from "react-native";
 
 export const moduleDetailStyle = StyleSheet.create({
@@ -8,7 +9,7 @@ export const moduleDetailStyle = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: "80%",
+    width: "90%",
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
@@ -122,5 +123,15 @@ export const moduleDetailStyle = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "gray"
-  }
+  },
+  buttons:{
+    marginTop: 10,
+    borderRadius: 6,
+    backgroundColor: colors.primary,
+  },
+    resourceOrderContainer: {
+    maxHeight: 150,
+    width: "100%",
+    marginBottom: 10,
+  },
 });
