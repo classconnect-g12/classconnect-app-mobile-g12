@@ -3,17 +3,17 @@ import {
   Text,
   Modal,
   TextInput,
-  Button,
   FlatList,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { moduleDetailStyle } from "@styles/moduleDetailStyle";
 import { useState, useEffect, use } from "react";
 import { useCourse } from "@context/CourseContext";
-import { AnimatedFAB, IconButton } from "react-native-paper";
+import { AnimatedFAB, IconButton, Button } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
@@ -93,10 +93,6 @@ export default function ModulePage() {
       //handleApiError(error, showSnackbar, "Error fetching resources", logout);
     }
   };
-
-  useEffect(() => {
-    loadResources();
-  }, [id, moduleId]);
 
   // Manejar la selección de archivo
   const pickFile = async () => {
@@ -327,7 +323,7 @@ export default function ModulePage() {
         <View style={moduleDetailStyle.modalContainer}>
           <View style={moduleDetailStyle.modalContent}>
             <Text style={moduleDetailStyle.modalTitle}>
-              Create new resource
+              Create a new resource
             </Text>
 
             {/* Campo: Título */}
@@ -358,19 +354,30 @@ export default function ModulePage() {
             />
 
             {/* Campo: Archivo */}
-            <Button title="Select File" onPress={pickFile} />
+            <Button
+              style={moduleDetailStyle.buttons}
+              labelStyle={{ fontWeight: "bold", color: "white" }}
+              onPress={pickFile}
+            >
+              Select File
+            </Button>
             {formData.file &&
               "canceled" in formData.file &&
               !formData.file.canceled && (
-                <Text>Selected file: {formData.file.assets[0].name}</Text>
+                <Text style={{ marginBottom: 10, marginTop: 10 }}>
+                  Selected file: {formData.file.assets[0].name}
+                </Text>
               )}
 
             <View style={moduleDetailStyle.modalButtons}>
               <Button
-                title="Cancel"
+                style={moduleDetailStyle.buttons}
+                labelStyle={{ fontWeight: "bold", color: "white" }}
                 onPress={() => setModalVisible(false)}
                 disabled={isSubmitting}
-              />
+              >
+                Cancel
+              </Button>
               {isSubmitting ? (
                 <ActivityIndicator
                   size="small"
@@ -378,7 +385,13 @@ export default function ModulePage() {
                   style={{ marginTop: 10 }}
                 />
               ) : (
-                <Button title="Create" onPress={handleSubmit} />
+                <Button
+                  style={moduleDetailStyle.buttons}
+                  labelStyle={{ fontWeight: "bold", color: "white" }}
+                  onPress={handleSubmit}
+                >
+                  Create
+                </Button>
               )}
             </View>
           </View>
@@ -456,7 +469,7 @@ export default function ModulePage() {
           </TouchableOpacity>
         </View>
       </Modal>
-      
+
       {/* Modal de video */}
       <Modal
         visible={!!selectedVideo}
@@ -491,7 +504,7 @@ export default function ModulePage() {
       >
         <View style={moduleDetailStyle.modalContainer}>
           <View style={moduleDetailStyle.modalContent}>
-            <Text style={moduleDetailStyle.modalTitle}>Edit Module</Text>
+            <Text style={moduleDetailStyle.modalTitle}>Edit module</Text>
 
             {moduleData && (
               <>
@@ -530,38 +543,57 @@ export default function ModulePage() {
                 />
 
                 {/* Orden de recursos */}
-                <Text style={{ marginTop: 10 }}>Edit Resources Order</Text>
-                {editedResources.map((res, index) => (
-                  <View
-                    key={res.ID}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    <Text style={{ flex: 1 }}>
-                      {resources.find((r) => r.resourceId === res.ID)?.title}
-                    </Text>
-                    <TextInput
-                      style={[moduleDetailStyle.input, { width: 60 }]}
-                      keyboardType="numeric"
-                      value={res.order.toString()}
-                      onChangeText={(text) => {
-                        const updated = [...editedResources];
-                        updated[index].order = parseInt(text, 10) || 0;
-                        setEditedResources(updated);
-                      }}
-                    />
-                  </View>
-                ))}
+                <Text style={{ marginTop: 10, marginBottom: 10, fontSize: 16 }}>
+                  Edit resources order
+                </Text>
+
+                <View style={moduleDetailStyle.resourceOrderContainer}>
+                  <ScrollView>
+                    {editedResources.map((res, index) => (
+                      <View
+                        key={res.ID}
+                        style={{
+                          borderColor: "gray",
+                          borderBottomWidth: 1,
+                          paddingLeft: 8,
+                          paddingRight: 8,
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          alignItems: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Text style={{ flex: 1 }}>
+                          {
+                            resources.find((r) => r.resourceId === res.ID)
+                              ?.title
+                          }
+                        </Text>
+                        <TextInput
+                          style={[moduleDetailStyle.input, { width: 40 }]}
+                          keyboardType="numeric"
+                          value={res.order.toString()}
+                          onChangeText={(text) => {
+                            const updated = [...editedResources];
+                            updated[index].order = parseInt(text, 10) || 0;
+                            setEditedResources(updated);
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+
                 <View style={moduleDetailStyle.modalButtons}>
                   <Button
-                    title="Cancel"
+                    style={moduleDetailStyle.buttons}
+                    labelStyle={{ fontWeight: "bold", color: "white" }}
                     onPress={() => setEditModalVisible(false)}
                     disabled={isSavingModule}
-                  />
+                  >
+                    Cancel
+                  </Button>
                   {isSavingModule ? (
                     <ActivityIndicator
                       size="small"
@@ -569,16 +601,15 @@ export default function ModulePage() {
                       style={{ marginTop: 10 }}
                     />
                   ) : (
-                    <Button title="Save" onPress={handleEditSubmit} />
+                    <Button
+                      style={moduleDetailStyle.buttons}
+                      labelStyle={{ fontWeight: "bold", color: "white" }}
+                      onPress={handleEditSubmit}
+                    >
+                      Save
+                    </Button>
                   )}
                 </View>
-                
-                <AppSnackbar
-                  visible={snackbarVisible}
-                  message={snackbarMessage}
-                  onDismiss={hideSnackbar}
-                  variant={snackbarVariant}
-                />
               </>
             )}
           </View>
