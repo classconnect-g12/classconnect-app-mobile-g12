@@ -16,7 +16,10 @@ import {
 } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import { AppSnackbar } from "./AppSnackbar";
-import { AssesmentQuestion, AssesmentType } from "@services/AssesmentService";
+import {
+  AssessmentType,
+  AssessmentQuestion,
+} from "@services/AssessmentService";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { colors } from "@theme/colors";
 import { useSnackbar } from "@hooks/useSnackbar";
@@ -29,6 +32,7 @@ type QuestionImages = ({
 
 type Values = {
   title: string;
+  description: string;
   instructions: string;
   maxScore: string;
   minScore: string;
@@ -37,12 +41,13 @@ type Values = {
   allowLateSubmission: boolean;
   startDate: Date;
   endDate: Date;
-  questions: AssesmentQuestion[];
+  questions: AssessmentQuestion[];
   questionImages: QuestionImages;
 };
 
 type OnChangeHandlers = {
   setTitle: Dispatch<SetStateAction<string>>;
+  setDescription: Dispatch<SetStateAction<string>>;
   setInstructions: Dispatch<SetStateAction<string>>;
   setMaxScore: Dispatch<SetStateAction<string>>;
   setMinScore: Dispatch<SetStateAction<string>>;
@@ -53,7 +58,7 @@ type OnChangeHandlers = {
   setEndDate: Dispatch<SetStateAction<Date>>;
   handleQuestionChange: (
     index: number,
-    field: keyof AssesmentQuestion,
+    field: keyof AssessmentQuestion,
     value: any
   ) => void;
   handleOptionChange: (qIndex: number, oIndex: number, value: string) => void;
@@ -67,7 +72,7 @@ type SnackbarProps = {
 };
 
 type AssessmentFormProps = {
-  type?: AssesmentType; // "EXAM" | "TASK" etc
+  type?: AssessmentType;
   values: Values;
   onChange: OnChangeHandlers;
   onSubmit: () => void;
@@ -98,6 +103,7 @@ const AssessmentForm = ({
 }: AssessmentFormProps) => {
   const {
     title,
+    description,
     instructions,
     maxScore,
     minScore,
@@ -112,6 +118,7 @@ const AssessmentForm = ({
 
   const {
     setTitle,
+    setDescription,
     setInstructions,
     setMaxScore,
     setMinScore,
@@ -142,6 +149,15 @@ const AssessmentForm = ({
             } title`}
             value={title}
             onChangeText={setTitle}
+            style={styles.input}
+            theme={{ colors: { primary: colors.primary } }}
+          />
+          <TextInput
+            label="Description"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
             style={styles.input}
             theme={{ colors: { primary: colors.primary } }}
           />
@@ -191,6 +207,7 @@ const AssessmentForm = ({
             <Switch
               value={allowLateSubmission}
               onValueChange={setAllowLateSubmission}
+              color={colors.primary}
             />
           </View>
 
@@ -301,36 +318,56 @@ const AssessmentForm = ({
                   />
                 )}
 
-                <View style={styles.switchRow}>
-                  <Text>Has image?</Text>
-                  <Switch
-                    value={q.hasImage}
-                    onValueChange={(value) =>
-                      handleQuestionChange(index, "hasImage", value)
-                    }
-                  />
+                <View style={{ marginVertical: 8 }}>
+                  <View style={styles.switchRow}>
+                    <Text>Has image?</Text>
+                    <Switch
+                      color={colors.primary}
+                      value={q.hasImage}
+                      onValueChange={(value) =>
+                        handleQuestionChange(index, "hasImage", value)
+                      }
+                    />
+                  </View>
+
                   {q.hasImage && (
-                    <>
+                    <View
+                      style={{
+                        marginTop: 8,
+                        width: "100%",
+                        flexDirection: "column",
+                      }}
+                    >
                       <Button
                         mode="outlined"
                         onPress={() => onPickImage(index)}
-                        style={{ marginVertical: 8 }}
+                        style={{ marginBottom: 8 }}
+                        textColor={colors.primary}
                       >
                         Select image
                       </Button>
                       {questionImages[index] && (
-                        <Image
-                          source={{ uri: questionImages[index]!.uri }}
+                        <View
                           style={{
-                            width: "100%",
-                            height: 200,
                             marginTop: 8,
-                            borderRadius: 8,
+                            width: "100%",
+                            flexDirection: "column",
+                            alignItems: "center", // Centra los elementos horizontalmente
                           }}
-                          resizeMode="contain"
-                        />
+                        >
+                          <Image
+                            source={{ uri: questionImages[index]!.uri }}
+                            style={{
+                              width: "100%",
+                              height: 200,
+                              borderRadius: 8,
+                              marginTop: 8, // Espacio adicional arriba de la imagen
+                            }}
+                            resizeMode="contain"
+                          />
+                        </View>
                       )}
-                    </>
+                    </View>
                   )}
                 </View>
 
