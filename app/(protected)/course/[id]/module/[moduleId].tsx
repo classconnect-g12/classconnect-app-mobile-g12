@@ -8,12 +8,12 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { moduleDetailStyle } from "@styles/moduleDetailStyle";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useCourse } from "@context/CourseContext";
-import { AnimatedFAB, IconButton, Button } from "react-native-paper";
+import { AnimatedFAB, Button } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
@@ -29,21 +29,14 @@ import {
   Module,
 } from "@services/ModuleService";
 import { handleApiError } from "@utils/handleApiError";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useModule } from "@context/ModuleContext";
 
 export default function ModulePage() {
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { id, moduleId } = useLocalSearchParams<{
     id: string;
     moduleId: string;
@@ -442,12 +435,6 @@ export default function ModulePage() {
           />
         </>
       )}
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
 
       {/* Modal de imagen */}
       <Modal

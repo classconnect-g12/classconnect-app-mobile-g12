@@ -24,8 +24,7 @@ import {
 } from "@services/EnrollmentService";
 import { membersStyles as styles } from "@styles/membersStyles";
 import { useCourse } from "@context/CourseContext";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import {
   ASSISTANT_PERMISSIONS,
@@ -72,13 +71,7 @@ export default function Members() {
     useState(false);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const fetchMembers = async () => {
     if (!courseId) return;
@@ -307,13 +300,6 @@ export default function Members() {
           onRefresh={handleRefresh}
         />
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
 
       <Portal>
         {permissionsModalVisible && (

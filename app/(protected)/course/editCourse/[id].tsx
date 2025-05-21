@@ -2,13 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { fetchCourseDetail, updateCourse } from "@services/CourseService";
 import { CourseRequestBody, FullCourse, Modality } from "@src/types/course";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
 import { CourseForm } from "@components/CourseForm";
-import { View, Text, StyleSheet } from "react-native";
 
 type CourseOption = { id: string; title: string };
 
@@ -16,13 +14,7 @@ export default function EditCourse() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const [isLoading, setIsLoading] = useState(false);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
@@ -191,29 +183,6 @@ export default function EditCourse() {
         buttonMessageActive="Saving..."
         buttonMessageInactive="Save Course"
       />
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  title: {
-    marginTop: 20,
-    textAlign: "center",
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  subtitle: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 20,
-  },
-});
