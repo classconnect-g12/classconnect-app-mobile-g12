@@ -317,36 +317,54 @@ const AssessmentForm = ({
                   />
                 )}
 
-                <View style={styles.switchRow}>
-                  <Text>Has image?</Text>
-                  <Switch
-                    value={q.hasImage}
-                    onValueChange={(value) =>
-                      handleQuestionChange(index, "hasImage", value)
-                    }
-                  />
+                <View style={{ marginVertical: 8 }}>
+                  <View style={styles.switchRow}>
+                    <Text>Has image?</Text>
+                    <Switch
+                      value={q.hasImage}
+                      onValueChange={(value) =>
+                        handleQuestionChange(index, "hasImage", value)
+                      }
+                    />
+                  </View>
+
                   {q.hasImage && (
-                    <>
+                    <View
+                      style={{
+                        marginTop: 8,
+                        width: "100%",
+                        flexDirection: "column",
+                      }}
+                    >
                       <Button
                         mode="outlined"
                         onPress={() => onPickImage(index)}
-                        style={{ marginVertical: 8 }}
+                        style={{ marginBottom: 8 }}
                       >
                         Select image
                       </Button>
                       {questionImages[index] && (
-                        <Image
-                          source={{ uri: questionImages[index]!.uri }}
+                        <View
                           style={{
-                            width: "100%",
-                            height: 200,
                             marginTop: 8,
-                            borderRadius: 8,
+                            width: "100%",
+                            flexDirection: "column",
+                            alignItems: "center", // Centra los elementos horizontalmente
                           }}
-                          resizeMode="contain"
-                        />
+                        >
+                          <Image
+                            source={{ uri: questionImages[index]!.uri }}
+                            style={{
+                              width: "100%",
+                              height: 200,
+                              borderRadius: 8,
+                              marginTop: 8, // Espacio adicional arriba de la imagen
+                            }}
+                            resizeMode="contain"
+                          />
+                        </View>
                       )}
-                    </>
+                    </View>
                   )}
                 </View>
 
