@@ -16,7 +16,10 @@ import {
 } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import { AppSnackbar } from "./AppSnackbar";
-import { AssesmentQuestion, AssesmentType } from "@services/AssesmentService";
+import {
+  AssessmentType,
+  AssessmentQuestion,
+} from "@services/AssessmentService";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { colors } from "@theme/colors";
 import { useSnackbar } from "@hooks/useSnackbar";
@@ -37,7 +40,7 @@ type Values = {
   allowLateSubmission: boolean;
   startDate: Date;
   endDate: Date;
-  questions: AssesmentQuestion[];
+  questions: AssessmentQuestion[];
   questionImages: QuestionImages;
 };
 
@@ -53,7 +56,7 @@ type OnChangeHandlers = {
   setEndDate: Dispatch<SetStateAction<Date>>;
   handleQuestionChange: (
     index: number,
-    field: keyof AssesmentQuestion,
+    field: keyof AssessmentQuestion,
     value: any
   ) => void;
   handleOptionChange: (qIndex: number, oIndex: number, value: string) => void;
@@ -67,7 +70,7 @@ type SnackbarProps = {
 };
 
 type AssessmentFormProps = {
-  type?: AssesmentType; // "EXAM" | "TASK" etc
+  type?: AssessmentType;
   values: Values;
   onChange: OnChangeHandlers;
   onSubmit: () => void;

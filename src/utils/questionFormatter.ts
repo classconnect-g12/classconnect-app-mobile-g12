@@ -1,4 +1,4 @@
-import { AssesmentQuestion } from "@services/AssesmentService";
+import { AssesmentQuestion } from "@services/AssessmentService";
 
 export function questionFormatter(questions: AssesmentQuestion[]) {
   return questions.map((q: AssesmentQuestion) => {
