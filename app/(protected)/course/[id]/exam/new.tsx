@@ -18,20 +18,15 @@ import { useCourse } from "@context/CourseContext";
 import { useSnackbar } from "@hooks/useSnackbar";
 import { useAuth } from "@context/authContext";
 import {
-  AssesmentQuestion,
-  AssesmentType,
+  AssessmentQuestion,
+  AssessmentType,
   createAssessment,
   QuestionType,
-} from "@services/AssesmentService";
+} from "@services/AssessmentService";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
-import { Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { createCourseStyles as styles } from "@styles/createCourseStyles";
-import { colors } from "@theme/colors";
-import { Picker } from "@react-native-picker/picker";
 import AssessmentForm from "@components/AssesmentForm";
 
 const defaultQuestion = {
@@ -54,7 +49,7 @@ export default function NewExamScreen() {
   const [gracePeriodMinutes, setGracePeriodMinutes] = useState("0");
   const [latePenaltyPercentage, setLatePenaltyPercentage] = useState("0");
   const [allowLateSubmission, setAllowLateSubmission] = useState(false);
-  const [questions, setQuestions] = useState<AssesmentQuestion[]>([
+  const [questions, setQuestions] = useState<AssessmentQuestion[]>([
     defaultQuestion,
   ]);
   const [questionImages, setQuestionImages] = useState<
@@ -200,7 +195,7 @@ export default function NewExamScreen() {
         description: "description",
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        type: "EXAM" as AssesmentType,
+        type: "EXAM" as AssessmentType,
         maxScore: Number(maxScore),
         minScore: Number(minScore),
         gracePeriodMinutes: Number(gracePeriodMinutes),
