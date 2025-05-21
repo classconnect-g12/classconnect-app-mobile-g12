@@ -207,6 +207,7 @@ const AssessmentForm = ({
             <Switch
               value={allowLateSubmission}
               onValueChange={setAllowLateSubmission}
+              color={colors.primary}
             />
           </View>
 
@@ -321,6 +322,7 @@ const AssessmentForm = ({
                   <View style={styles.switchRow}>
                     <Text>Has image?</Text>
                     <Switch
+                      color={colors.primary}
                       value={q.hasImage}
                       onValueChange={(value) =>
                         handleQuestionChange(index, "hasImage", value)
@@ -340,6 +342,7 @@ const AssessmentForm = ({
                         mode="outlined"
                         onPress={() => onPickImage(index)}
                         style={{ marginBottom: 8 }}
+                        textColor={colors.primary}
                       >
                         Select image
                       </Button>
