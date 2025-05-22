@@ -20,17 +20,25 @@ export default function MoreScreen() {
     route: string;
     icon: IoniconName;
     requiresTeacher?: boolean;
+    requiresStudent?: boolean;
   }[] = [
     {
+      title: "Give feedback",
+      route: `course/${courseId}/more/giveFeedback`,
+      icon: "chatbubble-ellipses-outline",
+      requiresStudent: true,
+    },
+    {
       title: "Feedback",
-      route: `course/${courseId}/more/feedback`,
+      route: `course/${courseId}/more/courseFeedback`,
       icon: "chatbubble-ellipses-outline",
       requiresTeacher: true,
     },
     {
-      title: "Notes",
-      route: `course/${courseId}/more/notes`,
-      icon: "document-text-outline",
+      title: "My notes",
+      route: `course/${courseId}/more/myNotes`,
+      icon: "chatbubble-ellipses-outline",
+      requiresStudent: true,
     },
     {
       title: "Activity",
@@ -38,16 +46,13 @@ export default function MoreScreen() {
       icon: "help-circle-outline",
       requiresTeacher: true,
     },
-    {
-      title: "About",
-      route: `course/${courseId}/more/about`,
-      icon: "information-circle-outline",
-    },
   ];
 
-  const visibleOptions = allOptions.filter(
-    (item) => !item.requiresTeacher || isTeacher
-  );
+  const visibleOptions = allOptions.filter((item) => {
+    if (item.requiresTeacher && !isTeacher) return false;
+    if (item.requiresStudent && isTeacher) return false;
+    return true;
+  });
 
   return (
     <ScrollView contentContainerStyle={moreStyles.container}>

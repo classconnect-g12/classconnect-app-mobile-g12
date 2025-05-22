@@ -165,6 +165,17 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
+              router.push("/profile/myFeedback");
+            }}
+            title="My feedback"
+            leadingIcon="comment-outline"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
               router.push("/course/myCourses");
             }}
             title="My courses"
