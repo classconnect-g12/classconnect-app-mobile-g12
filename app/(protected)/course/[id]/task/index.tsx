@@ -84,70 +84,72 @@ export default function TasksScreen() {
     );
   };
 
-  const renderItem = ({ item }: { item: Assessment }) => (
-    <Card style={styles.moduleCard}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <MaterialCommunityIcons
-          name="clipboard-text-outline"
-          size={24}
-          color={colors.primary}
-          style={{ marginRight: 8 }}
-        />
-        <Text style={styles.title}>{item.title}</Text>
-      </View>
+  const renderItem = ({ item }: { item: Assessment }) => {
+    const isEditable =
+      isTeacher && new Date(item.startDate).getTime() > Date.now();
 
-      <Text style={styles.description}>{item.instructions}</Text>
-      <Text style={styles.order}>
-        Deadline: {new Date(item.startDate).toLocaleString()}
-      </Text>
-
-      {isTeacher && (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            marginTop: 8,
-          }}
-        >
-          {new Date(item.startDate).getTime() < Date.now() ? (
-            <>
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={24}
-                color={colors.primary}
-                style={{ marginRight: 16, opacity: 0.3 }}
-              />
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={24}
-                color={colors.error}
-                disabled={true}
-                style={{ opacity: 0.3 }}
-              />
-            </>
-          ) : (
-            <>
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={24}
-                color={colors.primary}
-                onPress={() => {
-                  router.push(`/course/${courseId}/task/editTask/${item.id}`);
-                }}
-                style={{ marginRight: 16 }}
-              />
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={24}
-                color={colors.error}
-                onPress={() => handleDelete(item.id)}
-              />
-            </>
-          )}
+    return (
+      <Card
+        style={styles.moduleCard}
+        onPress={() => {
+          if (!isTeacher) {
+            router.push(`/course/${courseId}/task/solve/${item.id}`);
+          }
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialCommunityIcons
+            name="clipboard-text-outline"
+            size={24}
+            color={colors.primary}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.title}>{item.title}</Text>
         </View>
-      )}
-    </Card>
-  );
+
+        <Text style={styles.description}>{item.instructions}</Text>
+        <Text style={styles.order}>
+          Fecha de entrega: {new Date(item.startDate).toLocaleString()}
+        </Text>
+
+        <Text style={{ marginTop: 4, fontWeight: "bold" }}>
+          Estado: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+        </Text>
+
+        {isTeacher && (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              marginTop: 8,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="pencil-outline"
+              size={24}
+              color={colors.primary}
+              onPress={
+                isEditable
+                  ? () =>
+                      router.push(
+                        `/course/${courseId}/task/editTask/${item.id}`
+                      )
+                  : undefined
+              }
+              style={{ marginRight: 16, opacity: isEditable ? 1 : 0.3 }}
+            />
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={24}
+              color={colors.error}
+              onPress={isEditable ? () => handleDelete(item.id) : undefined}
+              style={{ opacity: isEditable ? 1 : 0.3 }}
+            />
+          </View>
+        )}
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
