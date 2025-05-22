@@ -9,7 +9,6 @@ import { signUpStyles as styles } from "@styles/signUpStyles";
 import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "@context/SnackbarContext";
-import { useSnackbar } from "src/hooks/useSnackbar";
 import * as SecureStore from "expo-secure-store"; 
 
 const saveCredentials = async (email: string, password: string) => {
