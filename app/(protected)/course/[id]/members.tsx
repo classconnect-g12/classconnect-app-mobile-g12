@@ -30,6 +30,8 @@ import {
   ASSISTANT_PERMISSIONS,
   PERMISSION_LABELS,
 } from "@constants/permissions";
+import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 type Member = {
   enrollmentId: number;
@@ -57,6 +59,7 @@ export default function Members() {
   const [promoting, setPromoting] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { logout } = useAuth();
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [permissionsModalVisible, setPermissionsModalVisible] = useState(false);
@@ -104,7 +107,7 @@ export default function Members() {
 
       setSections(newSections);
     } catch (error) {
-      console.error("Error fetching members:", error);
+      handleApiError(error, showSnackbar, "Error fetching members", logout);
     } finally {
       setLoading(false);
     }
@@ -149,10 +152,11 @@ export default function Members() {
 
       await fetchMembers();
     } catch (error) {
-      console.error("Error promoting to assistant:", error);
-      showSnackbar(
+      handleApiError(
+        error,
+        showSnackbar,
         `Failed to promote ${selectedMember.userProfile.user_name}`,
-        SNACKBAR_VARIANTS.ERROR
+        logout
       );
     } finally {
       setPromoting(false);
@@ -175,10 +179,11 @@ export default function Members() {
 
       await fetchMembers();
     } catch (error) {
-      console.error("Error removing assistant:", error);
-      showSnackbar(
+      handleApiError(
+        error,
+        showSnackbar,
         `Failed to remove ${memberToRemove.userProfile.user_name}`,
-        SNACKBAR_VARIANTS.ERROR
+        logout
       );
     } finally {
       setRemoving(false);
@@ -206,10 +211,11 @@ export default function Members() {
 
       await fetchMembers();
     } catch (error) {
-      console.error("Error removing student:", error);
-      showSnackbar(
+      handleApiError(
+        error,
+        showSnackbar,
         `Failed to remove ${studentToRemove.userProfile.user_name}`,
-        SNACKBAR_VARIANTS.ERROR
+        logout
       );
     } finally {
       setRemovingStudent(false);
