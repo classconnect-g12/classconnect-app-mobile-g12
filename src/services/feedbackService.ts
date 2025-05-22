@@ -30,3 +30,10 @@ export async function getCourseFeedbacks(
   return response.data;
 }
 
+export async function getCourseIaFeedbacks(courseId: string) {
+  const response = await privateClient.get(
+    `/course/${courseId}/feedbacks/summary`,
+    {}
+  );
+  return response.data;
+}
