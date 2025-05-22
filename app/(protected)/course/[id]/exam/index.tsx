@@ -9,9 +9,8 @@ import {
 } from "@services/AssessmentService";
 import { useCourse } from "@context/CourseContext";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
@@ -23,13 +22,7 @@ export default function ExamsScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
   const loadExams = async () => {
@@ -190,13 +183,6 @@ export default function ExamsScreen() {
           color={colors.buttonText}
         />
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }

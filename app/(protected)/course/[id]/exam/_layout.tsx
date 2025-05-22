@@ -1,4 +1,3 @@
-// app/course/[courseId]/exam/_layout.tsx
 import { Stack } from "expo-router";
 import { ModuleProvider } from "@context/ModuleContext";
 
