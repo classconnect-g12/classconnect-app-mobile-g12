@@ -1,11 +1,26 @@
 import { privateClient } from "@utils/apiClient";
 
-export async function createFeedback(
+export async function sendFeedbackStudentToCourse(
   courseId: string,
   comment: string,
   rating: number
 ) {
   const response = await privateClient.post(`/course/${courseId}/feedback`, [
+    {
+      comment,
+      rating,
+    },
+  ]);
+  console.log(response.data);
+}
+
+export async function sendFeedbackCourseToStudent(
+  courseId: string,
+  studentId: string,
+  comment: string,
+  rating: number
+) {
+  const response = await privateClient.post(`/course/${courseId}/student/${studentId}/feedback`, [
     {
       comment,
       rating,
@@ -27,6 +42,8 @@ export async function getCourseFeedbacks(
   const response = await privateClient.get(`/course/${courseId}/feedbacks`, {
     params,
   });
+
+  console.log(response.data);
   return response.data;
 }
 
@@ -35,5 +52,7 @@ export async function getCourseIaFeedbacks(courseId: string) {
     `/course/${courseId}/feedbacks/summary`,
     {}
   );
+
+  console.log(response.data);
   return response.data;
 }
