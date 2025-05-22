@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AssessmentForm from "@components/AssesmentForm";
 import { useAuth } from "@context/authContext";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import {
   AssessmentQuestion,
   getAssessmentById,
@@ -27,13 +27,7 @@ export default function EditExamScreen() {
   const router = useRouter();
   const { id, examId } = useLocalSearchParams();
   const { logout } = useAuth();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -317,12 +311,6 @@ export default function EditExamScreen() {
       removeQuestion={removeQuestion}
       loading={loading}
       submitButtonText="Update exam"
-      snackbar={{
-        visible: snackbarVisible,
-        message: snackbarMessage,
-        onDismiss: hideSnackbar,
-        variant: snackbarVariant,
-      }}
       showDateTimePicker={showDateTimePicker}
     />
   );

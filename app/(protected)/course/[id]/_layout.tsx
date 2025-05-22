@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { CourseProvider, useCourse } from "@context/CourseContext";
 import { fetchCourseDetail } from "@services/CourseService";
-import { Pressable, View, Text, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 function InnerTabs() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -125,7 +125,7 @@ function InnerTabs() {
             ),
         }}
       />
-        <Tabs.Screen
+      <Tabs.Screen
         name="more"
         options={{
           title: "More",
