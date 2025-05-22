@@ -56,3 +56,27 @@ export async function getCourseIaFeedbacks(courseId: string) {
   console.log(response.data);
   return response.data;
 }
+
+export async function getStudentFeedbacks(
+  params?: {
+    page?: number;
+    size?: number;
+  }
+) {
+  const response = await privateClient.get(`/student/feedbacks`, {
+    params,
+  });
+
+  console.log(response.data);
+  return response.data;
+}
+
+export async function getStudentIaFeedbacks() {
+  const response = await privateClient.get(
+    `/student/feedbacks/summary`,
+    {}
+  );
+
+  console.log(response.data);
+  return response.data;
+}
