@@ -9,6 +9,13 @@ import { signUpStyles as styles } from "@styles/signUpStyles";
 import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "@context/SnackbarContext";
+import { useSnackbar } from "src/hooks/useSnackbar";
+import * as SecureStore from "expo-secure-store"; 
+
+const saveCredentials = async (email: string, password: string) => {
+  await SecureStore.setItemAsync("biometric_email", email);
+  await SecureStore.setItemAsync("biometric_password", password);
+};
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
@@ -53,6 +60,9 @@ export default function SignUp() {
     try {
       const token = await register(username, email, password);
       await authLogin(token);
+
+      await saveCredentials(email, password);
+
       router.replace("../home");
       showSnackbar("Account created successfully!", SNACKBAR_VARIANTS.SUCCESS);
     } catch (error: any) {
