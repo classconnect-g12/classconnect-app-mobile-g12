@@ -21,9 +21,8 @@ import {
   validatePasswordLength,
   validateUsername,
 } from "@utils/validators";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { useSnackbar } from "src/hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import auth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import {
@@ -79,13 +78,7 @@ export default function SignIn() {
   const { login: authLogin } = useAuth();
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const notificationContext = useContext(NotificationContext);
 
   const triedAutoBiometric = useRef(false);
@@ -234,7 +227,6 @@ export default function SignIn() {
 
         router.replace("../home");
       } catch (error: any) {
-        
         if (error?.status === 404) {
           setShowUsernameInput(true);
           setPendingIdToken(firebaseIdToken);
@@ -452,12 +444,6 @@ export default function SignIn() {
           Sign up
         </Link>
       </Text>
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }

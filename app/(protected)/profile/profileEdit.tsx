@@ -15,8 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { profileEditStyles as styles } from "@styles/profileEditStyles";
 import { getUserProfile, updateUserProfile } from "@services/ProfileService";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
@@ -37,13 +36,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const { logout } = useAuth();
 
@@ -181,13 +174,6 @@ export default function ProfileScreen() {
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
         </TouchableOpacity>
-
-        <AppSnackbar
-          visible={snackbarVisible}
-          message={snackbarMessage}
-          onDismiss={hideSnackbar}
-          variant={snackbarVariant}
-        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -8,7 +8,7 @@ import {
 } from "@services/ProfileService";
 import { profileIdStyles as styles } from "@styles/profileIdStyles";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "../../../src/hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { AxiosError } from "axios";
 import { ApiError } from "@src/types/apiError";
 import { useAuth } from "@context/authContext";
@@ -27,32 +27,11 @@ const UserProfile: React.FC = () => {
         const data = await getUserProfileByUsername(profileId as string);
         setProfile(data);
       } catch (error) {
-        const axiosError = error as AxiosError<ApiError>;
-
-        const status = axiosError.response?.status;
-
-        if (status === 404) {
-          handleApiError(axiosError, showSnackbar, "Profile not found", logout);
-        } else if (status === 401) {
-          handleApiError(
-            axiosError,
-            showSnackbar,
-            "Unauthorized. Please log in.",
-            logout
-          );
-        } else {
-          handleApiError(
-            axiosError,
-            showSnackbar,
-            "Error loading profile",
-            logout
-          );
-        }
+        handleApiError(error, showSnackbar, "Error fetching profile", logout);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfile();
   }, [profileId]);
 
@@ -96,13 +75,6 @@ const UserProfile: React.FC = () => {
         <Text style={styles.label}>Last Name</Text>
         <Text style={styles.readOnlyText}>{profile.last_name}</Text>
       </View>
-
-      {/* INFO SENSIBLE
-      <View style={{ width: "100%" }}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.email}>{profile.email}</Text>
-      </View>
-      */}
     </ScrollView>
   );
 };

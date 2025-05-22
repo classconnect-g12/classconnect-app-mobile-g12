@@ -6,9 +6,9 @@ import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { colors } from "@theme/colors";
 import { signUpStyles as styles } from "@styles/signUpStyles";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useSnackbar } from "@context/SnackbarContext";
 import { useSnackbar } from "src/hooks/useSnackbar";
 import * as SecureStore from "expo-secure-store"; 
 
@@ -26,13 +26,7 @@ export default function SignUp() {
   const { login: authLogin } = useAuth();
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const handleSubmit = async () => {
     if (!username)
@@ -126,13 +120,6 @@ export default function SignUp() {
           Sign in
         </Link>
       </Text>
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }
