@@ -7,7 +7,13 @@ export const appbarMenuStyles = StyleSheet.create({
     elevation: 4,
   },
   title: {
-    opacity: 0.6,
+    opacity: 0.8,
+  },
+  titleAccount: {
+    paddingBottom: 5,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   notificationContainer: {
     position: "relative",
