@@ -65,7 +65,6 @@ export default function Members() {
   const [promoting, setPromoting] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { logout } = useAuth();
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [permissionsModalVisible, setPermissionsModalVisible] = useState(false);
