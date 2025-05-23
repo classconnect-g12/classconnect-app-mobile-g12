@@ -42,8 +42,8 @@ export const register = async (
       `Error ${response.status}: ${JSON.stringify(response.data)}`
     );
   } catch (error: any) {
-    console.error("Register error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Registration failed" };
+    console.error("Register error:", error);
+    throw error;
   }
 };
 
@@ -102,4 +102,32 @@ export const resetPasswordWithCode = async (
   });
 
   return response.data.message || "Password reset successfully";
+};
+
+
+export const sendActivationPin = async ({
+  email,
+  phone,
+  method,
+}: {
+  email: string;
+  phone: string;
+  method: "email" | "sms";
+}): Promise<void> => {
+  const data = {
+    type: method.toUpperCase(),
+    email: email ?? "",
+    phone: phone ?? "",
+  };
+  await publicClient.post("/auth/send-pin", data);
+};
+
+export const verifyActivationPin = async (
+  email: string,
+  pin: string
+): Promise<void> => {
+  await publicClient.post("/auth/verify-pin", {
+    email,
+    pin,
+  });
 };
