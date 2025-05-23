@@ -13,9 +13,13 @@ export const feedbackStyles = StyleSheet.create({
     alignItems: "center",
   },
   card: {
+    backgroundColor: "white",
+    borderRadius: 4,
     marginVertical: 8,
   },
   header: {
+    textAlign: "center",
+    textDecorationLine: "underline",
     fontSize: 18,
     fontWeight: "bold",
     marginVertical: 12,
@@ -30,5 +34,37 @@ export const feedbackStyles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "gray",
+  },
+  courseName: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  comment: {
+    fontSize: 16,
+    marginVertical: 4,
+  },
+  rating: {
+    fontSize: 16,
+    marginVertical: 4,
+  },
+  emptyStar: {
+    fontSize: 20,
+    color: '#CCCCCC',
+  },
+  author: {
+    fontSize: 16,
+    color: "gray",
+  },
+  averageRating: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  totalFeedbacks: {
+    fontSize: 16,
+    marginVertical: 4,
+  },
+  summary: {
+    fontSize: 16,
+    marginVertical: 4,
   },
 });

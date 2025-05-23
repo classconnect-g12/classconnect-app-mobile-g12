@@ -67,16 +67,23 @@ export default function MyFeedbackScreen() {
         feedbacks.map((fb) => (
           <Card key={fb.id} style={feedbackStyles.card}>
             <Card.Content>
-              <Text>{fb.courseName}</Text>
-              <Text>{fb.comment}</Text>
-              <Text>Rating: {fb.rating} ⭐</Text>
-              <Text>Author: {fb.authorProfile?.user_name || "Anonymous"}</Text>
+              <Text style={feedbackStyles.courseName}>{fb.courseName}</Text>
+              <Text style={feedbackStyles.comment}>{fb.comment}</Text>
+              <Text style={feedbackStyles.rating}>
+                {"⭐".repeat(fb.rating)}
+                <Text style={feedbackStyles.emptyStar}>
+                  {"☆".repeat(5 - fb.rating)}
+                </Text>
+              </Text>
+              <Text style={feedbackStyles.author}>
+                Author: {fb.authorProfile?.user_name || "Anonymous"}
+              </Text>
             </Card.Content>
           </Card>
         ))
       )}
 
-      {feedbacks.length !== 0 && (
+      {feedbacks.length !== 0 && !iaSummary &&(
         <Button
           mode="contained"
           onPress={handleGenerateSummary}
@@ -89,12 +96,16 @@ export default function MyFeedbackScreen() {
 
       {iaSummary && (
         <>
-          <Text style={feedbackStyles.header}>AI Summary</Text>
           <Card style={feedbackStyles.card}>
+            <Text style={feedbackStyles.header}>AI Summary</Text>
             <Card.Content>
-              <Text>Average rating: {iaSummary.averageRating} ⭐</Text>
-              <Text>Total feedbacks: {iaSummary.totalFeedbacks}</Text>
-              <Text>{iaSummary.summary}</Text>
+              <Text style={feedbackStyles.averageRating}>
+                Average rating: {iaSummary.averageRating} ⭐
+              </Text>
+              <Text style={feedbackStyles.totalFeedbacks}>
+                Total feedbacks: {iaSummary.totalFeedbacks}
+              </Text>
+              <Text style={feedbackStyles.summary}>{iaSummary.summary}</Text>
             </Card.Content>
           </Card>
         </>
