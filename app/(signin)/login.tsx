@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, Image } from "react-native";
 import { images } from "@assets/images";
 import { signInStyles as styles } from "@styles/signInStyles";
@@ -7,10 +7,8 @@ import { LoginForm } from "@components/LoginForm";
 import { GoogleSignInButton } from "@components/GoogleSignInButton";
 import { BiometricButton } from "@components/BiometricButton";
 import { PinVerificationModal } from "@components/PinVerificationModal";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { useLogin } from "@hooks/useLogin";
 import { Link } from "expo-router";
-
 
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import auth from "@react-native-firebase/auth";
@@ -20,10 +18,10 @@ import { GoogleRegisterPrompt } from "@components/GoogleRegisterPrompt";
 import { useLocalSearchParams } from "expo-router";
 import { useSnackbar } from "@context/SnackbarContext";
 
-
 export default function SignIn() {
   const login = useLogin();
 
+  const [loadingType, setLoadingType] = useState<null | "email" | "google" | "biometric">(null);
 
   const params = useLocalSearchParams();
   React.useEffect(() => {
@@ -33,7 +31,6 @@ export default function SignIn() {
     }
   }, [params]);
 
-  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -42,10 +39,18 @@ export default function SignIn() {
     });
   }, []);
 
+  const handleEmailLogin = async () => {
+    setLoadingType("email");
+    try {
+      await login.handleLogin(login.email, login.password);
+    } finally {
+      setLoadingType(null);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
+    setLoadingType("google");
     try {
-      login.setIsLoading(true);
       await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const userInfo: any = await GoogleSignin.signIn();
@@ -64,13 +69,13 @@ export default function SignIn() {
         "error"
       );
     } finally {
-      login.setIsLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleBiometricLogin = async () => {
+    setLoadingType("biometric");
     try {
-      login.setIsLoading(true);
       const rnBiometrics = new ReactNativeBiometrics();
       const { available } = await rnBiometrics.isSensorAvailable();
       if (!available) {
@@ -99,9 +104,11 @@ export default function SignIn() {
         "error"
       );
     } finally {
-      login.setIsLoading(false);
+      setLoadingType(null);
     }
   };
+
+  const isAnyLoading = loadingType !== null;
 
   return (
     <View style={styles.container}>
@@ -115,18 +122,21 @@ export default function SignIn() {
         setEmail={login.setEmail}
         password={login.password}
         setPassword={login.setPassword}
-        isLoading={login.isLoading}
-        onLogin={() => login.handleLogin(login.email, login.password)}
+        isLoading={loadingType === "email"}
+        onLogin={handleEmailLogin}
+        disabled={isAnyLoading && loadingType !== "email"}
       />
 
       <GoogleSignInButton
-        isLoading={login.isLoading}
+        isLoading={loadingType === "google"}
         onPress={handleGoogleSignIn}
+        disabled={isAnyLoading && loadingType !== "google"}
       />
 
       <BiometricButton
-        isLoading={login.isLoading}
+        isLoading={loadingType === "biometric"}
         onPress={handleBiometricLogin}
+        disabled={isAnyLoading && loadingType !== "biometric"}
       />
 
       <Text style={styles.footerText}>
@@ -142,7 +152,6 @@ export default function SignIn() {
         </Link>
       </Text>
 
-
       <GoogleRegisterPrompt
         visible={login.showUsernameInput && !login.showVerifyModal}
         onClose={() => {
@@ -151,7 +160,7 @@ export default function SignIn() {
         }}
         username={login.googleUsername}
         setUsername={login.setGoogleUsername}
-        isLoading={login.isLoading}
+        isLoading={isAnyLoading}
         onRegister={login.handleGoogleRegister}
       />
 
