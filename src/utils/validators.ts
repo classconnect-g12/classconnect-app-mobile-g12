@@ -12,16 +12,15 @@ export const validatePasswordLength = (password: string): boolean => {
 // Username validations
 export const validateUsername = (username: string): string | null => {
   if (!username.trim()) return "Please enter a username";
-  if (username.length < 5) return "Username must be at least 5 characters long";
-  if (username.length > 30) return "Username cannot be longer than 30 characters";
+  if (username.length < 5 || username.length > 30) return "Username must be between 5 and 30 characters long";
   return null;
 };
 
 // Course name validations
 export const validateCourse = (name: string): string | null => {
   if (!name.trim()) return "Please enter a course name";
-  if (name.length < 3) return "Course name must be at least 3 characters long";
-  if (name.length > 50) return "Course name cannot be longer than 50 characters";
+  if (name.length < 5) return "Course name must be at least 5 characters long";
+  if (name.length > 30) return "Course name cannot be longer than 30 characters";
   return null;
 };
 
