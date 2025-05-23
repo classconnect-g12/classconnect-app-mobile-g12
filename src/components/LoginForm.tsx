@@ -11,6 +11,7 @@ export function LoginForm({
   setPassword,
   isLoading,
   onLogin,
+  disabled = false,
 }: {
   email: string;
   setEmail: (v: string) => void;
@@ -18,7 +19,10 @@ export function LoginForm({
   setPassword: (v: string) => void;
   isLoading: boolean;
   onLogin: () => void;
+  disabled?: boolean;
 }) {
+  const isButtonDisabled = isLoading || disabled;
+
   return (
     <>
       <TextInput
@@ -41,9 +45,12 @@ export function LoginForm({
         onChangeText={setPassword}
       />
       <TouchableOpacity
-        style={styles.button}
+        style={[
+          styles.button,
+          isButtonDisabled && { opacity: 0.5 },
+        ]}
         onPress={onLogin}
-        disabled={isLoading}
+        disabled={isButtonDisabled}
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
