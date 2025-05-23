@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@context/authContext";
-import { useSnackbar } from "src/hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { login, loginWithGoogle, registerWithGoogle } from "@services/AuthService";
 import { getAllNotifications, getNotificationPreferences } from "@services/NotificationService";
 import { NotificationContext, defaultPreferences } from "@context/notificationContext";
@@ -26,13 +26,8 @@ export function useLogin() {
 
   const { login: authLogin } = useAuth();
   const router = useRouter();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
+
   const notificationContext = useContext(NotificationContext);
 
   const saveCredentials = async (
@@ -212,11 +207,7 @@ export function useLogin() {
     handleLogin,
     handleGoogleLogin,
     handlePinVerified,
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
     showSnackbar,
-    hideSnackbar,
     showUsernameInput,
     setShowUsernameInput,
     googleUsername,

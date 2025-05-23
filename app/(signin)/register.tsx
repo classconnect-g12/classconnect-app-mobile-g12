@@ -6,10 +6,12 @@ import { TextInput } from "react-native-paper";
 import { useAuth } from "@context/authContext";
 import { colors } from "@theme/colors";
 import { signUpStyles as styles } from "@styles/signUpStyles";
+
 import { AppSnackbar } from "@components/AppSnackbar";
 import { validateEmail, validatePasswordLength, validateUsername } from "@utils/validators";
+
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { useSnackbar } from "src/hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import * as SecureStore from "expo-secure-store"; 
 import { PinVerificationModal } from "@components/PinVerificationModal";
 import { useLogin } from "@hooks/useLogin";
@@ -32,13 +34,7 @@ export default function SignUp() {
   const { login: authLogin } = useAuth();
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const handleSubmit = async () => {
     if (!username)
@@ -149,6 +145,7 @@ export default function SignUp() {
         </Link>
       </Text>
 
+
       <PinVerificationModal
         visible={showVerifyModal}
         onClose={() => setShowVerifyModal(false)}
@@ -166,12 +163,6 @@ export default function SignUp() {
         }}
       />
 
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }

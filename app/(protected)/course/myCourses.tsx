@@ -7,7 +7,12 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { deleteCourse, getMyCourses, markOrUnmarkFavorite, getFavoriteCourses } from "@services/CourseService";
+import {
+  deleteCourse,
+  getMyCourses,
+  markOrUnmarkFavorite,
+  getFavoriteCourses,
+} from "@services/CourseService";
 import { getMyEnrollments } from "@services/EnrollmentService";
 import { colors } from "@theme/colors";
 import { ApiCourse } from "@src/types/course";
@@ -15,7 +20,7 @@ import Tab from "@components/Tab";
 import CourseItem from "@components/CourseItem";
 import SectionHeader from "@components/SectionHeader";
 import MyCourseFilter from "@components/MyCoursesFilter";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { handleApiError } from "@utils/handleApiError";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
@@ -23,7 +28,9 @@ import { useAuth } from "@context/authContext";
 export default function MyCourses() {
   const now = new Date();
   const router = useRouter();
-  const [tab, setTab] = useState<"created" | "enrolled" | "favorites">("created");
+  const [tab, setTab] = useState<"created" | "enrolled" | "favorites">(
+    "created"
+  );
 
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
@@ -152,7 +159,6 @@ export default function MyCourses() {
       fetchFavoriteCourses();
     }
   }, [tab, filters.state]);
-
 
   const categorizeCourses = (courses: ApiCourse[]) => {
     const filteredByName = filters.name

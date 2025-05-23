@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, Image } from "react-native";
 import { images } from "@assets/images";
 import { signInStyles as styles } from "@styles/signInStyles";
+
 import { LoginForm } from "@components/LoginForm";
 import { GoogleSignInButton } from "@components/GoogleSignInButton";
 import { BiometricButton } from "@components/BiometricButton";
@@ -9,16 +10,20 @@ import { PinVerificationModal } from "@components/PinVerificationModal";
 import { AppSnackbar } from "@components/AppSnackbar";
 import { useLogin } from "@hooks/useLogin";
 import { Link } from "expo-router";
+
+
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import auth from "@react-native-firebase/auth";
 import ReactNativeBiometrics from "react-native-biometrics";
 import * as SecureStore from "expo-secure-store";
 import { GoogleRegisterPrompt } from "@components/GoogleRegisterPrompt";
 import { useLocalSearchParams } from "expo-router";
+import { useSnackbar } from "@context/SnackbarContext";
 
 
 export default function SignIn() {
   const login = useLogin();
+
 
   const params = useLocalSearchParams();
   React.useEffect(() => {
@@ -27,6 +32,8 @@ export default function SignIn() {
       login.setShowVerifyModal(true);
     }
   }, [params]);
+
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -47,8 +54,10 @@ export default function SignIn() {
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       const userCredential = await auth().signInWithCredential(googleCredential);
       const firebaseIdToken = await userCredential.user.getIdToken();
+
       const googleEmail = userCredential.user.email || login.email || userInfo.user?.email;
       await login.handleGoogleLogin(firebaseIdToken, googleEmail);
+
     } catch (error: any) {
       login.showSnackbar(
         error?.message || "Google Sign-In failed",
@@ -133,6 +142,7 @@ export default function SignIn() {
         </Link>
       </Text>
 
+
       <GoogleRegisterPrompt
         visible={login.showUsernameInput && !login.showVerifyModal}
         onClose={() => {
@@ -152,12 +162,7 @@ export default function SignIn() {
         showSnackbar={login.showSnackbar}
         onVerified={login.handlePinVerified}
       />
-      <AppSnackbar
-        visible={login.snackbarVisible}
-        message={login.snackbarMessage}
-        onDismiss={login.hideSnackbar}
-        variant={login.snackbarVariant}
-      />
+
     </View>
   );
 }

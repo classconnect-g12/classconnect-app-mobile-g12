@@ -1,35 +1,31 @@
-import { useEffect, useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import AssessmentForm from "@components/AssesmentForm";
-import { useAuth } from "@context/authContext";
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { useCourse } from "@context/CourseContext";
 import { useSnackbar } from "@context/SnackbarContext";
+import { useAuth } from "@context/authContext";
 import {
   AssessmentQuestion,
-  getAssessmentById,
-  updateAssessment,
+  AssessmentType,
+  createAssessment,
+  QuestionType,
 } from "@services/AssessmentService";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import * as ImagePicker from "expo-image-picker";
-import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import AssessmentForm from "@components/AssesmentForm";
 
-const defaultQuestion: AssessmentQuestion = {
+const defaultQuestion = {
   text: "",
   score: 0,
-  type: "MULTIPLE_CHOICE",
+  type: "MULTIPLE_CHOICE" as QuestionType,
   correctOption: "",
   options: ["", "", "", ""],
   sampleAnswer: "",
   hasImage: false,
 };
 
-export default function EditExamScreen() {
-  const router = useRouter();
-  const { id, examId } = useLocalSearchParams();
-  const { logout } = useAuth();
-  const { showSnackbar } = useSnackbar();
-
-  const [loading, setLoading] = useState(false);
+export default function NewTaskScreen() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -46,42 +42,14 @@ export default function EditExamScreen() {
   const [questionImages, setQuestionImages] = useState<
     ({ uri: string; name: string; mimeType: string } | null)[]
   >([null]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const loadAssessment = async () => {
-      try {
-        setLoading(true);
+  const router = useRouter();
+  const { courseId } = useCourse();
+  const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
-        const data = await getAssessmentById(id as string, examId as string);
-        setTitle(data.title);
-        setDescription(data.description);
-        setInstructions(data.instructions);
-        setStartDate(new Date(data.startDate));
-        setEndDate(new Date(data.endDate));
-        setMaxScore(data.maxScore.toString());
-        setMinScore(data.minScore.toString());
-        setGracePeriodMinutes(data.gracePeriodMinutes.toString());
-        setLatePenaltyPercentage(data.latePenaltyPercentage.toString());
-        setAllowLateSubmission(data.allowLateSubmission);
-        setQuestions(data.questions);
-        setQuestionImages(
-          data.questionImages ?? data.questions.map(() => null)
-        );
-      } catch (err) {
-        handleApiError(err, showSnackbar, "Error loading exam", logout);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAssessment();
-  }, [examId]);
-
-  const handleQuestionChange = (
-    index: number,
-    field: keyof AssessmentQuestion,
-    value: any
-  ) => {
+  const handleQuestionChange = (index: number, field: string, value: any) => {
     const updated = [...questions];
     updated[index] = { ...updated[index], [field]: value };
     setQuestions(updated);
@@ -93,9 +61,11 @@ export default function EditExamScreen() {
     value: string
   ) => {
     const updated = [...questions];
+
     if (!updated[qIndex].options) {
       updated[qIndex].options = ["", "", "", ""];
     }
+
     updated[qIndex].options![oIndex] = value;
     setQuestions(updated);
   };
@@ -109,9 +79,128 @@ export default function EditExamScreen() {
     const updatedQuestions = [...questions];
     updatedQuestions.splice(index, 1);
     setQuestions(updatedQuestions);
+
     const updatedImages = [...questionImages];
     updatedImages.splice(index, 1);
     setQuestionImages(updatedImages);
+  };
+
+  const handleSubmit = async () => {
+    if (!title) {
+      showSnackbar("Please complete the task title", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (!description) {
+      showSnackbar(
+        "Please complete the task description",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (!instructions) {
+      showSnackbar(
+        "Please complete the task instructions",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(maxScore) <= 0) {
+      showSnackbar(
+        "Max score can't be less or equal than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(minScore) < 0) {
+      showSnackbar(
+        "Min score can't be less than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(maxScore) < parseInt(minScore)) {
+      showSnackbar(
+        "Max score can't be smaller than min score",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseInt(gracePeriodMinutes) < 0) {
+      showSnackbar(
+        "Tolerance minutes can't be less than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (parseFloat(latePenaltyPercentage) < 0.0) {
+      showSnackbar(
+        "Late delivery penalty can't be less than zero",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (startDate >= endDate) {
+      showSnackbar(
+        "End date must be after start date",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    if (questions.length === 0) {
+      showSnackbar(
+        "Please add at least one question to the task",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    let totalQuestionsScore = questions.reduce(
+      (total, question) => total + question.score,
+      0
+    );
+
+    if (totalQuestionsScore !== parseInt(maxScore)) {
+      showSnackbar(
+        "The total question scores must equal the maximum score",
+        SNACKBAR_VARIANTS.ERROR
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createAssessment(courseId as string, {
+        title,
+        instructions,
+        description,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        type: "TASK" as AssessmentType,
+        maxScore: Number(maxScore),
+        minScore: Number(minScore),
+        gracePeriodMinutes: Number(gracePeriodMinutes),
+        latePenaltyPercentage: parseFloat(latePenaltyPercentage),
+        allowLateSubmission,
+        questions,
+        questionImages,
+      });
+
+      showSnackbar("Task created", SNACKBAR_VARIANTS.SUCCESS);
+      router.back();
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error creating task", logout);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePickImage = async (index: number) => {
@@ -119,6 +208,7 @@ export default function EditExamScreen() {
       mediaTypes: "images",
       quality: 1,
     });
+
     if (!result.canceled) {
       const asset = result.assets[0];
       const updatedImages = [...questionImages];
@@ -159,124 +249,9 @@ export default function EditExamScreen() {
     });
   };
 
-  const handleSubmit = async () => {
-    if (!title) {
-      showSnackbar("Please complete the exam title", SNACKBAR_VARIANTS.ERROR);
-      return;
-    }
-
-    if (!description) {
-      showSnackbar(
-        "Please complete the exam description",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (!instructions) {
-      showSnackbar(
-        "Please complete the exam instructions",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (parseInt(maxScore) <= 0) {
-      showSnackbar(
-        "Max score can't be less or equal than zero",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (parseInt(minScore) < 0) {
-      showSnackbar(
-        "Min score can't be less or equal than zero",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (parseInt(maxScore) < parseInt(minScore)) {
-      showSnackbar(
-        "Max score can't be smaller than min score",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (parseInt(gracePeriodMinutes) < 0) {
-      showSnackbar(
-        "Tolerance minutes can't be less than zero",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (parseFloat(latePenaltyPercentage) < 0.0) {
-      showSnackbar(
-        "Late delivery pentalty can't be less than zero",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (startDate >= endDate) {
-      showSnackbar(
-        "End date must be after start date",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    if (questions.length === 0) {
-      showSnackbar(
-        "Please add at least one question to the exam",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-
-    let totalQuestionsScore = questions.reduce(
-      (total, question) => total + question.score,
-      0
-    );
-
-    if (totalQuestionsScore !== parseInt(maxScore)) {
-      showSnackbar(
-        "The total question scores must equal the maximum score",
-        SNACKBAR_VARIANTS.ERROR
-      );
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateAssessment(id as string, examId as string, {
-        title,
-        description,
-        instructions,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        maxScore: parseInt(maxScore),
-        minScore: parseInt(minScore),
-        gracePeriodMinutes: parseInt(gracePeriodMinutes),
-        latePenaltyPercentage: parseFloat(latePenaltyPercentage),
-        allowLateSubmission,
-        questions,
-        questionImages,
-      });
-      showSnackbar("Exam updated", SNACKBAR_VARIANTS.SUCCESS);
-      router.back();
-    } catch (err) {
-      handleApiError(err, showSnackbar, "Error updating exam", logout);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <AssessmentForm
-      type="EXAM"
+      type="TASK"
       values={{
         title,
         description,
@@ -310,7 +285,7 @@ export default function EditExamScreen() {
       addQuestion={addQuestion}
       removeQuestion={removeQuestion}
       loading={loading}
-      submitButtonText="Update exam"
+      submitButtonText="Create task"
       showDateTimePicker={showDateTimePicker}
     />
   );

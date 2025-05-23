@@ -1,30 +1,48 @@
 import { RelativePathString, router, Stack } from "expo-router";
 import { AuthProvider } from "../src/context/authContext";
-import { Platform } from "react-native";
 import { useEffect, useRef, useContext } from "react";
-import notifee, { AndroidImportance, AndroidVisibility, EventType } from "@notifee/react-native";
-import messaging, { FirebaseMessagingTypes } from "@react-native-firebase/messaging"; 
-import { getAllNotifications, addNotification, deleteNotification } from "@services/NotificationService";
-import { NotificationResponse } from "@src/types/notification"; 
-import { NotificationProvider, NotificationContext } from "@context/notificationContext";
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+  EventType,
+} from "@notifee/react-native";
+import messaging, {
+  FirebaseMessagingTypes,
+} from "@react-native-firebase/messaging";
+import { getAllNotifications } from "@services/NotificationService";
+import { NotificationResponse } from "@src/types/notification";
+import {
+  NotificationProvider,
+  NotificationContext,
+} from "@context/notificationContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppSnackbar } from "@components/AppSnackbar";
+import { SnackbarProvider, useSnackbar } from "@context/SnackbarContext";
 
 const showNotification = async (
   remoteMessage: FirebaseMessagingTypes.RemoteMessage,
   setHasNewNotifications: (value: boolean) => void,
-  notifications: NotificationResponse[], 
+  notifications: NotificationResponse[],
   setNotifications: React.Dispatch<React.SetStateAction<NotificationResponse[]>>
 ) => {
-
   const storedUserId = await AsyncStorage.getItem("userId");
-  const notificationUserId = remoteMessage.data?.userId ? String(remoteMessage.data?.userId) : "";
+  const notificationUserId = remoteMessage.data?.userId
+    ? String(remoteMessage.data?.userId)
+    : "";
 
   if (!storedUserId || storedUserId !== notificationUserId) {
     return;
   }
 
-  if (!remoteMessage.data?.id || !remoteMessage.data?.title || !remoteMessage.data?.body) {
-    console.warn("⚠️ Notificación inválida, no se guardará:", remoteMessage.data);
+  if (
+    !remoteMessage.data?.id ||
+    !remoteMessage.data?.title ||
+    !remoteMessage.data?.body
+  ) {
+    console.warn(
+      "⚠️ Notificación inválida, no se guardará:",
+      remoteMessage.data
+    );
     return;
   }
 
@@ -33,10 +51,13 @@ const showNotification = async (
     userId: Number(remoteMessage.data?.userId) || 0,
     title: String(remoteMessage.data?.title) || "Nueva notificación",
     body: String(remoteMessage.data?.body) || "Tienes un mensaje",
-    type: "PUSH", 
+    type: "PUSH",
     isRead: false,
-    createdAt: String(remoteMessage.data?.createdAt) || new Date().toISOString(),
-    detail: remoteMessage.data?.detail ? String(remoteMessage.data?.detail) : undefined,
+    createdAt:
+      String(remoteMessage.data?.createdAt) || new Date().toISOString(),
+    detail: remoteMessage.data?.detail
+      ? String(remoteMessage.data?.detail)
+      : undefined,
   };
 
   await notifee.requestPermission();
@@ -71,14 +92,14 @@ const NotificationHandler = () => {
     console.error("⚠️ NotificationContext no está disponible.");
     return null;
   }
-  
+
   const { setHasNewNotifications, setNotifications, notifications } = context;
 
   useEffect(() => {
-    if (hasSubscribed.current) return; 
-  
-    hasSubscribed.current = true; 
-  
+    if (hasSubscribed.current) return;
+
+    hasSubscribed.current = true;
+
     const fetchNotifications = async () => {
       try {
         console.log("🔄 Fetching notifications...");
@@ -88,14 +109,21 @@ const NotificationHandler = () => {
         console.warn("Error fetching notifications:", error);
       }
     };
-  
-    fetchNotifications(); 
-  
-    const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
-      console.log("📲 NOTIFICACIÓN RECIBIDA (primer plano):", remoteMessage);
-      showNotification(remoteMessage, setHasNewNotifications, notifications, setNotifications);
-    });
-  
+
+    fetchNotifications();
+
+    const unsubscribeForeground = messaging().onMessage(
+      async (remoteMessage) => {
+        console.log("📲 NOTIFICACIÓN RECIBIDA (primer plano):", remoteMessage);
+        showNotification(
+          remoteMessage,
+          setHasNewNotifications,
+          notifications,
+          setNotifications
+        );
+      }
+    );
+
     return () => {
       unsubscribeForeground();
     };
@@ -103,28 +131,35 @@ const NotificationHandler = () => {
 
   messaging().setBackgroundMessageHandler(async (remoteMessage) => {
     console.log("🌙 NOTIFICACIÓN RECIBIDA (segundo plano):", remoteMessage);
-    showNotification(remoteMessage, setHasNewNotifications, notifications, setNotifications);
+    showNotification(
+      remoteMessage,
+      setHasNewNotifications,
+      notifications,
+      setNotifications
+    );
   });
-
 
   notifee.onBackgroundEvent(async ({ type, detail }) => {
     if (type === EventType.PRESS && detail.notification) {
       console.log("🟢 Notificación presionada:", detail.notification);
-  
+
       let route = detail.notification.data?.detail;
-  
+
       if (typeof route === "string") {
         try {
           if (!route.startsWith("/(protected)")) {
             route = "/(protected)" + route;
           }
-  
+
           router.push(route as RelativePathString);
         } catch (error) {
           console.error("❌ Error al navegar:", error);
         }
       } else {
-        console.warn("⚠️ Detalle de notificación no es una string válida:", route);
+        console.warn(
+          "⚠️ Detalle de notificación no es una string válida:",
+          route
+        );
       }
     }
   });
@@ -132,17 +167,32 @@ const NotificationHandler = () => {
   return null;
 };
 
+const GlobalSnackbar = () => {
+  const { visible, message, variant, hideSnackbar } = useSnackbar();
+  return (
+    <AppSnackbar
+      visible={visible}
+      message={message}
+      onDismiss={hideSnackbar}
+      variant={variant}
+    />
+  );
+};
+
 export default function RootLayout() {
   return (
-    <NotificationProvider>  
-      <NotificationHandler /> 
-      <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(signin)" options={{ headerShown: false }} />
-          <Stack.Screen name="(protected)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" options={{ title: "Oops!" }} />
-        </Stack>
-      </AuthProvider>
-    </NotificationProvider>
+    <SnackbarProvider>
+      <NotificationProvider>
+        <NotificationHandler />
+        <AuthProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(signin)" options={{ headerShown: false }} />
+            <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" options={{ title: "Oops!" }} />
+          </Stack>
+          <GlobalSnackbar />
+        </AuthProvider>
+      </NotificationProvider>
+    </SnackbarProvider>
   );
 }
