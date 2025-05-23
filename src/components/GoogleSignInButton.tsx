@@ -6,10 +6,14 @@ import { images } from "@assets/images";
 export function GoogleSignInButton({
   isLoading,
   onPress,
+  disabled = false,
 }: {
   isLoading: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }) {
+  const isButtonDisabled = isLoading || disabled;
+
   return (
     <TouchableOpacity
       style={{
@@ -28,9 +32,11 @@ export function GoogleSignInButton({
         elevation: 2,
         borderWidth: 1,
         borderColor: "#e0e0e0",
+        opacity: isButtonDisabled ? 0.5 : 1,
+        width: "60%",
       }}
       onPress={onPress}
-      disabled={isLoading}
+      disabled={isButtonDisabled}
       activeOpacity={0.85}
     >
       {isLoading ? (
