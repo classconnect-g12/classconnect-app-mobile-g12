@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useCourse } from "@context/CourseContext";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import {
   AssessmentQuestion,
@@ -46,13 +46,7 @@ export default function NewExamScreen() {
 
   const router = useRouter();
   const { courseId } = useCourse();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
   const handleQuestionChange = (index: number, field: string, value: any) => {
@@ -293,12 +287,6 @@ export default function NewExamScreen() {
       removeQuestion={removeQuestion}
       loading={loading}
       submitButtonText="Create exam"
-      snackbar={{
-        visible: snackbarVisible,
-        message: snackbarMessage,
-        onDismiss: hideSnackbar,
-        variant: snackbarVariant,
-      }}
       showDateTimePicker={showDateTimePicker}
     />
   );

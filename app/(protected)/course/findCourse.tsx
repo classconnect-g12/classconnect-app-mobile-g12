@@ -12,14 +12,11 @@ import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useSnackbar } from "@context/SnackbarContext";
 import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
-import { enrollInCourse } from "@services/EnrollmentService";
 import { useAuth } from "@context/authContext";
 
 export default function FindCourse() {
@@ -36,13 +33,7 @@ export default function FindCourse() {
 
   const { logout } = useAuth();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const loadCourses = async (pageNumber = 0, reset = false) => {
     if (reset) {
@@ -120,23 +111,6 @@ export default function FindCourse() {
       const nextPage = page + 1;
       loadCourses(nextPage);
       setPage(nextPage);
-    }
-  };
-
-  const handleJoinCourse = async (courseId: string) => {
-    try {
-      await enrollInCourse(courseId);
-      showSnackbar(
-        "Successfully joined the course!",
-        SNACKBAR_VARIANTS.SUCCESS
-      );
-    } catch (error) {
-      handleApiError(
-        error,
-        showSnackbar,
-        "There was a problem joinin the course",
-        logout
-      );
     }
   };
 
@@ -262,13 +236,6 @@ export default function FindCourse() {
               : "Search for courses to join"}
           </Text>
         )}
-      />
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
       />
     </KeyboardAvoidingView>
   );

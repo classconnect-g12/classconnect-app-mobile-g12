@@ -23,9 +23,9 @@ const defaultQuestion: AssessmentQuestion = {
   hasImage: false,
 };
 
-export default function EditExamScreen() {
+export default function EditTaskScreen() {
   const router = useRouter();
-  const { id, examId } = useLocalSearchParams();
+  const { id, taskId } = useLocalSearchParams();
   const { logout } = useAuth();
   const { showSnackbar } = useSnackbar();
 
@@ -52,7 +52,7 @@ export default function EditExamScreen() {
       try {
         setLoading(true);
 
-        const data = await getAssessmentById(id as string, examId as string);
+        const data = await getAssessmentById(id as string, taskId as string);
         setTitle(data.title);
         setDescription(data.description);
         setInstructions(data.instructions);
@@ -68,14 +68,14 @@ export default function EditExamScreen() {
           data.questionImages ?? data.questions.map(() => null)
         );
       } catch (err) {
-        handleApiError(err, showSnackbar, "Error loading exam", logout);
+        handleApiError(err, showSnackbar, "Error loading task", logout);
       } finally {
         setLoading(false);
       }
     };
 
     loadAssessment();
-  }, [examId]);
+  }, [taskId]);
 
   const handleQuestionChange = (
     index: number,
@@ -161,13 +161,13 @@ export default function EditExamScreen() {
 
   const handleSubmit = async () => {
     if (!title) {
-      showSnackbar("Please complete the exam title", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar("Please complete the task title", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     if (!description) {
       showSnackbar(
-        "Please complete the exam description",
+        "Please complete the task description",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -175,7 +175,7 @@ export default function EditExamScreen() {
 
     if (!instructions) {
       showSnackbar(
-        "Please complete the exam instructions",
+        "Please complete the task instructions",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -191,7 +191,7 @@ export default function EditExamScreen() {
 
     if (parseInt(minScore) < 0) {
       showSnackbar(
-        "Min score can't be less or equal than zero",
+        "Min score can't be less than zero",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -215,7 +215,7 @@ export default function EditExamScreen() {
 
     if (parseFloat(latePenaltyPercentage) < 0.0) {
       showSnackbar(
-        "Late delivery pentalty can't be less than zero",
+        "Late delivery penalty can't be less than zero",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -231,27 +231,28 @@ export default function EditExamScreen() {
 
     if (questions.length === 0) {
       showSnackbar(
-        "Please add at least one question to the exam",
+        "Please add at least one question to the task",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
     }
 
-    let totalQuestionsScore = questions.reduce(
-      (total, question) => total + question.score,
+    const totalScore = questions.reduce(
+      (sum, question) => sum + question.score,
       0
     );
 
-    if (totalQuestionsScore !== parseInt(maxScore)) {
+    if (totalScore !== parseInt(maxScore)) {
       showSnackbar(
         "The total question scores must equal the maximum score",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
     }
+
     setLoading(true);
     try {
-      await updateAssessment(id as string, examId as string, {
+      await updateAssessment(id as string, taskId as string, {
         title,
         description,
         instructions,
@@ -265,10 +266,10 @@ export default function EditExamScreen() {
         questions,
         questionImages,
       });
-      showSnackbar("Exam updated", SNACKBAR_VARIANTS.SUCCESS);
+      showSnackbar("Task updated", SNACKBAR_VARIANTS.SUCCESS);
       router.back();
     } catch (err) {
-      handleApiError(err, showSnackbar, "Error updating exam", logout);
+      handleApiError(err, showSnackbar, "Error updating task", logout);
     } finally {
       setLoading(false);
     }
@@ -276,7 +277,7 @@ export default function EditExamScreen() {
 
   return (
     <AssessmentForm
-      type="EXAM"
+      type="TASK"
       values={{
         title,
         description,
@@ -310,7 +311,7 @@ export default function EditExamScreen() {
       addQuestion={addQuestion}
       removeQuestion={removeQuestion}
       loading={loading}
-      submitButtonText="Update exam"
+      submitButtonText="Update task"
       showDateTimePicker={showDateTimePicker}
     />
   );

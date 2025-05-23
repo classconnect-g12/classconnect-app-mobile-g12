@@ -4,7 +4,7 @@ import {
   registerWithGoogle,
 } from "@services/AuthService";
 import { Link, useRouter } from "expo-router";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -21,9 +21,8 @@ import {
   validatePasswordLength,
   validateUsername,
 } from "@utils/validators";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { useSnackbar } from "src/hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import auth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import {
@@ -36,6 +35,34 @@ import {
 } from "@context/notificationContext";
 import { PreferencesResponse, NotificationType } from "@src/types/notification";
 import { images } from "@assets/images";
+import ReactNativeBiometrics from "react-native-biometrics";
+import * as SecureStore from "expo-secure-store";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+const saveCredentials = async (
+  email: string,
+  password?: string,
+  firebaseIdToken?: string
+) => {
+  await SecureStore.setItemAsync("biometric_email", email);
+  if (password) {
+    await SecureStore.setItemAsync("biometric_password", password);
+    await SecureStore.deleteItemAsync("biometric_firebase_token");
+  } else if (firebaseIdToken) {
+    await SecureStore.deleteItemAsync("biometric_password");
+    await SecureStore.setItemAsync("biometric_firebase_token", firebaseIdToken);
+  } else {
+    await SecureStore.deleteItemAsync("biometric_password");
+    await SecureStore.deleteItemAsync("biometric_firebase_token");
+  }
+};
+
+const getCredentials = async () => {
+  const email = await SecureStore.getItemAsync("biometric_email");
+  const password = await SecureStore.getItemAsync("biometric_password");
+  const firebaseIdToken = await SecureStore.getItemAsync("biometric_firebase_token");
+  return { email, password, firebaseIdToken };
+};
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -45,20 +72,16 @@ export default function SignIn() {
   const [username, setUsername] = useState("");
   const [pendingIdToken, setPendingIdToken] = useState("");
   const [activeButton, setActiveButton] = useState<
-    "email" | "google" | "register" | null
+    "email" | "google" | "register" | "biometric" | null
   >(null);
 
   const { login: authLogin } = useAuth();
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const notificationContext = useContext(NotificationContext);
+
+  const triedAutoBiometric = useRef(false);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -67,9 +90,48 @@ export default function SignIn() {
     });
   }, []);
 
+  useEffect(() => {
+    const autoBiometric = async () => {
+      if (triedAutoBiometric.current) return;
+      triedAutoBiometric.current = true;
+
+      const { email: savedEmail, password: savedPassword, firebaseIdToken } = await getCredentials();
+      if (!savedEmail) return; 
+
+      const rnBiometrics = new ReactNativeBiometrics();
+      const { available } = await rnBiometrics.isSensorAvailable();
+      if (!available) return;
+
+      const { success } = await rnBiometrics.simplePrompt({ promptMessage: "Authenticate to sign in" });
+      if (success) {
+        if (savedPassword) {
+          await handleSubmit(savedEmail, savedPassword);
+        } else if (firebaseIdToken) {
+          try {
+            setActiveButton("google");
+            setIsLoading(true);
+            const backendToken = await loginWithGoogle(firebaseIdToken);
+            await authLogin(backendToken);
+            await syncUserData();
+            router.replace("../home");
+          } catch (error: any) {
+            showSnackbar(
+              error?.detail || "Error with biometric Google login",
+              SNACKBAR_VARIANTS.ERROR
+            );
+          } finally {
+            setIsLoading(false);
+            setActiveButton(null);
+          }
+        }
+      }
+    };
+
+    autoBiometric();
+  }, []);
   const syncUserData = async () => {
     if (!notificationContext) {
-      console.error("⚠️ NotificationContext no está disponible.");
+      console.error("⚠️ NotificationContext is not available.");
       return;
     }
 
@@ -103,18 +165,22 @@ export default function SignIn() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!email || !validateEmail(email))
+  const handleSubmit = async (customEmail?: string, customPassword?: string) => {
+    const usedEmail = customEmail ?? email;
+    const usedPassword = customPassword ?? password;
+
+    if (!usedEmail || !validateEmail(usedEmail))
       return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
-    if (!password || !validatePasswordLength(password))
+    if (!usedPassword || !validatePasswordLength(usedPassword))
       return showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
 
     try {
       setActiveButton("email");
       setIsLoading(true);
-      const token = await login(email, password);
+      const token = await login(usedEmail, usedPassword);
       await authLogin(token);
 
+      await saveCredentials(usedEmail, usedPassword);
       await syncUserData();
 
       router.replace("../home");
@@ -151,19 +217,21 @@ export default function SignIn() {
         const backendToken = await loginWithGoogle(firebaseIdToken);
         await authLogin(backendToken);
 
+        const googleEmail =
+          userCredential.user.email || email || userInfo.user?.email;
+        if (googleEmail) {
+          await saveCredentials(googleEmail, undefined, firebaseIdToken);
+        }
+
         await syncUserData();
 
         router.replace("../home");
       } catch (error: any) {
-        
         if (error?.status === 404) {
           setShowUsernameInput(true);
           setPendingIdToken(firebaseIdToken);
           return;
         }
-        
-
-        console.error("Google login error:", error.status);
         showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
       }
     } finally {
@@ -186,11 +254,12 @@ export default function SignIn() {
       const token = await registerWithGoogle(pendingIdToken, username);
       await authLogin(token);
 
+      await saveCredentials(email, undefined, pendingIdToken);
+
       await syncUserData();
 
       router.replace("../home");
     } catch (error: any) {
-      console.error("Google registration error:", error);
       showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
     } finally {
       setActiveButton(null);
@@ -198,6 +267,59 @@ export default function SignIn() {
     }
   };
 
+  const handleBiometricLogin = async () => {
+    try {
+      setActiveButton("biometric");
+      setIsLoading(true);
+
+      const rnBiometrics = new ReactNativeBiometrics();
+      const { available } = await rnBiometrics.isSensorAvailable();
+
+      if (!available) {
+        showSnackbar("Biometric authentication not available", SNACKBAR_VARIANTS.ERROR);
+        return;
+      }
+
+      const { success } = await rnBiometrics.simplePrompt({ promptMessage: "Authenticate to sign in" });
+
+      if (success) {
+        const { email: savedEmail, password: savedPassword, firebaseIdToken } = await getCredentials();
+        if (!savedEmail) {
+          showSnackbar("No credentials saved for biometric login. Please sign in manually first.", SNACKBAR_VARIANTS.ERROR);
+          return;
+        }
+        if (savedPassword) {
+          await handleSubmit(savedEmail, savedPassword);
+        } else if (firebaseIdToken) {
+          try {
+            setActiveButton("google");
+            setIsLoading(true);
+            const backendToken = await loginWithGoogle(firebaseIdToken);
+            await authLogin(backendToken);
+            await syncUserData();
+            router.replace("../home");
+          } catch (error: any) {
+            showSnackbar(
+              error?.detail || "Error with biometric Google login",
+              SNACKBAR_VARIANTS.ERROR
+            );
+          } finally {
+            setIsLoading(false);
+            setActiveButton(null);
+          }
+        } else {
+          showSnackbar("No credentials saved for biometric login. Please sign in manually first.", SNACKBAR_VARIANTS.ERROR);
+        }
+      } else {
+        showSnackbar("Biometric authentication failed", SNACKBAR_VARIANTS.ERROR);
+      }
+    } catch (error) {
+      showSnackbar("Error during biometric login", SNACKBAR_VARIANTS.ERROR);
+    } finally {
+      setIsLoading(false);
+      setActiveButton(null);
+    }
+  };
   return (
     <View style={styles.container}>
       <View>
@@ -230,7 +352,7 @@ export default function SignIn() {
               styles.button,
               isLoading && activeButton !== "email" && { opacity: 0.6 },
             ]}
-            onPress={handleSubmit}
+            onPress={() => handleSubmit()}
             disabled={isLoading}
           >
             {isLoading && activeButton === "email" ? (
@@ -254,6 +376,34 @@ export default function SignIn() {
               <Text style={styles.buttonText}>Sign in with Google</Text>
             )}
           </TouchableOpacity>
+
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.secondary,
+                borderRadius: 32,
+                width: 56,
+                height: 56,
+                justifyContent: "center",
+                alignItems: "center",
+                elevation: 3,
+                shadowColor: "#000",
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+              }}
+              onPress={handleBiometricLogin}
+              disabled={isLoading}
+            >
+              {isLoading && activeButton === "biometric" ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Icon name="fingerprint" size={32} color="#fff" />
+              )}
+            </TouchableOpacity>
+            <Text style={{ marginTop: 8, color: colors.secondary, fontWeight: "bold" }}>
+              Biometrics
+            </Text>
+          </View>
         </>
       ) : (
         <>
@@ -294,12 +444,6 @@ export default function SignIn() {
           Sign up
         </Link>
       </Text>
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }

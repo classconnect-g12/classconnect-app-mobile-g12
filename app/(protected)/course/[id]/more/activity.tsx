@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useCourse } from "@context/CourseContext";
 import { View, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 import { getCourseActivityLogs } from "@services/CourseService";
 import { format } from "date-fns";
+import { handleApiError } from "@utils/handleApiError";
+import { useSnackbar } from "@context/SnackbarContext";
+import { useAuth } from "@context/authContext";
 
 type ActivityLog = {
   id: number;
@@ -19,22 +22,23 @@ export default function Activity() {
   const { courseId, courseTitle } = useCourse();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { logout } = useAuth();
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     const fetchLogs = async () => {
       if (!courseId) return;
-
+      
       try {
         const response = await getCourseActivityLogs(courseId);
         console.log("Logs:", response);
         setLogs(response.logs || []);
       } catch (error) {
-        console.error("Error fetching logs:", error);
+        handleApiError(error, showSnackbar, "Error fetching logs", logout)
       } finally {
         setLoading(false);
       }
     };
-
     fetchLogs();
   }, [courseId]);
 

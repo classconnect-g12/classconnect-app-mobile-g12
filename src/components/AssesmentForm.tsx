@@ -15,14 +15,12 @@ import {
   IconButton,
 } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
-import { AppSnackbar } from "./AppSnackbar";
 import {
   AssessmentType,
   AssessmentQuestion,
 } from "@services/AssessmentService";
 import { createCourseStyles as styles } from "@styles/createCourseStyles";
 import { colors } from "@theme/colors";
-import { useSnackbar } from "@hooks/useSnackbar";
 
 type QuestionImages = ({
   uri: string;
@@ -64,13 +62,6 @@ type OnChangeHandlers = {
   handleOptionChange: (qIndex: number, oIndex: number, value: string) => void;
 };
 
-type SnackbarProps = {
-  visible: boolean;
-  message: string;
-  onDismiss: () => void;
-  variant: string;
-};
-
 type AssessmentFormProps = {
   type?: AssessmentType;
   values: Values;
@@ -81,7 +72,6 @@ type AssessmentFormProps = {
   removeQuestion: (index: number) => void;
   loading: boolean;
   submitButtonText?: string;
-  snackbar: SnackbarProps;
   showDateTimePicker: (
     currentDate: Date,
     onConfirm: (selectedDateTime: Date) => void
@@ -98,7 +88,6 @@ const AssessmentForm = ({
   removeQuestion,
   loading,
   submitButtonText = "Save",
-  snackbar,
   showDateTimePicker,
 }: AssessmentFormProps) => {
   const {
@@ -130,14 +119,6 @@ const AssessmentForm = ({
     handleQuestionChange,
     handleOptionChange,
   } = onChange;
-
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="height">
@@ -390,13 +371,6 @@ const AssessmentForm = ({
               {submitButtonText}
             </Button>
           )}
-
-          <AppSnackbar
-            visible={snackbarVisible}
-            message={snackbarMessage}
-            onDismiss={hideSnackbar}
-            variant={snackbarVariant}
-          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

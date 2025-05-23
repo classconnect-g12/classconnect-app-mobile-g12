@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-paper";
-
 import { forgotPasswordStyles as styles } from "@styles/forgotPasswordStyles";
 import { colors } from "@theme/colors";
 import { validateEmail } from "@utils/validators";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { resetPassword, resetPasswordWithCode } from "@services/AuthService";
 import { useRouter } from "expo-router";
 import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -20,13 +19,8 @@ export default function ForgotPassword() {
   const [step, setStep] = useState("email");
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
   const handleSubmitEmail = async () => {
     if (!email) {
@@ -46,7 +40,7 @@ export default function ForgotPassword() {
       showSnackbar(message, SNACKBAR_VARIANTS.INFO);
       setStep("code");
     } catch (error: any) {
-      handleApiError(error, showSnackbar, "Error resetting password");
+      handleApiError(error, showSnackbar, "Error resetting password", logout);
     }
   };
 
@@ -76,7 +70,7 @@ export default function ForgotPassword() {
       showSnackbar(message, SNACKBAR_VARIANTS.SUCCESS);
       router.replace("/(signin)/login");
     } catch (error: any) {
-      handleApiError(error, showSnackbar, "Error resetting password");
+      handleApiError(error, showSnackbar, "Error resetting password", logout);
     }
   };
 
@@ -145,13 +139,6 @@ export default function ForgotPassword() {
           Go back
         </Text>
       </Text>
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 }

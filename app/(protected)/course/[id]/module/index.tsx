@@ -13,10 +13,9 @@ import { fetchModules, createModule, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { colors } from "@theme/colors";
-import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
+import { AnimatedFAB } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
@@ -24,13 +23,7 @@ import { useModule } from "@context/ModuleContext";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { courseId, isTeacher, courseTitle } = useCourse();
 
   const [modules, setModules] = useState<Module[]>([]);
@@ -174,13 +167,6 @@ const CourseModulesScreen = () => {
           color={colors.buttonText}
         />
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 };

@@ -17,26 +17,26 @@ import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 
-export default function ExamsScreen() {
-  const [exams, setExams] = useState<Assessment[]>([]);
+export default function TasksScreen() {
+  const [tasks, setTasks] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
-  const loadExams = async () => {
+  const loadTasks = async () => {
     setLoading(true);
     try {
       const assessments = await getAssessmentsByCourse(
         courseId as string,
         0,
         10,
-        "EXAM"
+        "TASK"
       );
-      setExams(assessments);
+      setTasks(assessments);
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error loading exams", logout);
+      handleApiError(error, showSnackbar, "Error loading tasks", logout);
     } finally {
       setLoading(false);
     }
@@ -45,15 +45,15 @@ export default function ExamsScreen() {
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
-        loadExams();
+        loadTasks();
       }
     }, [courseId])
   );
 
-  const handleDelete = (examId: number) => {
+  const handleDelete = (taskId: number) => {
     Alert.alert(
       "Confirm delete",
-      "Are you sure you want to delete this exam?",
+      "Are you sure you want to delete this task?",
       [
         {
           text: "Cancel",
@@ -64,16 +64,16 @@ export default function ExamsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteAssessment(courseId as string, examId);
-              showSnackbar("Exam deleted", SNACKBAR_VARIANTS.SUCCESS);
-              setExams((prevExams) =>
-                prevExams.filter((exam) => exam.id !== examId)
+              await deleteAssessment(courseId as string, taskId);
+              showSnackbar("Task deleted", SNACKBAR_VARIANTS.SUCCESS);
+              setTasks((prevTasks) =>
+                prevTasks.filter((task) => task.id !== taskId)
               );
             } catch (error) {
               handleApiError(
                 error,
                 showSnackbar,
-                "Error deleting exam",
+                "Error deleting task",
                 logout
               );
             }
@@ -88,7 +88,7 @@ export default function ExamsScreen() {
     <Card style={styles.moduleCard}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <MaterialCommunityIcons
-          name="file-document-outline"
+          name="clipboard-text-outline"
           size={24}
           color={colors.primary}
           style={{ marginRight: 8 }}
@@ -98,7 +98,7 @@ export default function ExamsScreen() {
 
       <Text style={styles.description}>{item.instructions}</Text>
       <Text style={styles.order}>
-        Start: {new Date(item.startDate).toLocaleString()}
+        Deadline: {new Date(item.startDate).toLocaleString()}
       </Text>
 
       {isTeacher && (
@@ -132,7 +132,7 @@ export default function ExamsScreen() {
                 size={24}
                 color={colors.primary}
                 onPress={() => {
-                  router.push(`/course/${courseId}/exam/editExam/${item.id}`);
+                  router.push(`/course/${courseId}/task/editTask/${item.id}`);
                 }}
                 style={{ marginRight: 16 }}
               />
@@ -157,15 +157,15 @@ export default function ExamsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Exams</Text>
+      <Text style={styles.heading}>Tasks</Text>
 
       <FlatList
-        data={exams}
+        data={tasks}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.empty}>No exams available</Text>
+          <Text style={styles.empty}>No tasks available</Text>
         }
       />
 
@@ -175,7 +175,7 @@ export default function ExamsScreen() {
           label=""
           extended={false}
           onPress={() =>
-            router.push(`/(protected)/course/${courseId}/exam/new`)
+            router.push(`/(protected)/course/${courseId}/task/new`)
           }
           style={styles.fab}
           visible

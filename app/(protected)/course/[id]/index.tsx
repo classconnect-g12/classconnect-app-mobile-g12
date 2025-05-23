@@ -5,24 +5,17 @@ import { fetchCourseDetail } from "@services/CourseService";
 import { detailCourseStyles as styles } from "@styles/detailCourseStyles";
 import { colors } from "@theme/colors";
 import { Card, Button } from "react-native-paper";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { enrollInCourse } from "@services/EnrollmentService";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { useCourse } from "@context/CourseContext";
 import { useAuth } from "@context/authContext";
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
   const router = useRouter();
@@ -173,13 +166,6 @@ export default function CourseDetail() {
           {joiningStatus === "idle" && "Join Course"}
         </Button>
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </ScrollView>
   );
 }
@@ -190,9 +176,7 @@ const renderSection = (title: string, content: string) => {
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <Text
-        style={isEmpty ? styles.sectionEmptyText : styles.sectionText}
-      >
+      <Text style={isEmpty ? styles.sectionEmptyText : styles.sectionText}>
         {isEmpty ? "No information available." : content}
       </Text>
     </View>
