@@ -6,10 +6,14 @@ import { colors } from "@theme/colors";
 export function BiometricButton({
   isLoading,
   onPress,
+  disabled = false,
 }: {
   isLoading: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }) {
+  const isButtonDisabled = isLoading || disabled;
+
   return (
     <View style={{ alignItems: "center", marginTop: 20 }}>
       <TouchableOpacity
@@ -24,9 +28,11 @@ export function BiometricButton({
           shadowColor: "#000",
           shadowOpacity: 0.15,
           shadowRadius: 8,
+          opacity: isButtonDisabled ? 0.5 : 1,
         }}
         onPress={onPress}
-        disabled={isLoading}
+        disabled={isButtonDisabled}
+        activeOpacity={0.7}
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
