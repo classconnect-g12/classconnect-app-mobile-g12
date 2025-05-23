@@ -12,6 +12,7 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useSnackbar } from "src/hooks/useSnackbar";
 import * as SecureStore from "expo-secure-store"; 
 import { PinVerificationModal } from "@components/PinVerificationModal";
+import { useLogin } from "@hooks/useLogin";
 
 const saveCredentials = async (email: string, password: string) => {
   await SecureStore.setItemAsync("biometric_email", email);
@@ -25,7 +26,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const loginHook = useLogin();
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   const { login: authLogin } = useAuth();
@@ -87,10 +88,11 @@ export default function SignUp() {
       showSnackbar("Account created successfully!", SNACKBAR_VARIANTS.SUCCESS);
     } catch (error: any) {
         if (error?.title === "Account Not Verified" || error?.status === 403) {
-          router.replace({
-            pathname: "/(signin)/login",
-            params: { email, showVerify: "1" }
-          });
+          loginHook.setActivationEmail(email); 
+          loginHook.setEmail(email);
+          loginHook.setPassword(password);
+          setShowVerifyModal(true);
+          showSnackbar("Please verify your account to log in", SNACKBAR_VARIANTS.INFO);
           return;
         }
         showSnackbar(error.detail, SNACKBAR_VARIANTS.ERROR);
@@ -154,12 +156,7 @@ export default function SignUp() {
         showSnackbar={showSnackbar}
         onVerified={async () => {
           try {
-            setIsLoading(true);
-            const token = await login(email, password);
-            await authLogin(token);
-            await saveCredentials(email, password);
-            router.replace("../home");
-            showSnackbar("Account verified and logged in!", SNACKBAR_VARIANTS.SUCCESS);
+            await loginHook.handlePinVerified();
           } catch (error: any) {
             showSnackbar("Could not log in automatically. Please try manually.", SNACKBAR_VARIANTS.ERROR);
             router.replace("/(signin)/login");
