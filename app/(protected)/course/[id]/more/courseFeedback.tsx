@@ -6,7 +6,7 @@ import {
   getCourseIaFeedbacks,
 } from "@services/feedbackService";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import { feedbackStyles } from "@styles/myFeedbackStyles";
 import { useCourse } from "@context/CourseContext";
@@ -36,6 +36,7 @@ export default function CourseFeedbackScreen() {
           page: 0,
           size: 10,
         });
+        console.log(response);
         setFeedbacks(response.feedbacks);
       } catch (error) {
         handleApiError(

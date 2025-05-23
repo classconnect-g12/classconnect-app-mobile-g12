@@ -14,6 +14,8 @@ export const feedbackStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "gray",
     borderRadius: 4,
     marginVertical: 8,
   },
@@ -25,9 +27,12 @@ export const feedbackStyles = StyleSheet.create({
     marginVertical: 12,
   },
   button: {
+    width: "50%",
+    alignSelf: "center",
     borderRadius: 6,
     backgroundColor: colors.primary,
     marginTop: 16,
+    marginBottom: 16,
   },
   emptyMessage: {
     textAlign: "center",
@@ -49,7 +54,7 @@ export const feedbackStyles = StyleSheet.create({
   },
   emptyStar: {
     fontSize: 20,
-    color: '#CCCCCC',
+    color: "#CCCCCC",
   },
   author: {
     fontSize: 16,
@@ -61,10 +66,31 @@ export const feedbackStyles = StyleSheet.create({
   },
   totalFeedbacks: {
     fontSize: 16,
+    fontWeight: "bold",
     marginVertical: 4,
   },
   summary: {
+    borderTopWidth: 1,
+    borderTopColor: "gray",
+    paddingTop: 8,
     fontSize: 16,
     marginVertical: 4,
+  },
+  sectionTitle: {
+    textDecorationLine: "underline",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+    marginTop: 16,
+    color: "#333",
+  },
+
+  placeholderText: {
+    fontSize: 16,
+    marginTop: 16,
+    fontStyle: "italic",
+    color: "#777",
+    marginBottom: 16,
+    textAlign: "center",
   },
 });
