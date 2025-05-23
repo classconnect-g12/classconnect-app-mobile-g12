@@ -93,7 +93,7 @@ export default function TasksScreen() {
         style={styles.moduleCard}
         onPress={() => {
           if (!isTeacher) {
-            router.push(`/course/${courseId}/task/solve/${item.id}`);
+            router.push(`/course/${courseId}/task/complete/${item.id}`);
           }
         }}
       >
