@@ -2,8 +2,10 @@ import { Tabs, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { CourseProvider, useCourse } from "@context/CourseContext";
-import { fetchCourseDetail } from "@services/CourseService";
+import { fetchCourseDetail, getCourseStatus } from "@services/CourseService";
 import { Pressable, StyleSheet } from "react-native";
+
+const FINISHED_COURSE_STATUS = "FINISHED";
 
 function InnerTabs() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -12,7 +14,11 @@ function InnerTabs() {
     setCourseTitle,
     setIsEnrolled,
     setIsTeacher,
+    setCourseStatus,
+    setCourseDetail,
     isEnrolled,
+    courseStatus,
+    setIsLoading,
   } = useCourse();
 
   useEffect(() => {
@@ -20,12 +26,18 @@ function InnerTabs() {
 
     const fetchData = async () => {
       try {
+        setIsLoading?.(true);
         const courseDetail = await fetchCourseDetail(id ?? "");
+        setCourseDetail(courseDetail);
         setCourseTitle(courseDetail.course.title);
         setIsEnrolled(courseDetail.course.isEnrolled);
         setIsTeacher(courseDetail.course.isTeacher);
+        const courseStatus = await getCourseStatus(id ?? "");
+        setCourseStatus(courseStatus.status);
       } catch (error) {
         console.error("Error fetching course data:", error);
+      } finally {
+        setIsLoading?.(false);
       }
     };
 
@@ -43,6 +55,8 @@ function InnerTabs() {
       opacity: 0.4,
     },
   });
+
+  const isFinished = courseStatus === FINISHED_COURSE_STATUS;
 
   return (
     <Tabs
@@ -88,7 +102,7 @@ function InnerTabs() {
             <Ionicons name="file-tray-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? (
+            isEnrolled && !isFinished ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />
@@ -103,7 +117,7 @@ function InnerTabs() {
             <Ionicons name="school-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled ? (
+            isEnrolled && !isFinished ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />

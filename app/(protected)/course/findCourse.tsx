@@ -120,11 +120,12 @@ export default function FindCourse() {
     // Check if course is about to start (within 3 days)
     const now = new Date();
     const startDate = new Date(item.startDate);
+    const endDate = new Date(item.endDate);
     const daysUntilStart =
       (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
-    // Check if course has already started
     const hasStarted = startDate < now;
+    const hasEnded = endDate < now;
 
     return (
       <TouchableWithoutFeedback
@@ -149,11 +150,13 @@ export default function FindCourse() {
                   Last days to register
                 </Text>
               )}
-              {hasStarted && (
-                <Text style={styles.alreadyStartedIndicator}>
+              {hasEnded ? (
+                <Text style={styles.alreadyStartedIndicator}>Finished</Text>
+              ) : hasStarted ? (
+                <Text style={styles.availabilityIndicator}>
                   Already started
                 </Text>
-              )}
+              ) : null}
             </Card.Content>
             <Card.Actions>
               <Button

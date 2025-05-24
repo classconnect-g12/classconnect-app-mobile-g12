@@ -85,9 +85,9 @@ export default function EditCourse() {
       return;
     }
 
-    if (description.trim().length < 50 || description.trim().length > 255) {
+    if (description.trim().length > 255) {
       showSnackbar(
-        "Description must have between 50 and 255 characters",
+        "Description must have at most 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;

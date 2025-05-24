@@ -14,6 +14,8 @@ import {
   Portal,
   Button,
   Checkbox,
+  TextInput,
+  Dialog,
 } from "react-native-paper";
 import { router } from "expo-router";
 import {
@@ -30,6 +32,10 @@ import {
   ASSISTANT_PERMISSIONS,
   PERMISSION_LABELS,
 } from "@constants/permissions";
+
+import { colors } from "@theme/colors";
+import { sendFeedbackCourseToStudent } from "@services/feedbackService";
+
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
 
@@ -59,7 +65,6 @@ export default function Members() {
   const [promoting, setPromoting] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { logout } = useAuth();
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [permissionsModalVisible, setPermissionsModalVisible] = useState(false);
@@ -74,6 +79,13 @@ export default function Members() {
     useState(false);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState<Member | null>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+
+  const { logout } = useAuth();
   const { showSnackbar } = useSnackbar();
 
   const fetchMembers = async () => {
@@ -224,6 +236,47 @@ export default function Members() {
     }
   };
 
+  const confirmSendFeedback = async () => {
+    if (!feedbackTarget || !courseId) {
+      showSnackbar("Empty", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (!feedbackComment.trim()) {
+      showSnackbar("Comment cannot be empty", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (feedbackRating < 1 || feedbackRating > 5) {
+      showSnackbar("Rating must be between 1 and 5", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (feedbackComment.length > 255) {
+      showSnackbar("Comment must be 1 to 255 characters long", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    setSendingFeedback(true);
+    try {
+      await sendFeedbackCourseToStudent(
+        courseId,
+        String(feedbackTarget.userProfile.id),
+        feedbackComment.trim(),
+        feedbackRating,
+      );
+
+      setFeedbackModalVisible(false);
+      setFeedbackTarget(null);
+      setFeedbackComment("");
+      setFeedbackRating(0);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error sending feedback", logout);
+    } finally {
+      setSendingFeedback(false);
+    }
+  };
+
   const renderMember = ({ item }: { item: Member }) => {
     const profile = item.userProfile;
     const fullName =
@@ -268,6 +321,16 @@ export default function Members() {
             )}
             {isStudent && (
               <>
+                <IconButton
+                  icon="message-star-outline"
+                  iconColor="#1976d2"
+                  onPress={() => {
+                    setFeedbackTarget(item);
+                    setFeedbackModalVisible(true);
+                    setFeedbackComment("");
+                    setFeedbackRating(0);
+                  }}
+                />
                 <IconButton
                   icon="account-arrow-up"
                   iconColor="#388e3c"
@@ -468,6 +531,70 @@ export default function Members() {
             </View>
           </View>
         </Modal>
+      </Portal>
+
+      <Portal>
+        <Dialog
+          visible={feedbackModalVisible}
+          onDismiss={() => setFeedbackModalVisible(false)}
+          style={styles.confirmModalBox}
+        >
+          <Dialog.Title>
+            Send feedback to{" "}
+            <Text style={{ fontWeight: "bold" }}>
+              {feedbackTarget?.userProfile.user_name}
+            </Text>
+          </Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              mode="outlined"
+              label="Comment"
+              value={feedbackComment}
+              maxLength={255}
+              onChangeText={setFeedbackComment}
+              multiline
+              outlineColor="transparent"
+              activeOutlineColor={colors.primary}
+              style={{
+                marginBottom: 10,
+                backgroundColor: "white",
+                borderTopWidth: 0,
+                borderLeftWidth: 0,
+                borderRightWidth: 0,
+                borderBottomWidth: 1,
+              }}
+            />
+
+            <View style={{ flexDirection: "row", marginBottom: 8 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <IconButton
+                  key={star}
+                  icon={feedbackRating >= star ? "star" : "star-outline"}
+                  iconColor="#fbc02d"
+                  size={28}
+                  onPress={() => setFeedbackRating(star)}
+                />
+              ))}
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => setFeedbackModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={confirmSendFeedback}
+              disabled={sendingFeedback}
+              loading={sendingFeedback}
+              style={styles.confirmButton}
+            >
+              Send
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
       </Portal>
     </View>
   );

@@ -1,5 +1,10 @@
 import React from "react";
-import { TouchableWithoutFeedback, View, Text, TouchableOpacity } from "react-native";
+import {
+  TouchableWithoutFeedback,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { Card, Button } from "react-native-paper";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
@@ -31,10 +36,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
   const isLimitedCapacity = item.capacity <= 5;
   const now = new Date();
   const startDate = new Date(item.startDate);
+  const endDate = new Date(item.endDate);
   const daysUntilStart =
     (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
   const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
   const hasStarted = startDate < now;
+  const hasEnded = endDate < now;
 
   const handlePress = () => {
     router.push(`/course/${item.id}`);
@@ -50,22 +57,26 @@ const CourseItem: React.FC<CourseItemProps> = ({
                 <Text style={styles.courseName}>{item.title}</Text>
                 <Text style={styles.courseDescription}>{item.description}</Text>
                 <Text style={styles.courseDetails}>
-                  Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
-                  {new Date(item.endDate).toLocaleDateString()}
+                  Starts: {new Date(item.startDate).toLocaleDateString()} |
+                  Ends: {new Date(item.endDate).toLocaleDateString()}
                 </Text>
                 {isLimitedCapacity && (
-                  <Text style={styles.availabilityIndicator}>Limited spots</Text>
+                  <Text style={styles.availabilityIndicator}>
+                    Limited spots
+                  </Text>
                 )}
                 {isStartingSoon && (
                   <Text style={styles.availabilityIndicator}>
                     Last days to enroll
                   </Text>
                 )}
-                {hasStarted && (
-                  <Text style={styles.alreadyStartedIndicator}>
+                {hasEnded ? (
+                  <Text style={styles.alreadyStartedIndicator}>Finished</Text>
+                ) : hasStarted ? (
+                  <Text style={styles.availabilityIndicator}>
                     Already started
                   </Text>
-                )}
+                ) : null}
               </View>
               {tab === "enrolled" && (
                 <TouchableOpacity
@@ -83,12 +94,12 @@ const CourseItem: React.FC<CourseItemProps> = ({
                   }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                 <Ionicons
-                  name={isFavorite ? "star" : "star-outline"}
-                  size={30}
-                  color={isFavorite ? "#1976D2" : "#888"}
-                  style={{ opacity: isFavorite ? 1 : 0.5 }}
-                />
+                  <Ionicons
+                    name={isFavorite ? "star" : "star-outline"}
+                    size={30}
+                    color={isFavorite ? "#1976D2" : "#888"}
+                    style={{ opacity: isFavorite ? 1 : 0.5 }}
+                  />
                 </TouchableOpacity>
               )}
             </View>
