@@ -72,11 +72,17 @@ export default function CompleteTaskScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!task.availableForSubmission) {
+      Alert.alert(
+        "Submission not allowed",
+        "This task is no longer available for submission."
+      );
+      return;
+    }
     const emptyAnswers = task.questions.some((q: any) => {
       const answer = answers[q.id];
-      // Revisamos si falta texto o archivo según el tipo
       if (q.type === "FILE_ATTACHMENT") {
-        return !answer; // debe ser un URI válido
+        return !answer;
       } else {
         return !answer || !answer.trim();
       }
@@ -90,7 +96,25 @@ export default function CompleteTaskScreen() {
       return;
     }
 
-    Alert.alert("Confirm submission", "Do you want to submit your answers?", [
+    const remainingMinutes = task.remainingMinutes;
+    const graceMinutes = task.gracePeriodMinutes ?? 0;
+
+    const isOutsideGracePeriod = remainingMinutes < -graceMinutes;
+    const isLate = remainingMinutes < 0;
+
+    if (isOutsideGracePeriod && !task.allowLateSubmission) {
+      Alert.alert(
+        "Submission not allowed",
+        "The deadline has passed and late submissions are not allowed, even with grace period."
+      );
+      return;
+    }
+
+    const confirmMessage = isLate
+      ? `You are submitting late. A penalty of ${task.latePenaltyPercentage}% will be applied. Do you want to continue?`
+      : "Do you want to submit your answers?";
+
+    Alert.alert("Confirm submission", confirmMessage, [
       { text: "Cancel", style: "cancel" },
       {
         text: "Submit",
@@ -121,6 +145,19 @@ export default function CompleteTaskScreen() {
   if (loading) return <ActivityIndicator style={{ marginTop: 32 }} />;
 
   if (!task) return <Text style={{ padding: 16 }}>Task not found.</Text>;
+
+  if (!task.availableForSubmission) {
+    return (
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        <Card style={{ padding: 16 }}>
+          <Text variant="titleMedium">{task.title}</Text>
+          <Text style={{ marginTop: 8, color: "red" }}>
+            This task is no longer available for submission.
+          </Text>
+        </Card>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
