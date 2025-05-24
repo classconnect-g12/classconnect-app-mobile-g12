@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useCourse } from "@context/CourseContext";
 import { View, ScrollView } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, ActivityIndicator } from "react-native-paper";
 import { getCourseActivityLogs } from "@services/CourseService";
 import { format } from "date-fns";
 import { handleApiError } from "@utils/handleApiError";
@@ -28,13 +28,13 @@ export default function Activity() {
   useEffect(() => {
     const fetchLogs = async () => {
       if (!courseId) return;
-      
+
       try {
         const response = await getCourseActivityLogs(courseId);
         console.log("Logs:", response);
         setLogs(response.logs || []);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error fetching logs", logout)
+        handleApiError(error, showSnackbar, "Error fetching logs", logout);
       } finally {
         setLoading(false);
       }
@@ -45,7 +45,11 @@ export default function Activity() {
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "white" }}>
       {loading ? (
-        <Text>Loading...</Text>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="small" color="gray" />
+        </View>
       ) : logs.length === 0 ? (
         <Text>No activity logs found.</Text>
       ) : (
@@ -58,7 +62,9 @@ export default function Activity() {
                 marginBottom: 10,
               }}
             >
-              <Text style={{ fontWeight: "bold", fontSize: 16 }}>{log.action}</Text>
+              <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                {log.action}
+              </Text>
               <Text style={{ marginTop: 4 }}>
                 By {log.user.user_name} ({log.user.email})
               </Text>
