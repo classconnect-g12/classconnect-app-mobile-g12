@@ -84,27 +84,30 @@ export default function CompleteTaskScreen() {
 
     if (emptyAnswers) {
       Alert.alert(
-        "Faltan respuestas",
-        "Por favor completá todas las respuestas antes de enviar."
+        "Missing answers",
+        "Please complete all questions before submitting."
       );
       return;
     }
 
-    Alert.alert("Confirmar envío", "¿Querés enviar tus respuestas?", [
-      { text: "Cancelar", style: "cancel" },
+    Alert.alert("Confirm submission", "Do you want to submit your answers?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "Enviar",
+        text: "Submit",
         onPress: async () => {
           try {
             setSubmitting(true);
             await completeAssessment(task.id, task.questions, answers);
-            showSnackbar("Respuesta enviada correctamente", "success");
-            router.back();
+            showSnackbar("Answers submitted successfully", "success");
+
+            setTimeout(() => {
+              router.back();
+            }, 1500);
           } catch (error) {
             handleApiError(
               error,
               showSnackbar,
-              "Error al enviar la respuesta",
+              "Error submitting your answers",
               logout
             );
           } finally {
@@ -117,8 +120,7 @@ export default function CompleteTaskScreen() {
 
   if (loading) return <ActivityIndicator style={{ marginTop: 32 }} />;
 
-  if (!task)
-    return <Text style={{ padding: 16 }}>No se encontró la tarea.</Text>;
+  if (!task) return <Text style={{ padding: 16 }}>Task not found.</Text>;
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -127,7 +129,7 @@ export default function CompleteTaskScreen() {
           {task.title}
         </Text>
         <Text style={{ marginBottom: 4 }}>
-          Instrucciones: {task.instructions}
+          Instructions: {task.instructions}
         </Text>
         <Text style={{ marginBottom: 4 }}>
           Deadline: {new Date(task.startDate).toLocaleString()}
@@ -152,7 +154,7 @@ export default function CompleteTaskScreen() {
 
               {question.type === "WRITTEN_ANSWER" && (
                 <TextInput
-                  placeholder="Respuesta escrita..."
+                  placeholder="Written answer..."
                   multiline
                   numberOfLines={4}
                   value={answers[question.id]}
@@ -207,7 +209,7 @@ export default function CompleteTaskScreen() {
                     onPress={() => handleFilePick(question.id)}
                     style={{ marginTop: 8 }}
                   >
-                    Seleccionar archivo
+                    Select file
                   </Button>
                   {answers[question.id] ? (
                     <Text
@@ -217,8 +219,7 @@ export default function CompleteTaskScreen() {
                         color: "green",
                       }}
                     >
-                      Archivo seleccionado:{" "}
-                      {answers[question.id].split("/").pop()}
+                      File selected: {answers[question.id].split("/").pop()}
                     </Text>
                   ) : (
                     <Text
@@ -228,7 +229,7 @@ export default function CompleteTaskScreen() {
                         color: "gray",
                       }}
                     >
-                      No se ha seleccionado ningún archivo.
+                      No file selected.
                     </Text>
                   )}
                 </View>
@@ -242,11 +243,13 @@ export default function CompleteTaskScreen() {
             loading={submitting}
             disabled={submitting}
           >
-            Enviar respuestas
+            Submit answers
           </Button>
         </>
       ) : (
-        <Text style={{ marginTop: 8 }}>Ya has enviado esta tarea.</Text>
+        <Text style={{ marginTop: 8 }}>
+          You have already submitted this task.
+        </Text>
       )}
     </ScrollView>
   );
