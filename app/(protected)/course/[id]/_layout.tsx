@@ -16,9 +16,10 @@ function InnerTabs() {
     setIsTeacher,
     setCourseStatus,
     setCourseDetail,
-    isEnrolled,
-    courseStatus,
     setIsLoading,
+    courseStatus,
+    isEnrolled,
+    isTeacher,
   } = useCourse();
 
   useEffect(() => {
@@ -79,6 +80,7 @@ function InnerTabs() {
           ),
         }}
       />
+      
       <Tabs.Screen
         name="module"
         options={{
@@ -94,6 +96,7 @@ function InnerTabs() {
             ),
         }}
       />
+
       <Tabs.Screen
         name="task"
         options={{
@@ -102,13 +105,14 @@ function InnerTabs() {
             <Ionicons name="file-tray-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled && !isFinished ? (
+            isEnrolled && (!isFinished || isTeacher) ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />
             ),
         }}
       />
+
       <Tabs.Screen
         name="exam"
         options={{
@@ -117,13 +121,14 @@ function InnerTabs() {
             <Ionicons name="school-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled && !isFinished ? (
+            isEnrolled && (!isFinished || isTeacher) ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />
             ),
         }}
       />
+
       <Tabs.Screen
         name="members"
         options={{
@@ -139,6 +144,7 @@ function InnerTabs() {
             ),
         }}
       />
+
       <Tabs.Screen
         name="more"
         options={{
