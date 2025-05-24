@@ -5,6 +5,7 @@ import { NotificationContext } from "./notificationContext";
 type AuthContextType = {
   isAuthenticated: boolean;
   username: string | null;
+  userId: string | null;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const notificationContext = useContext(NotificationContext);
 
@@ -21,8 +23,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem("token");
       const storedUsername = await AsyncStorage.getItem("username");
+      const storedUserId = await AsyncStorage.getItem("userId");
+
       setIsAuthenticated(!!token);
       setUsername(storedUsername);
+      setUserId(storedUserId);
     };
     checkAuth();
   }, []);
@@ -52,12 +57,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setIsAuthenticated(true);
     setUsername(username);
+    setUserId(userId.toString());
   };
 
   const logout = async () => {
     await AsyncStorage.multiRemove(["token", "userId", "username"]);
     setIsAuthenticated(false);
     setUsername(null);
+    setUserId(null);
+
     if (notificationContext) {
       notificationContext.setNotifications([]);
       notificationContext.setHasNewNotifications(false);
@@ -65,7 +73,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, username, userId, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
