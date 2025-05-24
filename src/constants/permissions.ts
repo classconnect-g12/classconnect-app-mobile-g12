@@ -14,16 +14,16 @@ export const ASSISTANT_PERMISSIONS = [
 ];
 
 export const PERMISSION_LABELS: Record<string, string> = {
-  CREATE_ASSESSMENT: "Crear tarea o examen",
-  CREATE_RESOURCE: "Crear recurso",
-  CREATE_MODULE: "Crear módulo",
-  DELETE_COURSE: "Eliminar curso",
-  EDIT_COURSE: "Editar curso",
-  EDIT_MODULE: "Editar módulo",
-  DELETE_MODULE: "Eliminar módulo",
-  EDIT_RESOURCE: "Editar recurso",
-  DELETE_RESOURCE: "Eliminar recurso",
-  EDIT_ASSESSMENT: "Editar tarea o examen",
-  DELETE_ASSESMENT: "Eliminar tarea o examen",
-  REVIEW_ASSESSMENT: "Corregir exámenes",
+  CREATE_ASSESSMENT: "Create assignment or exam",
+  CREATE_RESOURCE: "Create resource",
+  CREATE_MODULE: "Create module",
+  DELETE_COURSE: "Delete course",
+  EDIT_COURSE: "Edit course",
+  EDIT_MODULE: "Edit module",
+  DELETE_MODULE: "Delete module",
+  EDIT_RESOURCE: "Edit resource",
+  DELETE_RESOURCE: "Delete resource",
+  EDIT_ASSESSMENT: "Edit assignment or exam",
+  DELETE_ASSESMENT: "Delete assignment or exam",
+  REVIEW_ASSESSMENT: "Grade exams",
 };

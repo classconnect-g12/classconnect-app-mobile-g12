@@ -68,6 +68,7 @@ export default function MyFeedbackScreen() {
           loading={loadingSummary}
           icon="robot"
           style={feedbackStyles.button}
+          disabled={feedbacks.length === 0}
         >
           {iaSummary ? "Regenerate" : "Generate"}
         </Button>

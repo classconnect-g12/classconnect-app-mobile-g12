@@ -238,26 +238,22 @@ export default function Members() {
 
   const confirmSendFeedback = async () => {
     if (!feedbackTarget || !courseId) {
-      console.error("Feedback target or course ID is missing.");
-      //showSnackbar("Empty", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar("Empty", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     if (!feedbackComment.trim()) {
-      console.error("Feedback comment is empty.");
-      //showSnackbar("Comment cannot be empty", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar("Comment cannot be empty", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     if (feedbackRating < 1 || feedbackRating > 5) {
-      console.error("Feedback rating is out of range.");
-      //showSnackbar("Rating must be between 1 and 5", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar("Rating must be between 1 and 5", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
     if (feedbackComment.length > 255) {
-      console.error("Feedback comment is too long.");
-      //showSnackbar("Comment must be 1 to 255 characters long", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar("Comment must be 1 to 255 characters long", SNACKBAR_VARIANTS.ERROR);
       return;
     }
 
