@@ -9,6 +9,12 @@ const CourseContext = createContext<{
   setIsEnrolled: (isEnrolled: boolean) => void;
   courseTitle: string;
   setCourseTitle: (title: string) => void;
+  courseStatus: string;
+  setCourseStatus: (status: string) => void;
+  courseDetail: any;
+  setCourseDetail: (detail: any) => void;
+  isLoading?: boolean;
+  setIsLoading?: (loading: boolean) => void;
 }>({
   courseId: null,
   setCourseId: () => {},
@@ -18,6 +24,12 @@ const CourseContext = createContext<{
   setIsEnrolled: () => {},
   courseTitle: "",
   setCourseTitle: () => {},
+  courseStatus: "",
+  setCourseStatus: () => {},
+  courseDetail: null,
+  setCourseDetail: () => {},
+  isLoading: false,
+  setIsLoading: () => {},
 });
 
 export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
@@ -25,9 +37,29 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
   const [isTeacher, setIsTeacher] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [courseTitle, setCourseTitle] = useState("");
+  const [courseStatus, setCourseStatus] = useState("");
+  const [courseDetail, setCourseDetail] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <CourseContext.Provider value={{ courseId, setCourseId, isTeacher, setIsTeacher, isEnrolled, setIsEnrolled, courseTitle, setCourseTitle }}>
+    <CourseContext.Provider
+      value={{
+        courseId,
+        setCourseId,
+        isTeacher,
+        setIsTeacher,
+        isEnrolled,
+        setIsEnrolled,
+        courseTitle,
+        setCourseTitle,
+        courseStatus,
+        setCourseStatus,
+        courseDetail,
+        setCourseDetail,
+        isLoading,
+        setIsLoading,
+      }}
+    >
       {children}
     </CourseContext.Provider>
   );

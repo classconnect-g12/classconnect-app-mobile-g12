@@ -23,12 +23,6 @@ export default function MoreScreen() {
     requiresStudent?: boolean;
   }[] = [
     {
-      title: "Give feedback",
-      route: `course/${courseId}/more/giveFeedback`,
-      icon: "chatbubble-ellipses-outline",
-      requiresStudent: true,
-    },
-    {
       title: "Feedback",
       route: `course/${courseId}/more/courseFeedback`,
       icon: "chatbubble-ellipses-outline",
