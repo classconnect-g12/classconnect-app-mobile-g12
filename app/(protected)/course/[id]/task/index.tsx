@@ -93,10 +93,12 @@ export default function TasksScreen() {
         style={styles.moduleCard}
         onPress={() => {
           if (!isTeacher) {
-            if (item.status === "OVERDUE") {
+            if (item.status === "OVERDUE" || item.status === "COMPLETED") {
               Alert.alert(
-                "Overdue task",
-                "You cannot complete this task because the time limit has expired."
+                "Unavailable task",
+                item.status === "OVERDUE"
+                  ? "You cannot complete this task because the time limit has expired."
+                  : "You have already completed this task."
               );
             } else {
               router.push(`/course/${courseId}/task/complete/${item.id}`);
@@ -116,11 +118,11 @@ export default function TasksScreen() {
 
         <Text style={styles.description}>{item.instructions}</Text>
         <Text style={styles.order}>
-          Fecha de entrega: {new Date(item.startDate).toLocaleString()}
+          Due date: {new Date(item.startDate).toLocaleString()}
         </Text>
 
         <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-          Estado: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+          Status: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
         </Text>
 
         {isTeacher && (
