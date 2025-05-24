@@ -1,7 +1,12 @@
 import { privateClient } from "@utils/apiClient";
 import { questionFormatter } from "@utils/questionFormatter";
 
-export type AssessmentStatus = "PENDING" | "IN_PROGRES" | "FINISHED";
+export type AssessmentStatus =
+  | "PENDING"
+  | "IN_PROGRES"
+  | "FINISHED"
+  | "OVERDUE"
+  | "COMPLETED";
 export type AssessmentType = "TASK" | "EXAM";
 
 export type AssessmentEditRequest = {
@@ -210,7 +215,69 @@ export async function updateAssessment(
   }
 
   await privateClient.put(
-    `course/${courseId}/assessments/${assessmentId}`,
+    `/course/${courseId}/assessments/${assessmentId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+}
+
+export type Answer = {
+  questionId: number;
+  selectedOption?: string;
+  answerText?: string;
+  file?: any;
+};
+
+export async function completeAssessment(
+  assessmentId: string,
+  questions: any[],
+  answers: { [questionId: number]: string }
+) {
+  const formData = new FormData();
+  const answersArray: any[] = [];
+
+  for (const question of questions) {
+    const answer = answers[question.id];
+
+    if (question.type === "WRITTEN_ANSWER") {
+      answersArray.push({
+        questionId: question.id,
+        answerText: answer,
+      });
+    } else if (question.type === "MULTIPLE_CHOICE") {
+      answersArray.push({
+        questionId: question.id,
+        selectedOption: answer,
+      });
+    } else if (question.type === "FILE_ATTACHMENT") {
+      answersArray.push({
+        questionId: question.id,
+      });
+
+      const fileUri = answer;
+      const filename = fileUri.split("/").pop()!;
+      const match = /\.(\w+)$/.exec(filename);
+      const extension = match?.[1] ?? "octet-stream";
+      const type = extension.startsWith("jp")
+        ? `image/${extension}`
+        : `application/${extension}`;
+
+      formData.append(`file_${question.id}`, {
+        uri: fileUri,
+        name: filename,
+        type,
+      } as any);
+    }
+  }
+
+  formData.append("answers", JSON.stringify(answersArray));
+
+  return privateClient.post(
+    `/course/assessments/submit/${assessmentId}`,
     formData,
     {
       headers: {

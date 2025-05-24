@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError } from "axios";
+import axios, { AxiosInstance, AxiosError, AxiosResponse } from "axios";
 import { getToken } from "@utils/tokenUtils";
 import { ApiError } from "@src/types/apiError";
 
@@ -33,6 +33,15 @@ privateClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+const logStatusInterceptor = (response: AxiosResponse) => {
+  console.log(
+    `[HTTP ${response.status}] ${response.config.method?.toUpperCase()} ${
+      response.config.url
+    }`
+  );
+  return response;
+};
+
 const responseErrorInterceptor = (error: AxiosError<ApiError>) => {
   const apiError: ApiError = error.response?.data || {
     type: error.response?.data?.type || "",
@@ -46,7 +55,13 @@ const responseErrorInterceptor = (error: AxiosError<ApiError>) => {
   throw apiError;
 };
 
-publicClient.interceptors.response.use((res) => res, responseErrorInterceptor);
-privateClient.interceptors.response.use((res) => res, responseErrorInterceptor);
+publicClient.interceptors.response.use(
+  logStatusInterceptor,
+  responseErrorInterceptor
+);
+privateClient.interceptors.response.use(
+  logStatusInterceptor,
+  responseErrorInterceptor
+);
 
 export { publicClient, privateClient };
