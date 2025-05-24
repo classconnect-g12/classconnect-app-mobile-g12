@@ -67,6 +67,8 @@ export default function ModulePage() {
   const [isSavingModule, setIsSavingModule] = useState(false);
 
   const isTeacher = useCourse().isTeacher;
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
   const moduleTitle = useModule().moduleTitle;
   const { logout } = useAuth();
 
@@ -86,6 +88,8 @@ export default function ModulePage() {
       //handleApiError(error, showSnackbar, "Error fetching resources", logout);
     }
   };
+
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   // Manejar la selección de archivo
   const pickFile = async () => {
@@ -391,48 +395,54 @@ export default function ModulePage() {
         </View>
       </Modal>
 
-      {/* Botones FAB visibles solo para docentes */}
-      {isTeacher && (
+      {/* Botones FAB visibles solo si tiene permisos */}
+      {(isTeacher ||
+        hasPermission("CREATE_RESOURCE") ||
+        hasPermission("EDIT_MODULE")) && (
         <>
-          <AnimatedFAB
-            icon="plus"
-            label=""
-            extended={false}
-            onPress={() => setModalVisible(true)}
-            style={viewModulesStyles.fab}
-            visible
-            animateFrom="right"
-            color={colors.buttonText}
-          />
+          {hasPermission("CREATE_RESOURCE") && (
+            <AnimatedFAB
+              icon="plus"
+              label=""
+              extended={false}
+              onPress={() => setModalVisible(true)}
+              style={viewModulesStyles.fab}
+              visible
+              animateFrom="right"
+              color={colors.buttonText}
+            />
+          )}
 
-          <AnimatedFAB
-            icon="pencil"
-            label=""
-            extended={false}
-            onPress={async () => {
-              try {
-                const module = await fetchModuleById(id, moduleId);
-                setModuleData(module);
-                const initialEditedResources = resources.map((res) => ({
-                  ID: res.resourceId,
-                  order: res.order,
-                }));
-                setEditedResources(initialEditedResources);
-                setEditModalVisible(true);
-              } catch (e) {
-                handleApiError(
-                  e,
-                  showSnackbar,
-                  "Error loading module info",
-                  logout
-                );
-              }
-            }}
-            style={[viewModulesStyles.fab, { right: 80 }]}
-            visible
-            animateFrom="right"
-            color={colors.buttonText}
-          />
+          {(hasPermission("EDIT_MODULE") && hasPermission("EDIT_RESOURCE")) && (
+            <AnimatedFAB
+              icon="pencil"
+              label=""
+              extended={false}
+              onPress={async () => {
+                try {
+                  const module = await fetchModuleById(id, moduleId);
+                  setModuleData(module);
+                  const initialEditedResources = resources.map((res) => ({
+                    ID: res.resourceId,
+                    order: res.order,
+                  }));
+                  setEditedResources(initialEditedResources);
+                  setEditModalVisible(true);
+                } catch (e) {
+                  handleApiError(
+                    e,
+                    showSnackbar,
+                    "Error loading module info",
+                    logout
+                  );
+                }
+              }}
+              style={[viewModulesStyles.fab, { right: 80 }]}
+              visible
+              animateFrom="right"
+              color={colors.buttonText}
+            />
+          )}
         </>
       )}
 

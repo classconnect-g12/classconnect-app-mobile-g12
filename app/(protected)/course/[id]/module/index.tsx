@@ -35,6 +35,8 @@ const CourseModulesScreen = () => {
 
   const [creating, setCreating] = useState(false);
 
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
   const { logout } = useAuth();
   const { setModuleTitle } = useModule();
 
@@ -57,6 +59,8 @@ const CourseModulesScreen = () => {
 
     loadModules();
   }, [courseId]);
+
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   const handleAddModule = async () => {
     if (!title.trim()) {
@@ -155,7 +159,7 @@ const CourseModulesScreen = () => {
         loading={creating}
       />
 
-      {isTeacher && (
+      {(isTeacher || hasPermission("CREATE_MODULE")) && (
         <AnimatedFAB
           icon="plus"
           label=""
