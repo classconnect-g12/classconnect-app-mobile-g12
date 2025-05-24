@@ -5,8 +5,11 @@ export default function MoreLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: "More options" }} />
       <Stack.Screen name="activity" options={{ title: "Activity" }} />
-      <Stack.Screen name="courseFeedback" options={{ title: "Course feedback" }} />
+      <Stack.Screen name="courseFeedback" options={{ title: "Feedback" }} />
       <Stack.Screen name="myNotes" options={{ title: "My notes" }} />
+      <Stack.Screen name="myPermissions" options={{ title: "My permissions" }} />
+      <Stack.Screen name="settings" options={{ title: "Settings" }} />
+      <Stack.Screen name="help" options={{ title: "Help" }} />
     </Stack>
   );
 }

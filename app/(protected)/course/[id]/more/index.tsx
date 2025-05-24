@@ -9,7 +9,8 @@ type IoniconName =
   | "chatbubble-ellipses-outline"
   | "document-text-outline"
   | "help-circle-outline"
-  | "information-circle-outline";
+  | "information-circle-outline"
+  | "settings-outline";
 
 export default function MoreScreen() {
   const router = useRouter();
@@ -39,6 +40,21 @@ export default function MoreScreen() {
       route: `course/${courseId}/more/activity`,
       icon: "help-circle-outline",
       requiresTeacher: true,
+    },
+    {
+      title: "My permissions",
+      route: `course/${courseId}/more/myPermissions`,
+      icon: "information-circle-outline",
+    },
+    {
+      title: "Settings",
+      route: `course/${courseId}/more/settings`,
+      icon: "settings-outline",
+    },
+    {
+      title: "Help",
+      route: `course/${courseId}/more/help`,
+      icon: "help-circle-outline",
     },
   ];
 
