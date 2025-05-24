@@ -253,7 +253,10 @@ export default function Members() {
     }
 
     if (feedbackComment.length > 255) {
-      showSnackbar("Comment must be 1 to 255 characters long", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Comment must be 1 to 255 characters long",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
@@ -263,7 +266,7 @@ export default function Members() {
         courseId,
         String(feedbackTarget.userProfile.id),
         feedbackComment.trim(),
-        feedbackRating,
+        feedbackRating
       );
 
       setFeedbackModalVisible(false);
@@ -313,11 +316,23 @@ export default function Members() {
         {isTeacher && (
           <View style={styles.actions}>
             {isAssistant && (
-              <IconButton
-                icon="account-remove"
-                iconColor="#d32f2f"
-                onPress={() => handleDemoteAssistant(item)}
-              />
+              <>
+                <IconButton
+                  icon="message-star-outline"
+                  iconColor="#1976d2"
+                  onPress={() => {
+                    setFeedbackTarget(item);
+                    setFeedbackModalVisible(true);
+                    setFeedbackComment("");
+                    setFeedbackRating(0);
+                  }}
+                />
+                <IconButton
+                  icon="account-remove"
+                  iconColor="#d32f2f"
+                  onPress={() => handleDemoteAssistant(item)}
+                />
+              </>
             )}
             {isStudent && (
               <>
