@@ -1,7 +1,12 @@
 import { privateClient } from "@utils/apiClient";
 import { questionFormatter } from "@utils/questionFormatter";
 
-export type AssessmentStatus = "PENDING" | "IN_PROGRES" | "FINISHED";
+export type AssessmentStatus =
+  | "PENDING"
+  | "IN_PROGRES"
+  | "FINISHED"
+  | "OVERDUE"
+  | "COMPLETED";
 export type AssessmentType = "TASK" | "EXAM";
 
 export type AssessmentEditRequest = {

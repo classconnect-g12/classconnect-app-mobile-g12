@@ -93,7 +93,14 @@ export default function TasksScreen() {
         style={styles.moduleCard}
         onPress={() => {
           if (!isTeacher) {
-            router.push(`/course/${courseId}/task/complete/${item.id}`);
+            if (item.status === "OVERDUE") {
+              Alert.alert(
+                "Overdue task",
+                "You cannot complete this task because the time limit has expired."
+              );
+            } else {
+              router.push(`/course/${courseId}/task/complete/${item.id}`);
+            }
           }
         }}
       >
