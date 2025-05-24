@@ -9,7 +9,6 @@ export async function sendFeedbackStudentToCourse(
     comment,
     rating,
   });
-  console.log(response.data);
   return response.data;
 }
 
@@ -26,7 +25,6 @@ export async function sendFeedbackCourseToStudent(
       rating,
     }
   );
-  console.log(response.data);
 }
 
 export async function getCourseFeedbacks(
@@ -52,7 +50,6 @@ export async function getCourseIaFeedbacks(courseId: string) {
     {}
   );
 
-  console.log(response.data);
   return response.data;
 }
 
@@ -64,13 +61,11 @@ export async function getStudentFeedbacks(params?: {
     params,
   });
 
-  console.log(response.data);
   return response.data;
 }
 
 export async function getStudentIaFeedbacks() {
   const response = await privateClient.get(`/student/feedbacks/summary`, {});
 
-  console.log(response.data);
   return response.data;
 }

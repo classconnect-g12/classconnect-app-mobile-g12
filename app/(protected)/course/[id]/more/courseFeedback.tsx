@@ -36,7 +36,6 @@ export default function CourseFeedbackScreen() {
           page: 0,
           size: 10,
         });
-        console.log(response);
         setFeedbacks(response.feedbacks);
       } catch (error) {
         handleApiError(
@@ -54,10 +53,7 @@ export default function CourseFeedbackScreen() {
   }, [courseId]);
 
   const handleGenerateSummary = async () => {
-    if (!courseId) {
-      console.error("Course ID is missing.");
-      return;
-    }
+    if (!courseId) return;
     setLoadingSummary(true);
     try {
       const summaryData = await getCourseIaFeedbacks(courseId);
@@ -71,23 +67,55 @@ export default function CourseFeedbackScreen() {
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "white",
-        }}
-      >
+      <View style={feedbackStyles.centered}>
         <ActivityIndicator animating={true} size="small" color="gray" />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
-      <ScrollView contentContainerStyle={feedbackStyles.container}>
-        {!feedbacks || feedbacks.length === 0 ? (
+    <View style={feedbackStyles.container}>
+      <ScrollView>
+        <Text style={feedbackStyles.sectionTitle}>AI Summary</Text>
+
+        <Button
+          mode="contained"
+          onPress={handleGenerateSummary}
+          loading={loadingSummary}
+          icon="robot"
+          style={feedbackStyles.button}
+          disabled={feedbacks.length === 0}
+        >
+          {iaSummary ? "Regenerate" : "Generate"}
+        </Button>
+
+        {iaSummary ? (
+          <Card style={feedbackStyles.card}>
+            <Card.Content>
+              <Text style={feedbackStyles.averageRating}>
+                Average rating: {iaSummary.averageRating} ⭐
+              </Text>
+              <Text style={feedbackStyles.totalFeedbacks}>
+                Total feedbacks: {iaSummary.totalFeedbacks}
+              </Text>
+              <Text style={feedbackStyles.summary}>{iaSummary.summary}</Text>
+            </Card.Content>
+          </Card>
+        ) : (
+          <Card style={feedbackStyles.card}>
+            <Card.Content>
+              <Text style={feedbackStyles.placeholderText}>
+                No AI summary generated yet.
+              </Text>
+            </Card.Content>
+          </Card>
+        )}
+
+        <Text style={[feedbackStyles.sectionTitle, { marginTop: 24 }]}>
+          Course Feedbacks
+        </Text>
+
+        {feedbacks.length === 0 ? (
           <Text style={feedbackStyles.emptyMessage}>
             No feedbacks available for this course.
           </Text>
@@ -95,36 +123,19 @@ export default function CourseFeedbackScreen() {
           feedbacks.map((fb) => (
             <Card key={fb.id} style={feedbackStyles.card}>
               <Card.Content>
-                <Text>{fb.comment}</Text>
-                <Text>Rating: {fb.rating} ⭐</Text>
-                <Text>Date: {fb.createdAt}</Text>
+                <Text style={feedbackStyles.comment}>{fb.comment}</Text>
+                <Text style={feedbackStyles.rating}>
+                  {"⭐".repeat(fb.rating)}
+                  <Text style={feedbackStyles.emptyStar}>
+                    {"☆".repeat(5 - fb.rating)}
+                  </Text>
+                </Text>
+                <Text style={feedbackStyles.author}>
+                  {new Date(fb.createdAt).toLocaleDateString()}
+                </Text>
               </Card.Content>
             </Card>
           ))
-        )}
-
-        {feedbacks && feedbacks.length > 0 && (
-          <Button
-            mode="contained"
-            onPress={handleGenerateSummary}
-            loading={loadingSummary}
-            style={feedbackStyles.button}
-          >
-            Generate AI Summary
-          </Button>
-        )}
-
-        {iaSummary && (
-          <>
-            <Text style={feedbackStyles.header}>AI Summary</Text>
-            <Card style={feedbackStyles.card}>
-              <Card.Content>
-                <Text>Average rating: {iaSummary.averageRating} ⭐</Text>
-                <Text>Total feedbacks: {iaSummary.totalFeedbacks}</Text>
-                <Text>{iaSummary.summary}</Text>
-              </Card.Content>
-            </Card>
-          </>
         )}
       </ScrollView>
     </View>
