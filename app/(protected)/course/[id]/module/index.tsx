@@ -49,8 +49,7 @@ const CourseModulesScreen = () => {
           setModules(data);
         }
       } catch (error) {
-        showSnackbar("No modules available", SNACKBAR_VARIANTS.INFO);
-        //handleApiError(error, showSnackbar, "Error loading modules", logout);
+        console.error("Error fetching modules:", error);
         setModules([]);
       } finally {
         setLoading(false);
