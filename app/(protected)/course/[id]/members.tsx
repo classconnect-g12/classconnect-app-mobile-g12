@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import {
   Text,
-  ActivityIndicator,
   IconButton,
   Portal,
   Button,
@@ -38,6 +37,7 @@ import { sendFeedbackCourseToStudent } from "@services/feedbackService";
 
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 type Member = {
   enrollmentId: number;
@@ -253,7 +253,10 @@ export default function Members() {
     }
 
     if (feedbackComment.length > 255) {
-      showSnackbar("Comment must be 1 to 255 characters long", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Comment must be 1 to 255 characters long",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
@@ -263,9 +266,12 @@ export default function Members() {
         courseId,
         String(feedbackTarget.userProfile.id),
         feedbackComment.trim(),
-        feedbackRating,
+        feedbackRating
       );
-
+      showSnackbar(
+        `Feedback sent to ${feedbackTarget.userProfile.user_name}`,
+        SNACKBAR_VARIANTS.SUCCESS
+      );
       setFeedbackModalVisible(false);
       setFeedbackTarget(null);
       setFeedbackComment("");
@@ -313,11 +319,23 @@ export default function Members() {
         {isTeacher && (
           <View style={styles.actions}>
             {isAssistant && (
-              <IconButton
-                icon="account-remove"
-                iconColor="#d32f2f"
-                onPress={() => handleDemoteAssistant(item)}
-              />
+              <>
+                <IconButton
+                  icon="message-star-outline"
+                  iconColor="#1976d2"
+                  onPress={() => {
+                    setFeedbackTarget(item);
+                    setFeedbackModalVisible(true);
+                    setFeedbackComment("");
+                    setFeedbackRating(0);
+                  }}
+                />
+                <IconButton
+                  icon="account-remove"
+                  iconColor="#d32f2f"
+                  onPress={() => handleDemoteAssistant(item)}
+                />
+              </>
             )}
             {isStudent && (
               <>
@@ -352,7 +370,7 @@ export default function Members() {
   return (
     <View style={styles.container}>
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 20 }} />
+        <Spinner />
       ) : sections.length === 0 ? (
         <Text style={{ marginTop: 20, textAlign: "center" }}>
           No students enrolled yet.

@@ -3,7 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { CourseProvider, useCourse } from "@context/CourseContext";
 import { fetchCourseDetail, getCourseStatus } from "@services/CourseService";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Spinner from "@components/Spinner";
 
 const FINISHED_COURSE_STATUS = "FINISHED";
 
@@ -16,9 +17,12 @@ function InnerTabs() {
     setIsTeacher,
     setCourseStatus,
     setCourseDetail,
-    isEnrolled,
-    courseStatus,
     setIsLoading,
+    courseStatus,
+    isEnrolled,
+    isTeacher,
+    isInitialized,
+    setIsInitialized,
   } = useCourse();
 
   useEffect(() => {
@@ -34,6 +38,7 @@ function InnerTabs() {
         setIsTeacher(courseDetail.course.isTeacher);
         const courseStatus = await getCourseStatus(id ?? "");
         setCourseStatus(courseStatus.status);
+        setIsInitialized?.(true);
       } catch (error) {
         console.error("Error fetching course data:", error);
       } finally {
@@ -58,6 +63,12 @@ function InnerTabs() {
 
   const isFinished = courseStatus === FINISHED_COURSE_STATUS;
 
+  if (!isInitialized) {
+    return (
+        <Spinner />
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -79,6 +90,7 @@ function InnerTabs() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="module"
         options={{
@@ -94,6 +106,7 @@ function InnerTabs() {
             ),
         }}
       />
+
       <Tabs.Screen
         name="task"
         options={{
@@ -102,13 +115,14 @@ function InnerTabs() {
             <Ionicons name="file-tray-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled && !isFinished ? (
+            isEnrolled && (!isFinished || isTeacher) ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />
             ),
         }}
       />
+
       <Tabs.Screen
         name="exam"
         options={{
@@ -117,13 +131,14 @@ function InnerTabs() {
             <Ionicons name="school-outline" size={size} color={color} />
           ),
           tabBarButton: (props) =>
-            isEnrolled && !isFinished ? (
+            isEnrolled && (!isFinished || isTeacher) ? (
               <Pressable {...props} />
             ) : (
               <DisabledTabButton {...props} />
             ),
         }}
       />
+
       <Tabs.Screen
         name="members"
         options={{
@@ -139,6 +154,7 @@ function InnerTabs() {
             ),
         }}
       />
+
       <Tabs.Screen
         name="more"
         options={{

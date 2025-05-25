@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useModule } from "@context/ModuleContext";
+import Spinner from "@components/Spinner";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -35,6 +35,8 @@ const CourseModulesScreen = () => {
 
   const [creating, setCreating] = useState(false);
 
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
   const { logout } = useAuth();
   const { setModuleTitle } = useModule();
 
@@ -47,8 +49,7 @@ const CourseModulesScreen = () => {
           setModules(data);
         }
       } catch (error) {
-        showSnackbar("No modules available", SNACKBAR_VARIANTS.INFO);
-        //handleApiError(error, showSnackbar, "Error loading modules", logout);
+        console.error("Error fetching modules:", error);
         setModules([]);
       } finally {
         setLoading(false);
@@ -57,6 +58,8 @@ const CourseModulesScreen = () => {
 
     loadModules();
   }, [courseId]);
+
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   const handleAddModule = async () => {
     if (!title.trim()) {
@@ -123,11 +126,7 @@ const CourseModulesScreen = () => {
 
   if (loading) {
     return (
-      <ActivityIndicator
-        size="large"
-        color="#0000ff"
-        style={viewModulesStyles.loader}
-      />
+        <Spinner />
     );
   }
 
@@ -155,7 +154,7 @@ const CourseModulesScreen = () => {
         loading={creating}
       />
 
-      {isTeacher && (
+      {(isTeacher || hasPermission("CREATE_MODULE")) && (
         <AnimatedFAB
           icon="plus"
           label=""

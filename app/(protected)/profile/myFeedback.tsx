@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Text, ActivityIndicator, Card, Button } from "react-native-paper";
+import { Text, Card, Button } from "react-native-paper";
 import {
   getStudentFeedbacks,
   getStudentIaFeedbacks,
@@ -9,6 +9,7 @@ import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import { feedbackStyles } from "@styles/myFeedbackStyles";
+import Spinner from "@components/Spinner";
 
 export default function MyFeedbackScreen() {
   const { showSnackbar } = useSnackbar();
@@ -51,9 +52,7 @@ export default function MyFeedbackScreen() {
 
   if (loading) {
     return (
-      <View style={feedbackStyles.centered}>
-        <ActivityIndicator animating={true} size="small" color="gray" />
-      </View>
+        <Spinner />
     );
   }
 

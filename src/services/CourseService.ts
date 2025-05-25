@@ -8,9 +8,11 @@ import {
   GetCoursesResponse,
 } from "@src/types/course";
 
-export const createCourse = async (data: BaseCourse): Promise<void> => {
-  await privateClient.post("/course/create", data);
+export const createCourse = async (data: BaseCourse): Promise<any> => {
+  const response = await privateClient.post("/course/create", data);
+  return response.data;
 };
+
 
 export async function fetchCourses(
   page = 0,

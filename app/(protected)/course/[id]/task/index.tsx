@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { View, FlatList, Alert } from "react-native";
-import { Text, Card, ActivityIndicator, AnimatedFAB } from "react-native-paper";
+import { Text, Card, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import {
   Assessment,
@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import Spinner from "@components/Spinner";
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Assessment[]>([]);
@@ -162,7 +163,7 @@ export default function TasksScreen() {
 
   if (loading) {
     return (
-      <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+        <Spinner />
     );
   }
 

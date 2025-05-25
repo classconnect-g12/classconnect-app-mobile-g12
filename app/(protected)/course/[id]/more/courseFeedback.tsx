@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Text, ActivityIndicator, Card, Button } from "react-native-paper";
+import { Text, Card, Button } from "react-native-paper";
 import {
   getCourseFeedbacks,
   getCourseIaFeedbacks,
@@ -10,6 +10,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import { feedbackStyles } from "@styles/myFeedbackStyles";
 import { useCourse } from "@context/CourseContext";
+import Spinner from "@components/Spinner";
 
 export default function CourseFeedbackScreen() {
   const { courseId } = useCourse();
@@ -67,9 +68,7 @@ export default function CourseFeedbackScreen() {
 
   if (loading) {
     return (
-      <View style={feedbackStyles.centered}>
-        <ActivityIndicator animating={true} size="small" color="gray" />
-      </View>
+        <Spinner />
     );
   }
 

@@ -10,7 +10,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Snackbar } from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { profileEditStyles as styles } from "@styles/profileEditStyles";
@@ -19,6 +19,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 export default function ProfileScreen() {
   const { profileId } = useLocalSearchParams();
@@ -106,13 +107,7 @@ export default function ProfileScreen() {
     }
   };
 
-  if (loading)
-    return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color={colors.text} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
+  if (loading) return <Spinner />;
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">

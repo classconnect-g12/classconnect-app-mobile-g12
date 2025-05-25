@@ -1,7 +1,8 @@
 import { Stack, useRouter } from "expo-router";
 import { useAuth } from "@context/authContext";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
+import Spinner from "@components/Spinner";
 
 export default function SigningLayout() {
   const { isAuthenticated } = useAuth();
@@ -21,9 +22,7 @@ export default function SigningLayout() {
 
   if (checkingAuth) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
+        <Spinner />
     );
   }
 

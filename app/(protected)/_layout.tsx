@@ -1,9 +1,8 @@
 import { Stack, useRouter } from "expo-router";
 import { useAuth } from "@context/authContext";
 import { useEffect } from "react";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import { colors } from "@theme/colors";
+import Spinner from "@components/Spinner";
 
 export default function ProtectedLayout() {
   const { isAuthenticated } = useAuth();
@@ -17,9 +16,7 @@ export default function ProtectedLayout() {
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+        <Spinner />
     );
   }
 
@@ -33,12 +30,3 @@ export default function ProtectedLayout() {
     </PaperProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.background,
-  },
-});

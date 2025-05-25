@@ -89,14 +89,14 @@ export default function CreateCourse() {
 
     try {
       setIsLoading(true);
-      await createCourse(courseData);
+      const response = await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       setTimeout(() => {
-        router.back();
+        router.replace(`/(protected)/course/${response.id}`);
+        setIsLoading(false);
       }, 1500);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating the course", logout);
-    } finally {
       setIsLoading(false);
     }
   };

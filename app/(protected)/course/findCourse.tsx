@@ -5,8 +5,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
-  ActivityIndicator,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
@@ -18,6 +18,7 @@ import { ApiCourse } from "@src/types/course";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,16 +179,7 @@ export default function FindCourse() {
   };
 
   if (isLoadingInitial) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <Spinner />;
   }
 
   return (

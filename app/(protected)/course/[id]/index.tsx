@@ -20,6 +20,7 @@ import { enrollInCourse } from "@services/EnrollmentService";
 import { useCourse } from "@context/CourseContext";
 import { useAuth } from "@context/authContext";
 import { sendFeedbackStudentToCourse } from "@services/feedbackService";
+import Spinner from "@components/Spinner";
 
 const FINISHED_COURSE_STATUS = "FINISHED";
 
@@ -55,7 +56,10 @@ export default function CourseDetail() {
       return;
     }
     if (feedbackRating < 1 || feedbackRating > 5) {
-      showSnackbar("Please select a rating between 1 and 5.", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Please select a rating between 1 and 5.",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
     try {
@@ -117,7 +121,10 @@ export default function CourseDetail() {
 
       setJoiningStatus("redirecting");
       setTimeout(() => {
-        router.replace(`/course/myCourses`);
+        router.replace("/(protected)/loading");
+        setTimeout(() => {
+          router.replace(`/(protected)/course/${courseId}`);
+        }, 1000);
       }, 2000);
     } catch (error) {
       handleApiError(error, showSnackbar, "Could not join the course.", logout);
@@ -126,11 +133,7 @@ export default function CourseDetail() {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <Spinner />;
   }
 
   if (!courseDetail) {
@@ -270,12 +273,7 @@ export default function CourseDetail() {
           onDismiss={() => setFeedbackModalVisible(false)}
           style={styles.confirmModalBox}
         >
-          <Dialog.Title>
-            Send feedback to{" "}
-            <Text style={{ fontWeight: "bold" }}>
-              {feedbackTarget?.userProfile.user_name}
-            </Text>
-          </Dialog.Title>
+          <Dialog.Title>Send feedback</Dialog.Title>
           <Dialog.Content>
             <TextInput
               mode="outlined"

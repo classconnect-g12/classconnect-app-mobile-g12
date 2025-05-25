@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, ScrollView } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
 import {
   getUserProfileByUsername,
@@ -12,6 +11,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { AxiosError } from "axios";
 import { ApiError } from "@src/types/apiError";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -38,7 +38,7 @@ const UserProfile: React.FC = () => {
   if (loading)
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
+        <Spinner />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
