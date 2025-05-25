@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useModule } from "@context/ModuleContext";
+import Spinner from "@components/Spinner";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -127,11 +127,7 @@ const CourseModulesScreen = () => {
 
   if (loading) {
     return (
-      <ActivityIndicator
-        size="large"
-        color="#0000ff"
-        style={viewModulesStyles.loader}
-      />
+        <Spinner />
     );
   }
 

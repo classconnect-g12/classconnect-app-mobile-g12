@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
   SectionList,
   Alert,
 } from "react-native";
@@ -24,6 +23,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { handleApiError } from "@utils/handleApiError";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 export default function MyCourses() {
   const now = new Date();
@@ -212,11 +212,7 @@ export default function MyCourses() {
       />
 
       {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+          <Spinner />
       ) : (
         <>
           <MyCourseFilter filters={filters} setFilters={setFilters} />

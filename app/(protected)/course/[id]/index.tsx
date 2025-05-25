@@ -20,6 +20,7 @@ import { enrollInCourse } from "@services/EnrollmentService";
 import { useCourse } from "@context/CourseContext";
 import { useAuth } from "@context/authContext";
 import { sendFeedbackStudentToCourse } from "@services/feedbackService";
+import Spinner from "@components/Spinner";
 
 const FINISHED_COURSE_STATUS = "FINISHED";
 
@@ -127,9 +128,7 @@ export default function CourseDetail() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+        <Spinner />
     );
   }
 

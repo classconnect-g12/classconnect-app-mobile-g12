@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import {
   Text,
-  ActivityIndicator,
   IconButton,
   Portal,
   Button,
@@ -38,6 +37,7 @@ import { sendFeedbackCourseToStudent } from "@services/feedbackService";
 
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 type Member = {
   enrollmentId: number;
@@ -367,7 +367,7 @@ export default function Members() {
   return (
     <View style={styles.container}>
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 20 }} />
+        <Spinner />
       ) : sections.length === 0 ? (
         <Text style={{ marginTop: 20, textAlign: "center" }}>
           No students enrolled yet.

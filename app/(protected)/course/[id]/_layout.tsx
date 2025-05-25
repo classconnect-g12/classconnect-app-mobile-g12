@@ -3,7 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { CourseProvider, useCourse } from "@context/CourseContext";
 import { fetchCourseDetail, getCourseStatus } from "@services/CourseService";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Spinner from "@components/Spinner";
 
 const FINISHED_COURSE_STATUS = "FINISHED";
 
@@ -64,9 +65,7 @@ function InnerTabs() {
 
   if (!isInitialized) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="small" />
-      </View>
+        <Spinner />
     );
   }
 

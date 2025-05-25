@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react";
 import { useCourse } from "@context/CourseContext";
 import { View, ScrollView } from "react-native";
-import { Text, ActivityIndicator } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { getCourseActivityLogs } from "@services/CourseService";
 import { format } from "date-fns";
 import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 type ActivityLog = {
   id: number;
@@ -45,11 +46,7 @@ export default function Activity() {
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "white" }}>
       {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="small" color="gray" />
-        </View>
+          <Spinner />
       ) : logs.length === 0 ? (
         <Text>No activity logs found.</Text>
       ) : (

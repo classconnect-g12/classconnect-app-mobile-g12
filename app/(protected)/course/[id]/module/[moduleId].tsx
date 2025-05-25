@@ -80,12 +80,9 @@ export default function ModulePage() {
     try {
       const fetchedResources = await fetchResources(id, moduleId);
       setResources(fetchedResources);
-      if (fetchedResources.length === 0) {
-        showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
-      }
     } catch (error) {
-      showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
-      //handleApiError(error, showSnackbar, "Error fetching resources", logout);
+      setResources([]);
+      console.error("Error fetching resources:", error);
     }
   };
 
