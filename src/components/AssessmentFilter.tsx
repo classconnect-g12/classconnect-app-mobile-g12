@@ -4,6 +4,7 @@ import { Button, Menu, Divider } from "react-native-paper";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { AssessmentStatus } from "@services/AssessmentService";
 import { formatStatus } from "@utils/statusFormatter";
+import { colors } from "@theme/colors";
 
 interface Props {
   selectedStatus: AssessmentStatus | null;
@@ -52,8 +53,15 @@ export default function AssessmentFilters({
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
+        contentStyle={{ backgroundColor: "white" }}
         anchor={
-          <Button mode="outlined" onPress={() => setMenuVisible(true)}>
+          <Button
+            mode="outlined"
+            onPress={() => setMenuVisible(true)}
+            style={{ borderRadius: 6, borderColor: "white", backgroundColor: colors.primary }}
+            labelStyle={{ color: "white", fontSize: 14 }}
+            textColor="black"
+          >
             {formatStatus(selectedStatus)}
           </Button>
         }
@@ -72,22 +80,26 @@ export default function AssessmentFilters({
         ))}
       </Menu>
 
-      <Button
-        mode="outlined"
-        onPress={() => showDatePicker("from")}
-        style={styles.dateButton}
-      >
-        From: {dateFrom ? dateFrom.toLocaleDateString() : "Any"}
-      </Button>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Button
+          mode="text"
+          onPress={() => showDatePicker("from")}
+          style={styles.dateButton}
+          textColor="black"
+        >
+          From: {dateFrom ? dateFrom.toLocaleDateString() : "Any"}
+        </Button>
 
-      <Button
-        mode="outlined"
-        onPress={() => showDatePicker("to")}
-        style={styles.dateButton}
-      >
-        To: {dateTo ? dateTo.toLocaleDateString() : "Any"}
-      </Button>
-
+        <Button
+          mode="text"
+          onPress={() => showDatePicker("to")}
+          style={styles.dateButton}
+          textColor="black"
+        >
+          To: {dateTo ? dateTo.toLocaleDateString() : "Any"}
+        </Button>
+      </View>
+        
       <Button
         mode="text"
         onPress={() => {
@@ -95,6 +107,8 @@ export default function AssessmentFilters({
           onDateFromChange(null);
           onDateToChange(null);
         }}
+        textColor="black"
+        labelStyle={{ fontSize: 14, textDecorationLine: "underline" }}
       >
         Clear filters
       </Button>
@@ -104,13 +118,11 @@ export default function AssessmentFilters({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12,
     alignItems: "center",
   },
   dateButton: {
+    borderRadius: 6,
+    borderColor: "black",
     flexShrink: 1,
   },
 });

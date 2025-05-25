@@ -208,8 +208,6 @@ export default function ExamsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Exams</Text>
-
       <AssessmentFilters
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}

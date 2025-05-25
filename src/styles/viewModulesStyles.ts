@@ -8,11 +8,9 @@ export const viewModulesStyles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   heading: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     marginBottom: 16,
-    textAlign: "center",
-    textDecorationLine: "underline",
   },
     headingSec: {
     fontSize: 18,

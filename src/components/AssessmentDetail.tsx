@@ -13,63 +13,114 @@ export default function AssessmentDetail({
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text variant="titleLarge">{assessment.title}</Text>
-      <Text>{assessment.description}</Text>
-      <Text style={{ marginVertical: 8 }}>{assessment.instructions}</Text>
-      <Text>Type: {assessment.type}</Text>
-      <Text>Duration: {assessment.duration} minutes</Text>
-      <Text>Start: {new Date(assessment.startDate).toLocaleString()}</Text>
-      <Text>End: {new Date(assessment.endDate).toLocaleString()}</Text>
-
-      <Divider style={{ marginVertical: 16 }} />
+      <Card
+        style={{
+          padding: 16,
+          borderRadius: 6,
+          marginBottom: 16,
+          backgroundColor: "white",
+        }}
+      >
+        <Text
+          variant="titleLarge"
+          style={{ fontWeight: "bold", marginBottom: 4 }}
+        >
+          {assessment.title}
+        </Text>
+        <Text style={{ color: "#555", marginBottom: 6 }}>
+          {assessment.description}
+        </Text>
+        <Text style={{ marginBottom: 6 }}>
+          <Text style={{ fontWeight: "600" }}>Instructions:</Text>{" "}
+          {assessment.instructions}
+        </Text>
+        <Text style={{ marginBottom: 4 }}>
+          ⏱️ Duration: {assessment.duration} minutes
+        </Text>
+        <Text style={{ marginBottom: 4 }}>
+          📅 Start: {new Date(assessment.startDate).toLocaleString()}
+        </Text>
+        <Text>🛑 End: {new Date(assessment.endDate).toLocaleString()}</Text>
+      </Card>
 
       {assessment.questions.map((q: any, index: number) => (
-        <Card key={q.id} style={{ marginBottom: 16, padding: 12 }}>
-          <Text style={{ fontWeight: "bold" }}>
+        <Card
+          key={q.id}
+          style={{
+            padding: 16,
+            borderRadius: 6,
+            marginBottom: 20,
+            backgroundColor: "white",
+          }}
+        >
+          <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}>
             {index + 1}. {q.text}
           </Text>
-          <Text>Score: {q.score}</Text>
-          <Text>Type: {q.type}</Text>
+          <Text style={{ marginBottom: 4 }}>🏆 Score: {q.score}</Text>
+          <Text style={{ marginBottom: 4 }}>📄 Type: {q.type}</Text>
 
           {q.imageUrl && (
             <Image
               source={{ uri: q.imageUrl }}
-              style={{ height: 150, resizeMode: "contain", marginTop: 8 }}
+              style={{
+                width: "100%",
+                height: 180,
+                resizeMode: "contain",
+                marginVertical: 12,
+                borderRadius: 8,
+              }}
             />
           )}
 
           {q.type === "MULTIPLE_CHOICE" && (
-            <View style={{ marginTop: 8 }}>
+            <View style={{ marginTop: 6 }}>
               {q.options.map((opt: string, i: number) => (
-                <Text key={i}>
-                  {opt} {opt === q.correctOption ? "✓ (correct)" : ""}
+                <Text key={i} style={{ marginBottom: 2 }}>
+                  {String.fromCharCode(65 + i)}. {opt}
+                  {opt === q.correctOption ? " ✅ (correct)" : ""}
                 </Text>
               ))}
             </View>
           )}
 
           {q.sampleAnswer && (
-            <Text style={{ marginTop: 8 }}>
-              Sample Answer: {q.sampleAnswer}
+            <Text style={{ marginTop: 8, fontStyle: "italic", color: "#555" }}>
+              💡 Sample Answer: {q.sampleAnswer}
             </Text>
           )}
 
-          <Divider style={{ marginVertical: 8 }} />
-          <Text style={{ fontWeight: "bold" }}>Answers:</Text>
-          {q.answers.length === 0 ? (
-            <Text>No answers submitted</Text>
+          <Divider style={{ marginVertical: 12 }} />
+
+          <Text style={{ fontWeight: "bold", marginBottom: 6 }}>
+            🧑‍🎓 Student Answers:
+          </Text>
+
+          {!Array.isArray(q.answers) || q.answers.length === 0 ? (
+            <Text style={{ fontStyle: "italic", color: "#888" }}>
+              No answers submitted.
+            </Text>
           ) : (
             q.answers.map((ans: any, idx: number) => (
-              <View key={idx} style={{ marginVertical: 4 }}>
-                <Text>Student ID: {ans.studentId}</Text>
+              <View
+                key={idx}
+                style={{
+                  marginBottom: 8,
+                  padding: 8,
+                  backgroundColor: "#f2f2f2",
+                  borderRadius: 8,
+                }}
+              >
+                <Text>🆔 Student ID: {ans.studentId}</Text>
                 {q.type === "MULTIPLE_CHOICE" && (
-                  <Text>Selected: {ans.selectedOption || "(no answer)"}</Text>
+                  <Text>
+                    ✅ Selected: {ans.selectedOption || "(no answer)"}
+                  </Text>
                 )}
                 {q.type === "WRITTEN_ANSWER" && (
-                  <Text>Answer: {ans.answerText || "(no answer)"}</Text>
+                  <Text>✍️ Answer: {ans.answerText || "(no answer)"}</Text>
                 )}
                 {q.type === "FILE_ATTACHMENT" && ans.filePath && (
-                  <Text>Attachment: {ans.filePath}</Text>
+                  <Text>📎 Attachment: {ans.filePath}</Text>
                 )}
               </View>
             ))

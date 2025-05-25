@@ -216,8 +216,6 @@ export default function TasksScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Tasks</Text>
-
       <AssessmentFilters
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
