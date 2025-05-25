@@ -19,6 +19,7 @@ import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
+import { formatStatus } from "@utils/statusFormatter";
 
 const PAGE_SIZE = 10;
 
@@ -169,7 +170,7 @@ export default function TasksScreen() {
         </Text>
 
         <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-          Status: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+          Status: {formatStatus(item.status)}
         </Text>
 
         {isTeacher && (
@@ -222,6 +223,7 @@ export default function TasksScreen() {
         dateTo={dateTo}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
+        isProfessor={isTeacher}
       />
 
       <FlatList

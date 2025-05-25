@@ -3,6 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Button, Menu, Divider } from "react-native-paper";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { AssessmentStatus } from "@services/AssessmentService";
+import { formatStatus } from "@utils/statusFormatter";
 
 interface Props {
   selectedStatus: AssessmentStatus | null;
@@ -11,6 +12,7 @@ interface Props {
   dateTo: Date | null;
   onDateFromChange: (date: Date | null) => void;
   onDateToChange: (date: Date | null) => void;
+  isProfessor?: boolean;
 }
 
 const statuses: AssessmentStatus[] = [
@@ -20,15 +22,6 @@ const statuses: AssessmentStatus[] = [
   "OVERDUE",
 ];
 
-const formatStatus = (status: AssessmentStatus | null): string => {
-  if (!status) return "All Statuses";
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join(" ");
-};
-
 export default function AssessmentFilters({
   selectedStatus,
   onStatusChange,
@@ -36,8 +29,13 @@ export default function AssessmentFilters({
   dateTo,
   onDateFromChange,
   onDateToChange,
+  isProfessor,
 }: Props) {
   const [menuVisible, setMenuVisible] = React.useState(false);
+
+  const allStatuses: AssessmentStatus[] = isProfessor
+    ? ["PENDING", "IN_PROGRESS", "FINISHED"]
+    : ["PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE"];
 
   const showDatePicker = (mode: "from" | "to") => {
     DateTimePickerAndroid.open({
@@ -69,7 +67,7 @@ export default function AssessmentFilters({
       >
         <Menu.Item onPress={() => onStatusChange(null)} title="All" />
         <Divider />
-        {statuses.map((status) => (
+        {allStatuses.map((status) => (
           <Menu.Item
             key={status}
             onPress={() => {
