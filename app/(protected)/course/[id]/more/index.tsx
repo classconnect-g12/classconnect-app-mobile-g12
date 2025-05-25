@@ -14,7 +14,11 @@ type IoniconName =
 
 export default function MoreScreen() {
   const router = useRouter();
-  const { courseId, isTeacher } = useCourse();
+  const { courseId, isTeacher, courseDetail } = useCourse();
+  const { course } = courseDetail;
+  const { permissions } = course;
+
+  const hasPermissions = permissions.length > 0;
 
   const allOptions: {
     title: string;
@@ -61,6 +65,12 @@ export default function MoreScreen() {
   const visibleOptions = allOptions.filter((item) => {
     if (item.requiresTeacher && !isTeacher) return false;
     if (item.requiresStudent && isTeacher) return false;
+    if (
+      (item.title === "Settings" || item.title === "My permissions") &&
+      !hasPermissions
+    ) {
+      return false;
+    }
     return true;
   });
 
