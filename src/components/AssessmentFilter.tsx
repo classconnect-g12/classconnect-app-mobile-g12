@@ -15,13 +15,6 @@ interface Props {
   isProfessor?: boolean;
 }
 
-const statuses: AssessmentStatus[] = [
-  "PENDING",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "OVERDUE",
-];
-
 export default function AssessmentFilters({
   selectedStatus,
   onStatusChange,
