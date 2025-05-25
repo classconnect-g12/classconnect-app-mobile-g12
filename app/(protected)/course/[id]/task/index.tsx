@@ -20,9 +20,14 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
 
+const PAGE_SIZE = 10;
+
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
@@ -42,30 +47,55 @@ export default function TasksScreen() {
     return true;
   });
 
-  const loadTasks = async () => {
-    setLoading(true);
+  const loadTasks = async (pageToLoad = 0) => {
+    const isFirstPage = pageToLoad === 0;
+
+    if (isFirstPage) {
+      setLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
     try {
       const assessments = await getAssessmentsByCourse(
         courseId as string,
-        0,
-        10,
+        pageToLoad,
+        PAGE_SIZE,
         "TASK"
       );
-      setTasks(assessments);
+
+      if (isFirstPage) {
+        setTasks(assessments);
+      } else {
+        setTasks((prev) => [...prev, ...assessments]);
+      }
+
+      setHasMore(assessments.length === PAGE_SIZE);
+      setPage(pageToLoad);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error loading tasks", logout);
     } finally {
-      setLoading(false);
+      if (isFirstPage) {
+        setLoading(false);
+      } else {
+        setIsFetchingMore(false);
+      }
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
-        loadTasks();
+        loadTasks(0);
       }
     }, [courseId])
   );
+
+  const handleEndReached = () => {
+    if (!isFetchingMore && hasMore) {
+      loadTasks(page + 1);
+    }
+  };
 
   const handleDelete = (taskId: number) => {
     Alert.alert(
@@ -202,6 +232,9 @@ export default function TasksScreen() {
         ListEmptyComponent={
           <Text style={styles.empty}>No tasks available</Text>
         }
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={isFetchingMore ? <Spinner /> : null}
       />
 
       {isTeacher && (

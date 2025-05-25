@@ -20,9 +20,15 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
 
+const PAGE_SIZE = 10;
+
 export default function ExamsScreen() {
   const [exams, setExams] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
@@ -42,16 +48,18 @@ export default function ExamsScreen() {
     return true;
   });
 
-  const loadExams = async () => {
+  const loadInitialExams = async () => {
     setLoading(true);
     try {
       const assessments = await getAssessmentsByCourse(
         courseId as string,
         0,
-        10,
+        PAGE_SIZE,
         "EXAM"
       );
       setExams(assessments);
+      setPage(1);
+      setHasMore(assessments.length === PAGE_SIZE);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error loading exams", logout);
     } finally {
@@ -59,10 +67,30 @@ export default function ExamsScreen() {
     }
   };
 
+  const loadMoreExams = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const assessments = await getAssessmentsByCourse(
+        courseId as string,
+        page,
+        PAGE_SIZE,
+        "EXAM"
+      );
+      setExams((prev) => [...prev, ...assessments]);
+      setPage((prev) => prev + 1);
+      setHasMore(assessments.length === PAGE_SIZE);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error loading more exams", logout);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
-        loadExams();
+        loadInitialExams();
       }
     }, [courseId])
   );
@@ -72,10 +100,7 @@ export default function ExamsScreen() {
       "Confirm delete",
       "Are you sure you want to delete this exam?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
@@ -96,8 +121,7 @@ export default function ExamsScreen() {
             }
           },
         },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
@@ -177,9 +201,7 @@ export default function ExamsScreen() {
     );
   };
 
-  if (loading) {
-    return <Spinner />;
-  }
+  if (loading) return <Spinner />;
 
   return (
     <View style={styles.container}>
@@ -202,6 +224,9 @@ export default function ExamsScreen() {
         ListEmptyComponent={
           <Text style={styles.empty}>No exams available</Text>
         }
+        onEndReached={loadMoreExams}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loadingMore ? <Spinner /> : null}
       />
 
       {isTeacher && (
