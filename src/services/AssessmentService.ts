@@ -3,7 +3,7 @@ import { questionFormatter } from "@utils/questionFormatter";
 
 export type AssessmentStatus =
   | "PENDING"
-  | "IN_PROGRES"
+  | "IN_PROGRESS"
   | "FINISHED"
   | "OVERDUE"
   | "COMPLETED";

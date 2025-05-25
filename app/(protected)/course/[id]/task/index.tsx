@@ -4,6 +4,7 @@ import { Text, Card, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import {
   Assessment,
+  AssessmentStatus,
   deleteAssessment,
   getAssessmentsByCourse,
 } from "@services/AssessmentService";
@@ -17,6 +18,7 @@ import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
+import AssessmentFilters from "@components/AssessmentFilter";
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Assessment[]>([]);
@@ -25,6 +27,20 @@ export default function TasksScreen() {
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
+
+  const [selectedStatus, setSelectedStatus] = useState<AssessmentStatus | null>(
+    null
+  );
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
+
+  const filteredItems = tasks.filter((item) => {
+    if (selectedStatus && item.status !== selectedStatus) return false;
+    const itemDate = new Date(item.startDate);
+    if (dateFrom && itemDate < dateFrom) return false;
+    if (dateTo && itemDate > dateTo) return false;
+    return true;
+  });
 
   const loadTasks = async () => {
     setLoading(true);
@@ -162,17 +178,24 @@ export default function TasksScreen() {
   };
 
   if (loading) {
-    return (
-        <Spinner />
-    );
+    return <Spinner />;
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Tasks</Text>
 
+      <AssessmentFilters
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+      />
+
       <FlatList
-        data={tasks}
+        data={filteredItems}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
