@@ -268,7 +268,10 @@ export default function Members() {
         feedbackComment.trim(),
         feedbackRating
       );
-
+      showSnackbar(
+        `Feedback sent to ${feedbackTarget.userProfile.user_name}`,
+        SNACKBAR_VARIANTS.SUCCESS
+      );
       setFeedbackModalVisible(false);
       setFeedbackTarget(null);
       setFeedbackComment("");
