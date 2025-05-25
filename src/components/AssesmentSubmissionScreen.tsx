@@ -69,8 +69,6 @@ export default function AssessmentSubmissionScreen({
     const fetchAssessment = async () => {
       try {
         const data = await getAssessmentById(courseId, assessmentId);
-        console.log(data);
-
         setAssessment(data);
         const initialAnswers: { [id: number]: string } = {};
         data.questions.forEach((q: any) => {
