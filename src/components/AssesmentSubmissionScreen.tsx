@@ -35,6 +35,35 @@ export default function AssessmentSubmissionScreen({
   const [answers, setAnswers] = useState<{ [questionId: number]: string }>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<{
+    minutes: number;
+    seconds: number;
+  }>({ minutes: 0, seconds: 0 });
+
+  const calculateRemainingTime = (endTime: number) => {
+    const diff = Math.max(0, endTime - Date.now());
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    return { minutes, seconds };
+  };
+
+  useEffect(() => {
+    if (!assessment) return;
+
+    const durationMs = assessment.remainingMinutes * 60000;
+    const endTime = Date.now() + durationMs;
+
+    const interval = setInterval(() => {
+      const { minutes, seconds } = calculateRemainingTime(endTime);
+      setTimeLeft({ minutes, seconds });
+
+      if (minutes === 0 && seconds === 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [assessment]);
 
   useEffect(() => {
     const fetchAssessment = async () => {
@@ -155,6 +184,10 @@ export default function AssessmentSubmissionScreen({
         <Text variant="titleMedium">{assessment.title}</Text>
         <Text>Instructions: {assessment.instructions}</Text>
         <Text>Deadline: {new Date(assessment.startDate).toLocaleString()}</Text>
+        <Text style={{ marginTop: 8, fontWeight: "bold", color: "#d32f2f" }}>
+          Time remaining: {timeLeft.minutes.toString().padStart(2, "0")}:
+          {timeLeft.seconds.toString().padStart(2, "0")}
+        </Text>
       </Card>
 
       {assessment.questions.map((question: any, index: number) => (
