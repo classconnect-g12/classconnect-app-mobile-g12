@@ -134,7 +134,9 @@ export default function ExamsScreen() {
       <Card
         style={styles.moduleCard}
         onPress={() => {
-          if (!isTeacher) {
+          if (isTeacher) {
+            router.push(`/course/${courseId}/exam/view/${item.id}`);
+          } else {
             if (item.status === "OVERDUE" || item.status === "COMPLETED") {
               Alert.alert(
                 "Unavailable exam",

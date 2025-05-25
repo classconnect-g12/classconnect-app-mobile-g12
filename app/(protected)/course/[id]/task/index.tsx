@@ -140,7 +140,9 @@ export default function TasksScreen() {
       <Card
         style={styles.moduleCard}
         onPress={() => {
-          if (!isTeacher) {
+          if (isTeacher) {
+            router.push(`/course/${courseId}/task/view/${item.id}`);
+          } else {
             if (item.status === "OVERDUE" || item.status === "COMPLETED") {
               Alert.alert(
                 "Unavailable task",
