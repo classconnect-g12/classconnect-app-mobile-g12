@@ -271,10 +271,7 @@ export default function CourseDetail() {
           style={styles.confirmModalBox}
         >
           <Dialog.Title>
-            Send feedback to{" "}
-            <Text style={{ fontWeight: "bold" }}>
-              {feedbackTarget?.userProfile.user_name}
-            </Text>
+            Send feedback
           </Dialog.Title>
           <Dialog.Content>
             <TextInput

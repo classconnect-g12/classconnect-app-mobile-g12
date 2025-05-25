@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { CourseProvider, useCourse } from "@context/CourseContext";
 import { fetchCourseDetail, getCourseStatus } from "@services/CourseService";
-import { Pressable, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 const FINISHED_COURSE_STATUS = "FINISHED";
 
@@ -20,6 +20,8 @@ function InnerTabs() {
     courseStatus,
     isEnrolled,
     isTeacher,
+    isInitialized,
+    setIsInitialized,
   } = useCourse();
 
   useEffect(() => {
@@ -35,6 +37,7 @@ function InnerTabs() {
         setIsTeacher(courseDetail.course.isTeacher);
         const courseStatus = await getCourseStatus(id ?? "");
         setCourseStatus(courseStatus.status);
+        setIsInitialized?.(true);
       } catch (error) {
         console.error("Error fetching course data:", error);
       } finally {
@@ -59,6 +62,14 @@ function InnerTabs() {
 
   const isFinished = courseStatus === FINISHED_COURSE_STATUS;
 
+  if (!isInitialized) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -80,7 +91,7 @@ function InnerTabs() {
           ),
         }}
       />
-      
+
       <Tabs.Screen
         name="module"
         options={{

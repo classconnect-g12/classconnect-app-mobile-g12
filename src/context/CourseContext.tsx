@@ -15,6 +15,8 @@ const CourseContext = createContext<{
   setCourseDetail: (detail: any) => void;
   isLoading?: boolean;
   setIsLoading?: (loading: boolean) => void;
+  isInitialized: boolean;
+  setIsInitialized: (initialized: boolean) => void;
 }>({
   courseId: null,
   setCourseId: () => {},
@@ -30,6 +32,8 @@ const CourseContext = createContext<{
   setCourseDetail: () => {},
   isLoading: false,
   setIsLoading: () => {},
+  isInitialized: false,
+  setIsInitialized: () => {},
 });
 
 export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
@@ -40,6 +44,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
   const [courseStatus, setCourseStatus] = useState("");
   const [courseDetail, setCourseDetail] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   return (
     <CourseContext.Provider
@@ -58,6 +63,8 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
         setCourseDetail,
         isLoading,
         setIsLoading,
+        isInitialized,
+        setIsInitialized,
       }}
     >
       {children}
