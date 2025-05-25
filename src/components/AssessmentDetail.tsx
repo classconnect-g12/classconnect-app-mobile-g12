@@ -11,6 +11,19 @@ export default function AssessmentDetail({
 }) {
   if (loading || !assessment) return <Spinner />;
 
+  const getReadableType = (type: string) => {
+    switch (type) {
+      case "MULTIPLE_CHOICE":
+        return "Multiple Choice";
+      case "WRITTEN_ANSWER":
+        return "Written Answer";
+      case "FILE_ATTACHMENT":
+        return "File Attachment";
+      default:
+        return type;
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
       <Card
@@ -57,7 +70,9 @@ export default function AssessmentDetail({
             {index + 1}. {q.text}
           </Text>
           <Text style={{ marginBottom: 4 }}>🏆 Score: {q.score}</Text>
-          <Text style={{ marginBottom: 4 }}>📄 Type: {q.type}</Text>
+          <Text style={{ marginBottom: 4 }}>
+            📄 Type: {getReadableType(q.type)}
+          </Text>
 
           {q.imageUrl && (
             <Image
