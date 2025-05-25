@@ -4,6 +4,7 @@ import { Text, Card, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import {
   Assessment,
+  AssessmentStatus,
   deleteAssessment,
   getAssessmentsByCourse,
 } from "@services/AssessmentService";
@@ -17,25 +18,49 @@ import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
+import AssessmentFilters from "@components/AssessmentFilter";
+import { formatStatus } from "@utils/statusFormatter";
+
+const PAGE_SIZE = 10;
 
 export default function ExamsScreen() {
   const [exams, setExams] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
-  const loadExams = async () => {
+  const [selectedStatus, setSelectedStatus] = useState<AssessmentStatus | null>(
+    null
+  );
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
+
+  const filteredItems = exams.filter((item) => {
+    if (selectedStatus && item.status !== selectedStatus) return false;
+    const itemDate = new Date(item.startDate);
+    if (dateFrom && itemDate < dateFrom) return false;
+    if (dateTo && itemDate > dateTo) return false;
+    return true;
+  });
+
+  const loadInitialExams = async () => {
     setLoading(true);
     try {
       const assessments = await getAssessmentsByCourse(
         courseId as string,
         0,
-        10,
+        PAGE_SIZE,
         "EXAM"
       );
       setExams(assessments);
+      setPage(1);
+      setHasMore(assessments.length === PAGE_SIZE);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error loading exams", logout);
     } finally {
@@ -43,10 +68,30 @@ export default function ExamsScreen() {
     }
   };
 
+  const loadMoreExams = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const assessments = await getAssessmentsByCourse(
+        courseId as string,
+        page,
+        PAGE_SIZE,
+        "EXAM"
+      );
+      setExams((prev) => [...prev, ...assessments]);
+      setPage((prev) => prev + 1);
+      setHasMore(assessments.length === PAGE_SIZE);
+    } catch (error) {
+      handleApiError(error, showSnackbar, "Error loading more exams", logout);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
-        loadExams();
+        loadInitialExams();
       }
     }, [courseId])
   );
@@ -56,10 +101,7 @@ export default function ExamsScreen() {
       "Confirm delete",
       "Are you sure you want to delete this exam?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
@@ -80,8 +122,7 @@ export default function ExamsScreen() {
             }
           },
         },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
@@ -123,7 +164,7 @@ export default function ExamsScreen() {
         </Text>
 
         <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-          Status: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+          Status: {formatStatus(item.status)}
         </Text>
 
         {isTeacher && (
@@ -161,24 +202,33 @@ export default function ExamsScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <Spinner />
-    );
-  }
+  if (loading) return <Spinner />;
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Exams</Text>
 
+      <AssessmentFilters
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        isProfessor={isTeacher}
+      />
+
       <FlatList
-        data={exams}
+        data={filteredItems}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.empty}>No exams available</Text>
         }
+        onEndReached={loadMoreExams}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loadingMore ? <Spinner /> : null}
       />
 
       {isTeacher && (

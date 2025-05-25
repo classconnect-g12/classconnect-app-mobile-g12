@@ -4,6 +4,7 @@ import { Text, Card, AnimatedFAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import {
   Assessment,
+  AssessmentStatus,
   deleteAssessment,
   getAssessmentsByCourse,
 } from "@services/AssessmentService";
@@ -17,39 +18,85 @@ import { colors } from "@theme/colors";
 import { viewModulesStyles as styles } from "@styles/viewModulesStyles";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
+import AssessmentFilters from "@components/AssessmentFilter";
+import { formatStatus } from "@utils/statusFormatter";
+
+const PAGE_SIZE = 10;
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
 
-  const loadTasks = async () => {
-    setLoading(true);
+  const [selectedStatus, setSelectedStatus] = useState<AssessmentStatus | null>(
+    null
+  );
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
+
+  const filteredItems = tasks.filter((item) => {
+    if (selectedStatus && item.status !== selectedStatus) return false;
+    const itemDate = new Date(item.startDate);
+    if (dateFrom && itemDate < dateFrom) return false;
+    if (dateTo && itemDate > dateTo) return false;
+    return true;
+  });
+
+  const loadTasks = async (pageToLoad = 0) => {
+    const isFirstPage = pageToLoad === 0;
+
+    if (isFirstPage) {
+      setLoading(true);
+    } else {
+      setIsFetchingMore(true);
+    }
+
     try {
       const assessments = await getAssessmentsByCourse(
         courseId as string,
-        0,
-        10,
+        pageToLoad,
+        PAGE_SIZE,
         "TASK"
       );
-      setTasks(assessments);
+
+      if (isFirstPage) {
+        setTasks(assessments);
+      } else {
+        setTasks((prev) => [...prev, ...assessments]);
+      }
+
+      setHasMore(assessments.length === PAGE_SIZE);
+      setPage(pageToLoad);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error loading tasks", logout);
     } finally {
-      setLoading(false);
+      if (isFirstPage) {
+        setLoading(false);
+      } else {
+        setIsFetchingMore(false);
+      }
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       if (courseId) {
-        loadTasks();
+        loadTasks(0);
       }
     }, [courseId])
   );
+
+  const handleEndReached = () => {
+    if (!isFetchingMore && hasMore) {
+      loadTasks(page + 1);
+    }
+  };
 
   const handleDelete = (taskId: number) => {
     Alert.alert(
@@ -123,7 +170,7 @@ export default function TasksScreen() {
         </Text>
 
         <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-          Status: {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
+          Status: {formatStatus(item.status)}
         </Text>
 
         {isTeacher && (
@@ -162,23 +209,34 @@ export default function TasksScreen() {
   };
 
   if (loading) {
-    return (
-        <Spinner />
-    );
+    return <Spinner />;
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Tasks</Text>
 
+      <AssessmentFilters
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        isProfessor={isTeacher}
+      />
+
       <FlatList
-        data={tasks}
+        data={filteredItems}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <Text style={styles.empty}>No tasks available</Text>
         }
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={isFetchingMore ? <Spinner /> : null}
       />
 
       {isTeacher && (
