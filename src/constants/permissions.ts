@@ -8,7 +8,7 @@ export const DELETE_MODULE = "DELETE_MODULE";
 export const EDIT_RESOURCE = "EDIT_RESOURCE";
 export const DELETE_RESOURCE = "DELETE_RESOURCE";
 export const EDIT_ASSESSMENT = "EDIT_ASSESSMENT";
-export const DELETE_ASSESMENT = "DELETE_ASSESMENT";
+export const DELETE_ASSESSMENT = "DELETE_ASSESMENT";
 export const REVIEW_ASSESSMENT = "REVIEW_ASSESSMENT";
 
 export const ASSISTANT_PERMISSIONS = [
@@ -22,7 +22,7 @@ export const ASSISTANT_PERMISSIONS = [
   EDIT_RESOURCE,
   DELETE_RESOURCE,
   EDIT_ASSESSMENT,
-  DELETE_ASSESMENT,
+  DELETE_ASSESSMENT,
   REVIEW_ASSESSMENT,
 ];
 
@@ -37,6 +37,6 @@ export const PERMISSION_LABELS: Record<string, string> = {
   [EDIT_RESOURCE]: "Edit resource",
   [DELETE_RESOURCE]: "Delete resource",
   [EDIT_ASSESSMENT]: "Edit assignment or exam",
-  [DELETE_ASSESMENT]: "Delete assignment or exam",
+  [DELETE_ASSESSMENT]: "Delete assignment or exam",
   [REVIEW_ASSESSMENT]: "Grade exams",
 };

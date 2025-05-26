@@ -20,6 +20,7 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
 import { formatStatus } from "@utils/statusFormatter";
+import { CREATE_ASSESSMENT, DELETE_ASSESSMENT, EDIT_ASSESSMENT, REVIEW_ASSESSMENT } from "@constants/permissions";
 
 const PAGE_SIZE = 10;
 
@@ -33,6 +34,10 @@ export default function TasksScreen() {
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
+
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   const [selectedStatus, setSelectedStatus] = useState<AssessmentStatus | null>(
     null
@@ -134,13 +139,18 @@ export default function TasksScreen() {
 
   const renderItem = ({ item }: { item: Assessment }) => {
     const isEditable =
-      isTeacher && new Date(item.startDate).getTime() > Date.now();
+      (isTeacher || hasPermission(EDIT_ASSESSMENT)) &&
+      new Date(item.startDate).getTime() > Date.now();
+
+    const isDeletable =
+      (isTeacher || hasPermission(DELETE_ASSESSMENT)) &&
+      new Date(item.startDate).getTime() > Date.now();
 
     return (
       <Card
         style={styles.moduleCard}
         onPress={() => {
-          if (isTeacher) {
+          if (isTeacher || hasPermission(REVIEW_ASSESSMENT)) {
             router.push(`/course/${courseId}/task/view/${item.id}`);
           } else {
             if (item.status === "OVERDUE" || item.status === "COMPLETED") {
@@ -175,7 +185,7 @@ export default function TasksScreen() {
           Status: {formatStatus(item.status)}
         </Text>
 
-        {isTeacher && (
+        {(isTeacher || hasPermission(EDIT_ASSESSMENT) || hasPermission(DELETE_ASSESSMENT)) && (
           <View
             style={{
               flexDirection: "row",
@@ -201,8 +211,8 @@ export default function TasksScreen() {
               name="trash-can-outline"
               size={24}
               color={colors.error}
-              onPress={isEditable ? () => handleDelete(item.id) : undefined}
-              style={{ opacity: isEditable ? 1 : 0.3 }}
+              onPress={isDeletable ? () => handleDelete(item.id) : undefined}
+              style={{ opacity: isDeletable ? 1 : 0.3 }}
             />
           </View>
         )}
@@ -239,7 +249,7 @@ export default function TasksScreen() {
         ListFooterComponent={isFetchingMore ? <Spinner /> : null}
       />
 
-      {isTeacher && (
+      {(isTeacher || hasPermission(CREATE_ASSESSMENT)) && (
         <AnimatedFAB
           icon="plus"
           label=""
