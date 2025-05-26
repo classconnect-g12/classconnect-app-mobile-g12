@@ -20,6 +20,7 @@ import { useAuth } from "@context/authContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useModule } from "@context/ModuleContext";
 import Spinner from "@components/Spinner";
+import { CREATE_MODULE } from "@constants/permissions";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
@@ -154,7 +155,7 @@ const CourseModulesScreen = () => {
         loading={creating}
       />
 
-      {(isTeacher || hasPermission("CREATE_MODULE")) && (
+      {(isTeacher || hasPermission(CREATE_MODULE)) && (
         <AnimatedFAB
           icon="plus"
           label=""

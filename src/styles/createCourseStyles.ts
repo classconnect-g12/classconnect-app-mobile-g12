@@ -34,6 +34,12 @@ export const createCourseStyles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.primary,
   },
+  buttonAddQuestion: {
+    borderRadius: 6,
+    width: "50%",
+    alignSelf: "flex-end",
+    backgroundColor: colors.secondary,
+  },
   datePickerContainer: {
     marginVertical: 10,
   },

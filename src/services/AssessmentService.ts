@@ -150,6 +150,18 @@ export async function getAssessmentById(
   return response.data;
 }
 
+export async function getAssessmentDetailsById(
+  courseId: string,
+  assessmentId: string
+) {
+  const response = await privateClient.get(
+    `/course/${courseId}/assessments/${assessmentId}/submissions`
+  );
+  console.log("Assessment details response:", response.data);
+  console.log("Assessment details user:", response.data.submissions[0].userProfile);
+  return response.data;
+}
+
 export async function updateAssessment(
   courseId: string,
   assessmentId: string,

@@ -1,6 +1,21 @@
-import { ScrollView, View, Image } from "react-native";
-import { Text, Card, Divider } from "react-native-paper";
+import { ScrollView, View } from "react-native";
+import { Text, Card, Button } from "react-native-paper";
 import Spinner from "@components/Spinner";
+import { colors } from "@theme/colors";
+
+const SUBMISSION_STATUS = {
+  GRADED: "GRADED",
+  PENDING_REVIEW: "PENDING_REVIEW",
+  LATE_SUBMISSION: "LATE_SUBMISSION",
+  SUBMITTED: "SUBMITTED",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  [SUBMISSION_STATUS.GRADED]: "Graded",
+  [SUBMISSION_STATUS.PENDING_REVIEW]: "Pending Review",
+  [SUBMISSION_STATUS.LATE_SUBMISSION]: "Late Submission",
+  [SUBMISSION_STATUS.SUBMITTED]: "Submitted",
+};
 
 export default function AssessmentDetail({
   assessment,
@@ -9,73 +24,92 @@ export default function AssessmentDetail({
   assessment: any;
   loading: boolean;
 }) {
-  if (loading || !assessment) return <Spinner />;
+  if (loading) return <Spinner />;
+
+  if (!assessment || !assessment.submissions) {
+    return (
+      <View style={{ padding: 16 }}>
+        <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16, textAlign: "center" }}>
+          No submissions found.
+        </Text>
+      </View>
+    );
+  }
+
+  const submissions = assessment.submissions;
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text variant="titleLarge">{assessment.title}</Text>
-      <Text>{assessment.description}</Text>
-      <Text style={{ marginVertical: 8 }}>{assessment.instructions}</Text>
-      <Text>Type: {assessment.type}</Text>
-      <Text>Duration: {assessment.duration} minutes</Text>
-      <Text>Start: {new Date(assessment.startDate).toLocaleString()}</Text>
-      <Text>End: {new Date(assessment.endDate).toLocaleString()}</Text>
+      {submissions.map((sub: any, index: number) => {
+        const status = sub.status;
+        const user = sub.userProfile;
+        const submissionDate = new Date(sub.submissionTime);
 
-      <Divider style={{ marginVertical: 16 }} />
+        const isLate =
+          status === SUBMISSION_STATUS.LATE_SUBMISSION ||
+          (assessment.endDate && submissionDate > new Date(assessment.endDate));
 
-      {assessment.questions.map((q: any, index: number) => (
-        <Card key={q.id} style={{ marginBottom: 16, padding: 12 }}>
-          <Text style={{ fontWeight: "bold" }}>
-            {index + 1}. {q.text}
-          </Text>
-          <Text>Score: {q.score}</Text>
-          <Text>Type: {q.type}</Text>
-
-          {q.imageUrl && (
-            <Image
-              source={{ uri: q.imageUrl }}
-              style={{ height: 150, resizeMode: "contain", marginTop: 8 }}
-            />
-          )}
-
-          {q.type === "MULTIPLE_CHOICE" && (
-            <View style={{ marginTop: 8 }}>
-              {q.options.map((opt: string, i: number) => (
-                <Text key={i}>
-                  {opt} {opt === q.correctOption ? "✓ (correct)" : ""}
-                </Text>
-              ))}
-            </View>
-          )}
-
-          {q.sampleAnswer && (
-            <Text style={{ marginTop: 8 }}>
-              Sample Answer: {q.sampleAnswer}
+        return (
+          <Card
+            key={`${sub.studentId}-${sub.submissionTime}`}
+            style={{
+              padding: 16,
+              borderRadius: 8,
+              marginBottom: 16,
+              backgroundColor: "white",
+            }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
+              🧑‍🎓 {user.first_name} {user.last_name} ({user.user_name})
             </Text>
-          )}
 
-          <Divider style={{ marginVertical: 8 }} />
-          <Text style={{ fontWeight: "bold" }}>Answers:</Text>
-          {q.answers.length === 0 ? (
-            <Text>No answers submitted</Text>
-          ) : (
-            q.answers.map((ans: any, idx: number) => (
-              <View key={idx} style={{ marginVertical: 4 }}>
-                <Text>Student ID: {ans.studentId}</Text>
-                {q.type === "MULTIPLE_CHOICE" && (
-                  <Text>Selected: {ans.selectedOption || "(no answer)"}</Text>
-                )}
-                {q.type === "WRITTEN_ANSWER" && (
-                  <Text>Answer: {ans.answerText || "(no answer)"}</Text>
-                )}
-                {q.type === "FILE_ATTACHMENT" && ans.filePath && (
-                  <Text>Attachment: {ans.filePath}</Text>
-                )}
+            <Text style={{ fontSize: 16, marginBottom: 6 }}>
+              <Text style={{ fontWeight: "bold" }}>Submitted: </Text>
+              {submissionDate.toLocaleString()}
+            </Text>
+
+            {isLate && (
+              <Text
+                style={{
+                  color: "red",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  marginBottom: 6,
+                }}
+              >
+                ⚠️ Late Submission
+              </Text>
+            )}
+
+            <Text style={{ fontSize: 16, marginBottom: 6 }}>
+              <Text style={{ fontWeight: "bold" }}>Status: </Text>
+              {STATUS_LABELS[status] ?? "Unknown"}
+            </Text>
+
+            {status === SUBMISSION_STATUS.GRADED && (
+              <Text style={{ fontSize: 16, marginBottom: 6 }}>
+                <Text style={{ fontWeight: "bold" }}>Score: </Text>
+                {sub.score}
+              </Text>
+            )}
+
+            {status === SUBMISSION_STATUS.PENDING_REVIEW && (
+              <View style={{ marginTop: 10 }}>
+                <Button
+                  style={{borderRadius: 6, backgroundColor: colors.primary}}
+                  mode="contained"
+                  onPress={() => {
+                    // TODO: routeo
+                    console.log("Review submission for", sub.studentId);
+                  }}
+                >
+                  Review Submission
+                </Button>
               </View>
-            ))
-          )}
-        </Card>
-      ))}
+            )}
+          </Card>
+        );
+      })}
     </ScrollView>
   );
 }

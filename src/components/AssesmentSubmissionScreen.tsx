@@ -6,9 +6,10 @@ import {
   Image,
   View,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import { Text, Button, ActivityIndicator, Card } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
 import { useSnackbar } from "@context/SnackbarContext";
@@ -17,6 +18,8 @@ import {
   getAssessmentById,
 } from "@services/AssessmentService";
 import { useRouter } from "expo-router";
+import Spinner from "./Spinner";
+import { colors } from "@theme/colors";
 
 type Props = {
   courseId: string;
@@ -38,7 +41,10 @@ export default function AssessmentSubmissionScreen({
   const [timeLeft, setTimeLeft] = useState<{
     minutes: number;
     seconds: number;
-  }>({ minutes: 0, seconds: 0 });
+  }>({
+    minutes: 0,
+    seconds: 0,
+  });
 
   const calculateRemainingTime = (endTime: number) => {
     const diff = Math.max(0, endTime - Date.now());
@@ -172,32 +178,43 @@ export default function AssessmentSubmissionScreen({
     );
   };
 
-  if (loading) return <ActivityIndicator style={{ marginTop: 32 }} />;
+  if (loading) return <Spinner />;
   if (!assessment)
-    return <Text style={{ padding: 16 }}>Assessment not found.</Text>;
+    return <Text style={styles.message}>Assessment not found.</Text>;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Card style={{ padding: 16, marginBottom: 16 }}>
-        <Text variant="titleMedium">{assessment.title}</Text>
-        <Text>Instructions: {assessment.instructions}</Text>
-        <Text>Deadline: {new Date(assessment.startDate).toLocaleString()}</Text>
-        <Text style={{ marginTop: 8, fontWeight: "bold", color: "#d32f2f" }}>
-          Time remaining: {timeLeft.minutes.toString().padStart(2, "0")}:
+    <ScrollView contentContainerStyle={styles.container}>
+      <Card style={styles.card}>
+        <Text variant="titleLarge" style={styles.title}>
+          {assessment.title}
+        </Text>
+
+        <Text style={styles.text}>
+          <Text style={styles.label}>Instructions:</Text>{" "}
+          {assessment.instructions}
+        </Text>
+
+        <Text style={styles.text}>
+          <Text style={styles.label}>Start:</Text>{" "}
+          {new Date(assessment.startDate).toLocaleString()}
+        </Text>
+
+        <Text style={styles.timer}>
+          ⏳ Time remaining: {timeLeft.minutes.toString().padStart(2, "0")}:
           {timeLeft.seconds.toString().padStart(2, "0")}
         </Text>
       </Card>
 
       {assessment.questions.map((question: any, index: number) => (
-        <Card key={question.id} style={{ padding: 12, marginBottom: 16 }}>
-          <Text style={{ fontWeight: "bold" }}>
+        <Card key={question.id} style={styles.questionCard}>
+          <Text style={styles.questionText}>
             {index + 1}. {question.text}
           </Text>
 
           {question.imageUrl && (
             <Image
               source={{ uri: question.imageUrl }}
-              style={{ width: "100%", height: 180, marginVertical: 12 }}
+              style={styles.image}
               resizeMode="contain"
             />
           )}
@@ -209,36 +226,35 @@ export default function AssessmentSubmissionScreen({
               numberOfLines={4}
               value={answers[question.id]}
               onChangeText={(text) => handleAnswerChange(question.id, text)}
-              style={{
-                borderColor: "#ccc",
-                borderWidth: 1,
-                borderRadius: 8,
-                padding: 10,
-                textAlignVertical: "top",
-              }}
+              style={styles.input}
             />
           )}
 
           {question.type === "MULTIPLE_CHOICE" &&
             question.options?.length > 0 && (
-              <View style={{ marginTop: 8 }}>
+              <View style={styles.optionsContainer}>
                 {question.options.map((option: string, i: number) => {
                   const selected = answers[question.id] === option;
+                  const letter = String.fromCharCode(65 + i);
                   return (
                     <TouchableOpacity
                       key={i}
                       onPress={() => handleAnswerChange(question.id, option)}
-                      style={{
-                        padding: 10,
-                        marginBottom: 6,
-                        borderRadius: 8,
-                        borderWidth: 1,
-                        borderColor: selected ? "#6200ee" : "#ccc",
-                        backgroundColor: selected ? "#e3d7fc" : "#fff",
-                      }}
+                      style={[
+                        styles.optionButton,
+                        selected && {
+                          backgroundColor: colors.secondary,
+                          borderColor: "#fff",
+                        },
+                      ]}
                     >
-                      <Text style={{ color: selected ? "#6200ee" : "#000" }}>
-                        {option}
+                      <Text
+                        style={[
+                          styles.optionText,
+                          selected && { color: "white", fontWeight: "bold" },
+                        ]}
+                      >
+                        {letter}. {option}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -256,11 +272,10 @@ export default function AssessmentSubmissionScreen({
                 Select file
               </Button>
               <Text
-                style={{
-                  marginTop: 4,
-                  fontStyle: "italic",
-                  color: answers[question.id] ? "green" : "gray",
-                }}
+                style={[
+                  styles.fileStatus,
+                  { color: answers[question.id] ? "green" : "gray" },
+                ]}
               >
                 {answers[question.id]
                   ? `File selected: ${answers[question.id].split("/").pop()}`
@@ -276,9 +291,87 @@ export default function AssessmentSubmissionScreen({
         onPress={handleSubmit}
         loading={submitting}
         disabled={submitting}
+        style={styles.submitButton}
       >
         Submit answers
       </Button>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  card: {
+    padding: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: "#f9f9f9",
+    elevation: 2,
+  },
+  title: {
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  text: {
+    marginBottom: 6,
+    color: "#555",
+  },
+  label: {
+    fontWeight: "600",
+  },
+  timer: {
+    marginTop: 12,
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#d32f2f",
+  },
+  message: {
+    padding: 16,
+  },
+  questionCard: {
+    padding: 12,
+    marginBottom: 16,
+  },
+  questionText: {
+    fontWeight: "bold",
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    marginVertical: 12,
+  },
+  input: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    textAlignVertical: "top",
+  },
+  optionsContainer: {
+    marginTop: 8,
+  },
+  optionButton: {
+    padding: 10,
+    marginBottom: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#fff",
+  },
+  optionText: {
+    color: "#000",
+  },
+  fileStatus: {
+    marginTop: 4,
+    fontStyle: "italic",
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+    borderColor: "white",
+    borderRadius: 6,
+    marginTop: 16,
+  },
+});

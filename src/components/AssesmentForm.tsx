@@ -239,6 +239,7 @@ const AssessmentForm = ({
                   style={styles.input}
                   theme={{ colors: { primary: colors.primary } }}
                 />
+                <Text style={{ marginBottom: 10, marginTop: 20 }}>Question type</Text>
                 <View style={styles.input}>
                   <Picker
                     selectedValue={q.type}
@@ -333,7 +334,7 @@ const AssessmentForm = ({
                             marginTop: 8,
                             width: "100%",
                             flexDirection: "column",
-                            alignItems: "center", // Centra los elementos horizontalmente
+                            alignItems: "center",
                           }}
                         >
                           <Image
@@ -342,7 +343,7 @@ const AssessmentForm = ({
                               width: "100%",
                               height: 200,
                               borderRadius: 8,
-                              marginTop: 8, // Espacio adicional arriba de la imagen
+                              marginTop: 8,
                             }}
                             resizeMode="contain"
                           />
@@ -360,7 +361,7 @@ const AssessmentForm = ({
             ))}
           </View>
 
-          <Button mode="contained" onPress={addQuestion} style={styles.button}>
+          <Button mode="contained" onPress={addQuestion} style={styles.buttonAddQuestion}>
             Add question
           </Button>
 
