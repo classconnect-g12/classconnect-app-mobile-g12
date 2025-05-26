@@ -1,6 +1,21 @@
-import { ScrollView, View, Image } from "react-native";
-import { Text, Card, Divider } from "react-native-paper";
+import { ScrollView, View } from "react-native";
+import { Text, Card, Button } from "react-native-paper";
 import Spinner from "@components/Spinner";
+import { colors } from "@theme/colors";
+
+const SUBMISSION_STATUS = {
+  GRADED: "GRADED",
+  PENDING_REVIEW: "PENDING_REVIEW",
+  LATE_SUBMISSION: "LATE_SUBMISSION",
+  SUBMITTED: "SUBMITTED",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  [SUBMISSION_STATUS.GRADED]: "Graded",
+  [SUBMISSION_STATUS.PENDING_REVIEW]: "Pending Review",
+  [SUBMISSION_STATUS.LATE_SUBMISSION]: "Late Submission",
+  [SUBMISSION_STATUS.SUBMITTED]: "Submitted",
+};
 
 export default function AssessmentDetail({
   assessment,
@@ -9,139 +24,92 @@ export default function AssessmentDetail({
   assessment: any;
   loading: boolean;
 }) {
-  if (loading || !assessment) return <Spinner />;
+  if (loading) return <Spinner />;
 
-  const getReadableType = (type: string) => {
-    switch (type) {
-      case "MULTIPLE_CHOICE":
-        return "Multiple Choice";
-      case "WRITTEN_ANSWER":
-        return "Written Answer";
-      case "FILE_ATTACHMENT":
-        return "File Attachment";
-      default:
-        return type;
-    }
-  };
+  if (!assessment || !assessment.submissions) {
+    return (
+      <View style={{ padding: 16 }}>
+        <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16 }}>
+          No submissions found.
+        </Text>
+      </View>
+    );
+  }
+
+  const submissions = assessment.submissions;
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Card
-        style={{
-          padding: 16,
-          borderRadius: 6,
-          marginBottom: 16,
-          backgroundColor: "white",
-        }}
-      >
-        <Text
-          variant="titleLarge"
-          style={{ fontWeight: "bold", marginBottom: 4 }}
-        >
-          {assessment.title}
-        </Text>
-        <Text style={{ color: "#555", marginBottom: 6 }}>
-          {assessment.description}
-        </Text>
-        <Text style={{ marginBottom: 6 }}>
-          <Text style={{ fontWeight: "600" }}>Instructions:</Text>{" "}
-          {assessment.instructions}
-        </Text>
-        <Text style={{ marginBottom: 4 }}>
-          ⏱️ Duration: {assessment.duration} minutes
-        </Text>
-        <Text style={{ marginBottom: 4 }}>
-          📅 Start: {new Date(assessment.startDate).toLocaleString()}
-        </Text>
-        <Text>🛑 End: {new Date(assessment.endDate).toLocaleString()}</Text>
-      </Card>
+      {submissions.map((sub: any, index: number) => {
+        const status = sub.status;
+        const user = sub.userProfile;
+        const submissionDate = new Date(sub.submissionTime);
 
-      {assessment.questions.map((q: any, index: number) => (
-        <Card
-          key={q.id}
-          style={{
-            padding: 16,
-            borderRadius: 6,
-            marginBottom: 20,
-            backgroundColor: "white",
-          }}
-        >
-          <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}>
-            {index + 1}. {q.text}
-          </Text>
-          <Text style={{ marginBottom: 4 }}>🏆 Score: {q.score}</Text>
-          <Text style={{ marginBottom: 4 }}>
-            📄 Type: {getReadableType(q.type)}
-          </Text>
+        const isLate =
+          status === SUBMISSION_STATUS.LATE_SUBMISSION ||
+          (assessment.endDate && submissionDate > new Date(assessment.endDate));
 
-          {q.imageUrl && (
-            <Image
-              source={{ uri: q.imageUrl }}
-              style={{
-                width: "100%",
-                height: 180,
-                resizeMode: "contain",
-                marginVertical: 12,
-                borderRadius: 8,
-              }}
-            />
-          )}
-
-          {q.type === "MULTIPLE_CHOICE" && (
-            <View style={{ marginTop: 6 }}>
-              {q.options.map((opt: string, i: number) => (
-                <Text key={i} style={{ marginBottom: 2 }}>
-                  {String.fromCharCode(65 + i)}. {opt}
-                  {opt === q.correctOption ? " ✅ (correct)" : ""}
-                </Text>
-              ))}
-            </View>
-          )}
-
-          {q.sampleAnswer && (
-            <Text style={{ marginTop: 8, fontStyle: "italic", color: "#555" }}>
-              💡 Sample Answer: {q.sampleAnswer}
+        return (
+          <Card
+            key={`${sub.studentId}-${sub.submissionTime}`}
+            style={{
+              padding: 16,
+              borderRadius: 8,
+              marginBottom: 16,
+              backgroundColor: "white",
+            }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
+              🧑‍🎓 {user.first_name} {user.last_name} ({user.user_name})
             </Text>
-          )}
 
-          <Divider style={{ marginVertical: 12 }} />
-
-          <Text style={{ fontWeight: "bold", marginBottom: 6 }}>
-            🧑‍🎓 Student Answers:
-          </Text>
-
-          {!Array.isArray(q.answers) || q.answers.length === 0 ? (
-            <Text style={{ fontStyle: "italic", color: "#888" }}>
-              No answers submitted.
+            <Text style={{ fontSize: 16, marginBottom: 6 }}>
+              <Text style={{ fontWeight: "bold" }}>Submitted: </Text>
+              {submissionDate.toLocaleString()}
             </Text>
-          ) : (
-            q.answers.map((ans: any, idx: number) => (
-              <View
-                key={idx}
+
+            {isLate && (
+              <Text
                 style={{
-                  marginBottom: 8,
-                  padding: 8,
-                  backgroundColor: "#f2f2f2",
-                  borderRadius: 8,
+                  color: "red",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  marginBottom: 6,
                 }}
               >
-                <Text>🆔 Student ID: {ans.studentId}</Text>
-                {q.type === "MULTIPLE_CHOICE" && (
-                  <Text>
-                    ✅ Selected: {ans.selectedOption || "(no answer)"}
-                  </Text>
-                )}
-                {q.type === "WRITTEN_ANSWER" && (
-                  <Text>✍️ Answer: {ans.answerText || "(no answer)"}</Text>
-                )}
-                {q.type === "FILE_ATTACHMENT" && ans.filePath && (
-                  <Text>📎 Attachment: {ans.filePath}</Text>
-                )}
+                ⚠️ Late Submission
+              </Text>
+            )}
+
+            <Text style={{ fontSize: 16, marginBottom: 6 }}>
+              <Text style={{ fontWeight: "bold" }}>Status: </Text>
+              {STATUS_LABELS[status] ?? "Unknown"}
+            </Text>
+
+            {status === SUBMISSION_STATUS.GRADED && (
+              <Text style={{ fontSize: 16, marginBottom: 6 }}>
+                <Text style={{ fontWeight: "bold" }}>Score: </Text>
+                {sub.score}
+              </Text>
+            )}
+
+            {status === SUBMISSION_STATUS.PENDING_REVIEW && (
+              <View style={{ marginTop: 10 }}>
+                <Button
+                  style={{borderRadius: 6, backgroundColor: colors.primary}}
+                  mode="contained"
+                  onPress={() => {
+                    // TODO: routeo
+                    console.log("Review submission for", sub.studentId);
+                  }}
+                >
+                  Review Submission
+                </Button>
               </View>
-            ))
-          )}
-        </Card>
-      ))}
+            )}
+          </Card>
+        );
+      })}
     </ScrollView>
   );
 }

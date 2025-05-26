@@ -12,7 +12,7 @@ export const viewModulesStyles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 16,
   },
-    headingSec: {
+  headingSec: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 16,
@@ -33,8 +33,8 @@ export const viewModulesStyles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   courseTitle: {
     textDecorationLine: "underline",
@@ -44,12 +44,17 @@ export const viewModulesStyles = StyleSheet.create({
     marginBottom: 16,
   },
   description: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555",
-    marginTop: 4,
+    marginTop: 8,
   },
   order: {
     alignSelf: "flex-end",
+    marginTop: 8,
+    backgroundColor: "#e0e0e0",
+  },
+  orderDate: {
+    fontSize: 16,
     marginTop: 8,
     backgroundColor: "#e0e0e0",
   },

@@ -170,7 +170,7 @@ export default function ExamsScreen() {
         </View>
 
         <Text style={styles.description}>{item.instructions}</Text>
-        <Text style={styles.order}>
+        <Text style={styles.orderDate}>
           Start: {new Date(item.startDate).toLocaleString()}
         </Text>
 
