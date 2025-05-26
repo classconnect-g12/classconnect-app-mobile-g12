@@ -43,7 +43,7 @@ export default function ExamLayout() {
                 <Stack.Screen
           name="view/[taskId]"
           options={{
-            headerTitle: () => CustomTitle("View Task"),
+            headerTitle: () => CustomTitle("Students submissions"),
             headerTitleAlign: "center",
           }}
         />

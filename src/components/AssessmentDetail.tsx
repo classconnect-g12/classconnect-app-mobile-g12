@@ -29,7 +29,7 @@ export default function AssessmentDetail({
   if (!assessment || !assessment.submissions) {
     return (
       <View style={{ padding: 16 }}>
-        <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16 }}>
+        <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16, textAlign: "center" }}>
           No submissions found.
         </Text>
       </View>
