@@ -40,10 +40,17 @@ export default function ExamLayout() {
             headerTitleAlign: "center",
           }}
         />
-                <Stack.Screen
-          name="view/[taskId]"
+        <Stack.Screen
+          name="view/[taskId]/index"
           options={{
             headerTitle: () => CustomTitle("Students submissions"),
+            headerTitleAlign: "center",
+          }}
+        />
+        <Stack.Screen
+          name="view/[taskId]/[userId]"
+          options={{
+            headerTitle: () => CustomTitle("Review Task"),
             headerTitleAlign: "center",
           }}
         />
