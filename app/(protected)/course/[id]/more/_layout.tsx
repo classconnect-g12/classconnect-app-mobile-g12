@@ -1,15 +1,58 @@
 import { Stack } from "expo-router";
+import { CustomTitle } from "@components/CustomTitle";
 
 export default function MoreLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "More options" }} />
-      <Stack.Screen name="activity" options={{ title: "Activity" }} />
-      <Stack.Screen name="courseFeedback" options={{ title: "Feedback" }} />
-      <Stack.Screen name="myNotes" options={{ title: "My notes" }} />
-      <Stack.Screen name="myPermissions" options={{ title: "My permissions" }} />
-      <Stack.Screen name="settings" options={{ title: "Settings" }} />
-      <Stack.Screen name="help" options={{ title: "Help" }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          headerTitle: () => CustomTitle("More options"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="activity"
+        options={{
+          headerTitle: () => CustomTitle("Activity"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="courseFeedback"
+        options={{
+          headerTitle: () => CustomTitle("Feedback"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="myNotes"
+        options={{
+          headerTitle: () => CustomTitle("My notes"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="myPermissions"
+        options={{
+          headerTitle: () => CustomTitle("My permissions"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="settings"
+        options={{
+          headerTitle: () => CustomTitle("Settings"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="help"
+        options={{
+          headerTitle: () => CustomTitle("Help"),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }

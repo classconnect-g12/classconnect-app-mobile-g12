@@ -1,21 +1,9 @@
 import { Stack } from "expo-router";
 import { Text } from "react-native";
 import { ModuleProvider } from "@context/ModuleContext";
+import { CustomTitle } from "@components/CustomTitle";
 
 export default function ExamLayout() {
-  const CustomTitle = (title: string) => (
-    <Text
-      style={{
-        textAlign: "center",
-        textDecorationLine: "underline",
-        fontSize: 18,
-        fontWeight: "bold",
-      }}
-    >
-      {title}
-    </Text>
-  );
-
   return (
     <ModuleProvider>
       <Stack>
