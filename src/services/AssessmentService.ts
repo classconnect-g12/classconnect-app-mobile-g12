@@ -67,6 +67,39 @@ export type AssessmentQuestion = {
   hasImage: boolean;
 };
 
+interface Grade {
+  assessmentId: number;
+  assessmentTitle: string;
+  type: "TASK" | "EXAM";
+  courseId: string;
+  score: number;
+  submissionTime: string;
+  status: string;
+  comment: string;
+}
+
+interface Pagination {
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  pageSize: number;
+}
+
+interface GradesResponse {
+  grades: Grade[];
+  pagination: Pagination;
+}
+
+interface Filters {
+  courseId: string;
+  title?: string;
+  type?: "TASK" | "EXAM";
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  size?: number;
+}
+
 export async function getAssessmentsByCourse(
   courseId: string,
   page = 0,
@@ -323,5 +356,14 @@ export async function gradeAssessmentSubmission(
     body
   );
 
+  return response.data;
+}
+
+export async function getAssessmentsGrades(
+  filters: Filters
+): Promise<GradesResponse> {
+  const response = await privateClient.get("/assessments/grades", {
+    params: filters,
+  });
   return response.data;
 }
