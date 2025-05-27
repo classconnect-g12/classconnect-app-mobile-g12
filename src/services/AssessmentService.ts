@@ -157,8 +157,6 @@ export async function getAssessmentDetailsById(
   const response = await privateClient.get(
     `/course/${courseId}/assessments/${assessmentId}/submissions`
   );
-  console.log("Assessment details response:", response.data);
-  console.log("Assessment details user:", response.data.submissions[0].userProfile);
   return response.data;
 }
 
@@ -297,4 +295,33 @@ export async function completeAssessment(
       },
     }
   );
+}
+
+export async function getUserAssessmentDetails(
+  assessmentId: string,
+  userId: string
+) {
+  const response = await privateClient.get(
+    `/assessments/${assessmentId}/users/${userId}`
+  );
+  return response.data;
+}
+
+export async function gradeAssessmentSubmission(
+  assessmentId: string,
+  userId: string,
+  answers: { answerId: number; score: number; comment: string }[],
+  generalComment: string
+) {
+  const body = {
+    answers,
+    comment: generalComment,
+  };
+
+  const response = await privateClient.put(
+    `/assessments/${assessmentId}/users/${userId}/grade`,
+    body
+  );
+
+  return response.data;
 }

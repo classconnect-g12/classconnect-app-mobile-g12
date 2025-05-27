@@ -2,6 +2,8 @@ import { ScrollView, View } from "react-native";
 import { Text, Card, Button } from "react-native-paper";
 import Spinner from "@components/Spinner";
 import { colors } from "@theme/colors";
+import { router } from "expo-router";
+import { useCourse } from "@context/CourseContext";
 
 const SUBMISSION_STATUS = {
   GRADED: "GRADED",
@@ -20,15 +22,19 @@ const STATUS_LABELS: Record<string, string> = {
 export default function AssessmentDetail({
   assessment,
   loading,
+  typeAssessment,
 }: {
   assessment: any;
   loading: boolean;
+  typeAssessment: string;
 }) {
   if (loading) return <Spinner />;
 
-  if (!assessment || !assessment.submissions) {
+  const { courseId } = useCourse();
+
+  if (!assessment || !assessment.submissions || assessment.submissions.length === 0) {
     return (
-      <View style={{ padding: 16 }}>
+      <View style={{ padding: 32, backgroundColor: "white", flex: 1}}>
         <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16, textAlign: "center" }}>
           No submissions found.
         </Text>
@@ -99,8 +105,7 @@ export default function AssessmentDetail({
                   style={{borderRadius: 6, backgroundColor: colors.primary}}
                   mode="contained"
                   onPress={() => {
-                    // TODO: routeo
-                    console.log("Review submission for", sub.studentId);
+                    router.push(`/course/${courseId}/${typeAssessment}/view/${sub.assessmentId}/${sub.studentId}`);
                   }}
                 >
                   Review Submission
