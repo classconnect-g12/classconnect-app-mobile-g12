@@ -47,6 +47,8 @@ export default function AssessmentReview({
     const loadData = async () => {
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
+        console.log(data);
+
         setAssessment(data);
 
         const initialFeedback: any = {};
@@ -84,13 +86,27 @@ export default function AssessmentReview({
   const handleSubmit = async () => {
     if (!assessmentId || !userId) return;
 
-    const invalidScores = Object.entries(feedback).filter(
-      ([_, { score }]) => isNaN(parseFloat(score)) || parseFloat(score) < 0
+    const invalidScores = assessment.questions.flatMap((question: any) =>
+      question.answers
+        .map((answer: any) => {
+          const scoreStr = feedback[answer.id]?.score;
+          const score = parseFloat(scoreStr);
+          if (isNaN(score) || score < 0 || score > question.score) {
+            return {
+              answerId: answer.id,
+              questionId: question.id,
+              maxScore: question.score,
+              score: scoreStr,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean)
     );
 
     if (invalidScores.length > 0) {
       showSnackbar(
-        "Scores must be valid numbers ≥ 0.",
+        "Each score must be a number between 0 and the question's max score.",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
