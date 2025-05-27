@@ -1,9 +1,12 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, Alert } from "react-native";
 import { Text, Card, Button } from "react-native-paper";
 import Spinner from "@components/Spinner";
 import { colors } from "@theme/colors";
 import { router } from "expo-router";
 import { useCourse } from "@context/CourseContext";
+import { useState } from "react";
+import axios from "axios";
+import { toggleAssessmentVisibility } from "@services/AssessmentService";
 
 const SUBMISSION_STATUS = {
   GRADED: "GRADED",
@@ -28,21 +31,43 @@ export default function AssessmentDetail({
   loading: boolean;
   typeAssessment: string;
 }) {
+  const { courseId } = useCourse();
+  const [submissions, setSubmissions] = useState(assessment?.submissions || []);
+
   if (loading) return <Spinner />;
 
-  const { courseId } = useCourse();
-
-  if (!assessment || !assessment.submissions || assessment.submissions.length === 0) {
+  if (!assessment || submissions.length === 0) {
     return (
-      <View style={{ padding: 32, backgroundColor: "white", flex: 1}}>
-        <Text style={{ fontStyle: "italic", color: "#888", fontSize: 16, textAlign: "center" }}>
+      <View style={{ padding: 32, backgroundColor: "white", flex: 1 }}>
+        <Text
+          style={{
+            fontStyle: "italic",
+            color: "#888",
+            fontSize: 16,
+            textAlign: "center",
+          }}
+        >
           No submissions found.
         </Text>
       </View>
     );
   }
 
-  const submissions = assessment.submissions;
+  const handleToggleVisibility = async (
+    assessmentId: string,
+    visible: boolean,
+    index: number
+  ) => {
+    try {
+      await toggleAssessmentVisibility(assessmentId, !visible);
+
+      const updated = [...submissions];
+      updated[index].visible = !visible;
+      setSubmissions(updated);
+    } catch (err) {
+      Alert.alert("Error", "Could not change visibility.");
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -102,16 +127,32 @@ export default function AssessmentDetail({
             {status === SUBMISSION_STATUS.PENDING_REVIEW && (
               <View style={{ marginTop: 10 }}>
                 <Button
-                  style={{borderRadius: 6, backgroundColor: colors.primary}}
+                  style={{
+                    borderRadius: 6,
+                    backgroundColor: colors.primary,
+                    marginBottom: 8,
+                  }}
                   mode="contained"
                   onPress={() => {
-                    router.push(`/course/${courseId}/${typeAssessment}/view/${sub.assessmentId}/${sub.studentId}`);
+                    router.push(
+                      `/course/${courseId}/${typeAssessment}/view/${sub.assessmentId}/${sub.studentId}`
+                    );
                   }}
                 >
                   Review Submission
                 </Button>
               </View>
             )}
+
+            <Button
+              style={{ borderRadius: 6, backgroundColor: colors.secondary }}
+              mode="contained"
+              onPress={() =>
+                handleToggleVisibility(sub.assessmentId, sub.visible, index)
+              }
+            >
+              {sub.visible ? "Make Invisible" : "Make Visible"}
+            </Button>
           </Card>
         );
       })}

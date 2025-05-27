@@ -367,3 +367,12 @@ export async function getAssessmentsGrades(
   });
   return response.data;
 }
+
+export async function toggleAssessmentVisibility(
+  assessmentId: string,
+  visible: boolean
+): Promise<void> {
+  await privateClient.put(`/assessments/${assessmentId}/visibility`, null, {
+    params: { visible: true },
+  });
+}
