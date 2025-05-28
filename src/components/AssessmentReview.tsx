@@ -47,8 +47,6 @@ export default function AssessmentReview({
     const loadData = async () => {
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
-        console.log(data);
-
         setAssessment(data);
 
         const initialFeedback: any = {};

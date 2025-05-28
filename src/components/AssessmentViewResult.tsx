@@ -26,7 +26,6 @@ export default function AssessmentResultView({
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
         setAssessment(data);
-        console.log(data);
       } catch (error) {
         console.error("Error fetching assessment details", error);
         showSnackbar(
