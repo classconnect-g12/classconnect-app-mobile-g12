@@ -4,8 +4,15 @@ import { useCourse } from "@context/CourseContext";
 import { useSnackbar } from "@context/SnackbarContext";
 import { getAssessmentsGrades } from "@services/AssessmentService";
 import { handleApiError } from "@utils/handleApiError";
+import { router } from "expo-router";
 import { JSX, useEffect, useState } from "react";
-import { View, FlatList, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Text, Card, Icon } from "react-native-paper";
 
 type Grade = {
@@ -19,6 +26,7 @@ type Grade = {
 };
 
 export default function MyGradesScreen() {
+  const { userId } = useAuth();
   const { courseId } = useCourse();
   const { logout } = useAuth();
   const { showSnackbar } = useSnackbar();
@@ -49,37 +57,48 @@ export default function MyGradesScreen() {
   }, [courseId]);
 
   const renderGrade = ({ item }: { item: Grade }) => (
-    <Card style={styles.card}>
-      <Text variant="titleMedium" style={styles.cardTitle}>
-        {item.assessmentTitle}
-      </Text>
-
-      <View style={styles.row}>
-        <Icon source="star" size={18} color="#555" />
-        <Text style={styles.label}> Grade:</Text>
-        <Text style={styles.value}>{item.score}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Icon source="check-circle-outline" size={18} color="#555" />
-        <Text style={styles.label}> Status:</Text>
-        <Text style={styles.value}>{item.status}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Icon source="comment-text-outline" size={18} color="#555" />
-        <Text style={styles.label}> Comment:</Text>
-        <Text style={styles.value}>{item.comment || "No comment"}</Text>
-      </View>
-
-      <View style={styles.row}>
-        <Icon source="calendar-clock" size={18} color="#555" />
-        <Text style={styles.label}> Date:</Text>
-        <Text style={styles.value}>
-          {new Date(item.submissionTime).toLocaleString()}
+    <TouchableOpacity
+      onPress={() =>
+        router.push(
+          `/course/${courseId}/${item.type.toLowerCase()}/view/${
+            item.assessmentId
+          }/${userId}`
+        )
+      }
+      activeOpacity={0.7}
+    >
+      <Card style={styles.card}>
+        <Text variant="titleMedium" style={styles.cardTitle}>
+          {item.assessmentTitle}
         </Text>
-      </View>
-    </Card>
+
+        <View style={styles.row}>
+          <Icon source="star" size={18} color="#555" />
+          <Text style={styles.label}> Grade:</Text>
+          <Text style={styles.value}>{item.score}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Icon source="check-circle-outline" size={18} color="#555" />
+          <Text style={styles.label}> Status:</Text>
+          <Text style={styles.value}>{item.status}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Icon source="comment-text-outline" size={18} color="#555" />
+          <Text style={styles.label}> Comment:</Text>
+          <Text style={styles.value}>{item.comment || "No comment"}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Icon source="calendar-clock" size={18} color="#555" />
+          <Text style={styles.label}> Date:</Text>
+          <Text style={styles.value}>
+            {new Date(item.submissionTime).toLocaleString()}
+          </Text>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 
   const exams = grades.filter((g) => g.type === "EXAM");
