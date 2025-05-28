@@ -22,5 +22,11 @@ export default function ExamDetailScreen() {
     loadData();
   }, [id, examId]);
 
-  return <AssessmentDetail assessment={assessment} loading={loading} typeAssessment="exam" />;
+  return (
+    <AssessmentDetail
+      assessment={assessment}
+      loading={loading}
+      typeAssessment="exam"
+    />
+  );
 }

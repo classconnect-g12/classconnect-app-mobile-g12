@@ -22,5 +22,11 @@ export default function TaskDetailScreen() {
     loadData();
   }, [id, taskId]);
 
-  return <AssessmentDetail assessment={assessment} loading={loading} typeAssessment="task" />;
+  return (
+    <AssessmentDetail
+      assessment={assessment}
+      loading={loading}
+      typeAssessment="task"
+    />
+  );
 }

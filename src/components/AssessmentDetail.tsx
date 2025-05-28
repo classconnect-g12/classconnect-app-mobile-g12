@@ -4,8 +4,7 @@ import Spinner from "@components/Spinner";
 import { colors } from "@theme/colors";
 import { router } from "expo-router";
 import { useCourse } from "@context/CourseContext";
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { toggleAssessmentVisibility } from "@services/AssessmentService";
 
 const SUBMISSION_STATUS = {
@@ -32,7 +31,20 @@ export default function AssessmentDetail({
   typeAssessment: string;
 }) {
   const { courseId } = useCourse();
-  const [submissions, setSubmissions] = useState(assessment?.submissions || []);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [isVisible, setIsVisible] = useState(assessment.isVisible);
+
+  useEffect(() => {
+    if (assessment?.isVisible) {
+      setIsVisible(assessment.isVisible);
+    }
+  }, [assessment]);
+
+  useEffect(() => {
+    if (assessment?.submissions) {
+      setSubmissions(assessment.submissions);
+    }
+  }, [assessment]);
 
   if (loading) return <Spinner />;
 
@@ -64,6 +76,7 @@ export default function AssessmentDetail({
       const updated = [...submissions];
       updated[index].visible = !visible;
       setSubmissions(updated);
+      setIsVisible(!visible);
     } catch (err) {
       Alert.alert("Error", "Could not change visibility.");
     }
@@ -148,10 +161,14 @@ export default function AssessmentDetail({
               style={{ borderRadius: 6, backgroundColor: colors.secondary }}
               mode="contained"
               onPress={() =>
-                handleToggleVisibility(sub.assessmentId, sub.visible, index)
+                handleToggleVisibility(
+                  sub.assessmentId,
+                  assessment.isVisible,
+                  index
+                )
               }
             >
-              {sub.visible ? "Make Invisible" : "Make Visible"}
+              {isVisible ? "Make Invisible" : "Make Visible"}
             </Button>
           </Card>
         );
