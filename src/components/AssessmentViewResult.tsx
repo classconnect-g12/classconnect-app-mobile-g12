@@ -21,6 +21,7 @@ export default function AssessmentResultView({
   onBack,
 }: Props) {
   const [assessment, setAssessment] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(true);
   const { logout } = useAuth();
@@ -29,7 +30,9 @@ export default function AssessmentResultView({
     const fetchDetails = async () => {
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
-        setAssessment(data);
+        console.log(data);
+        setAssessment(data.assessment);
+        setUserProfile(data.userProfile);
       } catch (error) {
         console.error("Error fetching assessment details", error);
         handleApiError(error, showSnackbar, "Failed to fetch grades", logout);
