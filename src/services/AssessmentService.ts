@@ -183,7 +183,7 @@ export async function getAssessmentById(
   return response.data;
 }
 
-export async function getAssessmentDetailsById(
+export async function getSubmissionsDetailsById(
   courseId: string,
   assessmentId: string
 ) {
@@ -373,6 +373,6 @@ export async function toggleAssessmentVisibility(
   visible: boolean
 ): Promise<void> {
   await privateClient.put(`/assessments/${assessmentId}/visibility`, null, {
-    params: { visible: true },
+    params: { visible },
   });
 }
