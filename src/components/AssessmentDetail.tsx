@@ -23,16 +23,18 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function AssessmentDetail({
   assessment,
+  assessmentId,
   loading,
   typeAssessment,
 }: {
   assessment: any;
+  assessmentId: string;
   loading: boolean;
   typeAssessment: string;
 }) {
   const { courseId } = useCourse();
   const [submissions, setSubmissions] = useState<any[]>([]);
-  const [isVisible, setIsVisible] = useState(assessment.isVisible);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (assessment?.isVisible) {
@@ -45,6 +47,18 @@ export default function AssessmentDetail({
       setSubmissions(assessment.submissions);
     }
   }, [assessment]);
+
+  const handleToggleVisibility = async (
+    assessmentId: string,
+    visible: boolean
+  ) => {
+    try {
+      await toggleAssessmentVisibility(assessmentId, !visible);
+      setIsVisible(!visible);
+    } catch (err) {
+      Alert.alert("Error", "Could not change visibility.");
+    }
+  };
 
   if (loading) return <Spinner />;
 
@@ -65,25 +79,10 @@ export default function AssessmentDetail({
     );
   }
 
-  const handleToggleVisibility = async (
-    assessmentId: string,
-    visible: boolean,
-    index: number
-  ) => {
-    try {
-      await toggleAssessmentVisibility(assessmentId, !visible);
-
-      const updated = [...submissions];
-      updated[index].visible = !visible;
-      setSubmissions(updated);
-      setIsVisible(!visible);
-    } catch (err) {
-      Alert.alert("Error", "Could not change visibility.");
-    }
-  };
-
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
+    <ScrollView
+      contentContainerStyle={{ padding: 16, backgroundColor: "white", flex: 1 }}
+    >
       {submissions.map((sub: any, index: number) => {
         const status = sub.status;
         const user = sub.userProfile;
@@ -156,23 +155,22 @@ export default function AssessmentDetail({
                 </Button>
               </View>
             )}
-
-            <Button
-              style={{ borderRadius: 6, backgroundColor: colors.secondary }}
-              mode="contained"
-              onPress={() =>
-                handleToggleVisibility(
-                  sub.assessmentId,
-                  assessment.isVisible,
-                  index
-                )
-              }
-            >
-              {isVisible ? "Make Invisible" : "Make Visible"}
-            </Button>
           </Card>
         );
       })}
+      <Button
+        style={{ borderRadius: 6, backgroundColor: colors.secondary }}
+        mode="contained"
+        onPress={() => {
+          if (assessmentId) {
+            handleToggleVisibility(assessmentId, isVisible);
+          } else {
+            Alert.alert("Error", "Assessment ID is not available.");
+          }
+        }}
+      >
+        {isVisible ? "Unpublish Feedback" : "Publish Feedback"}
+      </Button>
     </ScrollView>
   );
 }

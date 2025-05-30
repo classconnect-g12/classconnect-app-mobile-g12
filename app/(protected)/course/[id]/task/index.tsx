@@ -20,7 +20,12 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
 import { formatStatus } from "@utils/statusFormatter";
-import { CREATE_ASSESSMENT, DELETE_ASSESSMENT, EDIT_ASSESSMENT, REVIEW_ASSESSMENT } from "@constants/permissions";
+import {
+  CREATE_ASSESSMENT,
+  DELETE_ASSESSMENT,
+  EDIT_ASSESSMENT,
+  REVIEW_ASSESSMENT,
+} from "@constants/permissions";
 
 const PAGE_SIZE = 10;
 
@@ -33,7 +38,7 @@ export default function TasksScreen() {
   const router = useRouter();
   const { courseId, isTeacher } = useCourse();
   const { showSnackbar } = useSnackbar();
-  const { logout } = useAuth();
+  const { userId, logout } = useAuth();
 
   const { courseDetail } = useCourse();
   const { course } = courseDetail;
@@ -154,12 +159,21 @@ export default function TasksScreen() {
             router.push(`/course/${courseId}/task/view/${item.id}`);
           } else {
             if (item.status === "OVERDUE" || item.status === "COMPLETED") {
-              Alert.alert(
-                "Unavailable task",
-                item.status === "OVERDUE"
-                  ? "You cannot complete this task because the time limit has expired."
-                  : "You have already completed this task."
+              router.push(
+                `/course/${courseId}/${item.type.toLowerCase()}/view/${
+                  item.id
+                }/${userId}`
               );
+              {
+                /*
+                Alert.alert(
+                  "Unavailable task",
+                  item.status === "OVERDUE"
+                    ? "You cannot complete this task because the time limit has expired."
+                    : "You have already completed this task."
+                );
+                 */
+              }
             } else {
               router.push(`/course/${courseId}/task/complete/${item.id}`);
             }
@@ -185,7 +199,9 @@ export default function TasksScreen() {
           Status: {formatStatus(item.status)}
         </Text>
 
-        {(isTeacher || hasPermission(EDIT_ASSESSMENT) || hasPermission(DELETE_ASSESSMENT)) && (
+        {(isTeacher ||
+          hasPermission(EDIT_ASSESSMENT) ||
+          hasPermission(DELETE_ASSESSMENT)) && (
           <View
             style={{
               flexDirection: "row",

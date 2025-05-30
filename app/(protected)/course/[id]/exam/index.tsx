@@ -20,7 +20,12 @@ import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import Spinner from "@components/Spinner";
 import AssessmentFilters from "@components/AssessmentFilter";
 import { formatStatus } from "@utils/statusFormatter";
-import { CREATE_ASSESSMENT, DELETE_ASSESSMENT, EDIT_ASSESSMENT, REVIEW_ASSESSMENT } from "@constants/permissions";
+import {
+  CREATE_ASSESSMENT,
+  DELETE_ASSESSMENT,
+  EDIT_ASSESSMENT,
+  REVIEW_ASSESSMENT,
+} from "@constants/permissions";
 
 const PAGE_SIZE = 10;
 
@@ -34,7 +39,7 @@ export default function ExamsScreen() {
   const router = useRouter();
   const { courseId, isTeacher, courseDetail } = useCourse();
   const { showSnackbar } = useSnackbar();
-  const { logout } = useAuth();
+  const { userId, logout } = useAuth();
 
   const { course } = courseDetail;
   const hasPermission = (perm: string) => course.permissions.includes(perm);
@@ -147,12 +152,21 @@ export default function ExamsScreen() {
             router.push(`/course/${courseId}/exam/view/${item.id}`);
           } else {
             if (item.status === "OVERDUE" || item.status === "COMPLETED") {
-              Alert.alert(
-                "Unavailable exam",
-                item.status === "OVERDUE"
-                  ? "You cannot complete this exam because the time limit has expired."
-                  : "You have already completed this exam."
+              router.push(
+                `/course/${courseId}/${item.type.toLowerCase()}/view/${
+                  item.id
+                }/${userId}`
               );
+              {
+                /* 
+                Alert.alert(
+                  "Unavailable exam",
+                  item.status === "OVERDUE"
+                    ? "You cannot complete this exam because the time limit has expired."
+                    : "You have already completed this exam."
+                );
+                */
+              }
             } else {
               router.push(`/course/${courseId}/exam/complete/${item.id}`);
             }
@@ -178,7 +192,9 @@ export default function ExamsScreen() {
           Status: {formatStatus(item.status)}
         </Text>
 
-        {(isTeacher || hasPermission(EDIT_ASSESSMENT) || hasPermission(DELETE_ASSESSMENT)) && (
+        {(isTeacher ||
+          hasPermission(EDIT_ASSESSMENT) ||
+          hasPermission(DELETE_ASSESSMENT)) && (
           <View
             style={{
               flexDirection: "row",
