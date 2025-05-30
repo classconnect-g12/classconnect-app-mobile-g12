@@ -8,10 +8,22 @@ import {
 import { profileIdStyles as styles } from "@styles/profileIdStyles";
 import { handleApiError } from "@utils/handleApiError";
 import { useSnackbar } from "@context/SnackbarContext";
-import { AxiosError } from "axios";
-import { ApiError } from "@src/types/apiError";
 import { useAuth } from "@context/authContext";
 import Spinner from "@components/Spinner";
+
+const formatJoinDate = (isoDate?: string | null): string => {
+  if (!isoDate) return "Date not available";
+
+  const date = new Date(isoDate);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  return date.toLocaleDateString("en-US", options);
+};
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -35,13 +47,7 @@ const UserProfile: React.FC = () => {
     fetchProfile();
   }, [profileId]);
 
-  if (loading)
-    return (
-      <View style={styles.centeredContainer}>
-        <Spinner />
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
+  if (loading) return <Spinner />;
 
   if (!profile) {
     return (
@@ -53,27 +59,26 @@ const UserProfile: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.userName}>{profile.user_name}</Text>
-
       <View style={styles.header}>
         <Image source={{ uri: profile.banner }} style={styles.avatar} />
-      </View>
-
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Description</Text>
-        <Text style={styles.readOnlyText}>
-          {profile.description || "No description provided."}
+        <Text style={styles.userName}>
+          {profile.user_name || "Username not provided"}
+        </Text>
+        <Text style={styles.fullName}>
+          {profile.first_name || profile.last_name
+            ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
+            : "Full name not provided"}
+        </Text>
+        <Text style={styles.joinDate}>
+          Joined on {formatJoinDate(profile.created_at)}
         </Text>
       </View>
 
       <View style={styles.inputCard}>
-        <Text style={styles.label}>First Name</Text>
-        <Text style={styles.readOnlyText}>{profile.first_name}</Text>
-      </View>
-
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Last Name</Text>
-        <Text style={styles.readOnlyText}>{profile.last_name}</Text>
+        <Text style={styles.label}>Bio</Text>
+        <Text style={styles.readOnlyText}>
+          {profile.description || "No description provided."}
+        </Text>
       </View>
     </ScrollView>
   );
