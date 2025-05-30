@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { getAssessmentDetailsById } from "@services/AssessmentService";
+import { getSubmissionsDetailsById } from "@services/AssessmentService";
 import AssessmentDetail from "@components/AssessmentDetail";
 
 export default function ExamDetailScreen() {
@@ -11,7 +11,7 @@ export default function ExamDetailScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await getAssessmentDetailsById(id, examId);
+        const data = await getSubmissionsDetailsById(id, examId);
         setAssessment(data);
       } catch (error) {
         console.error("Error fetching assessment", error);
@@ -22,5 +22,12 @@ export default function ExamDetailScreen() {
     loadData();
   }, [id, examId]);
 
-  return <AssessmentDetail assessment={assessment} loading={loading} typeAssessment="exam" />;
+  return (
+    <AssessmentDetail
+      assessment={assessment}
+      assessmentId={examId}
+      loading={loading}
+      typeAssessment="exam"
+    />
+  );
 }

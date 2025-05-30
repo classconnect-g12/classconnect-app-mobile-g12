@@ -5,7 +5,13 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { getAssessmentsGrades } from "@services/AssessmentService";
 import { handleApiError } from "@utils/handleApiError";
 import { JSX, useEffect, useState } from "react";
-import { View, FlatList, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Text, Card, Icon } from "react-native-paper";
 
 type Grade = {
@@ -19,6 +25,7 @@ type Grade = {
 };
 
 export default function MyGradesScreen() {
+  const { userId } = useAuth();
   const { courseId } = useCourse();
   const { logout } = useAuth();
   const { showSnackbar } = useSnackbar();

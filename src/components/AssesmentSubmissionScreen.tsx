@@ -180,7 +180,11 @@ export default function AssessmentSubmissionScreen({
 
   if (loading) return <Spinner />;
   if (!assessment)
-    return <Text style={styles.message}>Assessment not found.</Text>;
+    return (
+      <Text>
+        The assignment or exam is not available yet.
+      </Text>
+    );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
