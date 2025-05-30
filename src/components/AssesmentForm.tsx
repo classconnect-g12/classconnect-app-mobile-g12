@@ -13,6 +13,7 @@ import {
   Switch,
   ActivityIndicator,
   IconButton,
+  RadioButton,
 } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import {
@@ -239,7 +240,9 @@ const AssessmentForm = ({
                   style={styles.input}
                   theme={{ colors: { primary: colors.primary } }}
                 />
-                <Text style={{ marginBottom: 10, marginTop: 20 }}>Question type</Text>
+                <Text style={{ marginBottom: 10, marginTop: 20 }}>
+                  Question type
+                </Text>
                 <View style={styles.input}>
                   <Picker
                     selectedValue={q.type}
@@ -265,29 +268,41 @@ const AssessmentForm = ({
 
                 {q.type === "MULTIPLE_CHOICE" && (
                   <>
-                    {q.options?.map((opt, i) => (
-                      <TextInput
-                        key={i}
-                        label={`Option ${String.fromCharCode(65 + i)}`}
-                        value={opt}
-                        onChangeText={(text) =>
-                          handleOptionChange(index, i, text)
-                        }
-                        style={styles.input}
-                        theme={{ colors: { primary: colors.primary } }}
-                      />
-                    ))}
-                    <TextInput
-                      label="Correct option (A, B, C, D)"
-                      value={q.correctOption}
-                      onChangeText={(text) =>
-                        handleQuestionChange(index, "correctOption", text)
+                    <RadioButton.Group
+                      onValueChange={(value) =>
+                        handleQuestionChange(
+                          index,
+                          "correctOption",
+                          q.options?.[Number(value)] ?? ""
+                        )
                       }
-                      style={styles.input}
-                      theme={{ colors: { primary: colors.primary } }}
-                    />
+                      value={
+                        q.options
+                          ?.findIndex((opt) => opt === q.correctOption)
+                          ?.toString() ?? ""
+                      }
+                    >
+                      {q.options?.map((opt, i) => {
+                        const optionKey = String.fromCharCode(65 + i);
+                        return (
+                          <View key={i} style={styles.optionRow}>
+                            <TextInput
+                              label={`Option ${optionKey}`}
+                              value={opt}
+                              onChangeText={(text) =>
+                                handleOptionChange(index, i, text)
+                              }
+                              style={[styles.input, { flex: 1 }]}
+                              theme={{ colors: { primary: colors.primary } }}
+                            />
+                            <RadioButton value={i.toString()} />
+                          </View>
+                        );
+                      })}
+                    </RadioButton.Group>
                   </>
                 )}
+
                 {q.type === "WRITTEN_ANSWER" && (
                   <TextInput
                     label="Example answer"
@@ -361,7 +376,11 @@ const AssessmentForm = ({
             ))}
           </View>
 
-          <Button mode="contained" onPress={addQuestion} style={styles.buttonAddQuestion}>
+          <Button
+            mode="contained"
+            onPress={addQuestion}
+            style={styles.buttonAddQuestion}
+          >
             Add question
           </Button>
 

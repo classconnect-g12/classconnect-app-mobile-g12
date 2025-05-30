@@ -32,6 +32,7 @@ export default function AssessmentReview({
   onBack,
 }: Props) {
   const [assessment, setAssessment] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [feedback, setFeedback] = useState<{
     [answerId: number]: { score: string; comment: string };
   }>({});
@@ -47,7 +48,8 @@ export default function AssessmentReview({
     const loadData = async () => {
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
-        setAssessment(data);
+        setAssessment(data.assessment);
+        setUserProfile(data.userProfile);
 
         const initialFeedback: any = {};
         data.questions.forEach((q: any) => {
@@ -161,7 +163,7 @@ export default function AssessmentReview({
         </Text>
 
         <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-          Student:
+          Student: {userProfile.first_name} {userProfile.last_name} ({userProfile.user_name})
         </Text>
 
         <Text

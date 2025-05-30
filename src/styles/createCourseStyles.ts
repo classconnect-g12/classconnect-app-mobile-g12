@@ -73,4 +73,9 @@ export const createCourseStyles = StyleSheet.create({
     justifyContent: "space-between",
     marginVertical: 8,
   },
+  optionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
 });
