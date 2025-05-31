@@ -9,6 +9,7 @@ export interface UserProfileResponse {
   email: string;
   description: string;
   banner: string;
+  created_at: string;
 }
 
 export const getUserProfileByUsername = async (

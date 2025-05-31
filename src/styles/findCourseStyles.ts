@@ -83,6 +83,18 @@ export const findCourseStyles = StyleSheet.create({
   },
   availabilityIndicator: {
     fontSize: 12,
+    color: "green",
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  limitIndicator: {
+    fontSize: 12,
+    color: "orange",
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  finishIndicator: {
+    fontSize: 12,
     color: colors.error,
     fontWeight: "bold",
     marginBottom: 5,

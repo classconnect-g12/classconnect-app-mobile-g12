@@ -142,17 +142,17 @@ export default function FindCourse() {
                 {new Date(item.endDate).toLocaleDateString()}
               </Text>
               {isLimitedCapacity && (
-                <Text style={styles.availabilityIndicator}>
+                <Text style={styles.limitIndicator}>
                   Limited spots remaining
                 </Text>
               )}
               {isStartingSoon && (
-                <Text style={styles.availabilityIndicator}>
+                <Text style={styles.limitIndicator}>
                   Last days to register
                 </Text>
               )}
               {hasEnded ? (
-                <Text style={styles.alreadyStartedIndicator}>Finished</Text>
+                <Text style={styles.finishIndicator}>Finished</Text>
               ) : hasStarted ? (
                 <Text style={styles.availabilityIndicator}>
                   Already started
