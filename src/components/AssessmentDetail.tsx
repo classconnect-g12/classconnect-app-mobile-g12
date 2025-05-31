@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { useCourse } from "@context/CourseContext";
 import { useEffect, useState } from "react";
 import { toggleAssessmentVisibility } from "@services/AssessmentService";
+import { handleDownload } from "@utils/downloadAssessment";
 
 const SUBMISSION_STATUS = {
   GRADED: "GRADED",
@@ -135,6 +136,12 @@ export default function AssessmentDetail({
                 {sub.score}
               </Text>
             )}
+
+            <Button
+              onPress={() => handleDownload(sub.assessmentId, sub.studentId)}
+            >
+              Download assessment
+            </Button>
 
             {status === SUBMISSION_STATUS.PENDING_REVIEW && (
               <View style={{ marginTop: 10 }}>
