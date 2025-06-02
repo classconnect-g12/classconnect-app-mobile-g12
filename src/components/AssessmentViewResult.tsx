@@ -8,6 +8,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import { Icon } from "react-native-paper";
 
 interface Props {
   assessmentId: string;
@@ -30,12 +31,11 @@ export default function AssessmentResultView({
     const fetchDetails = async () => {
       try {
         const data = await getUserAssessmentDetails(assessmentId, userId);
-        console.log(data);
         setAssessment(data.assessment);
         setUserProfile(data.userProfile);
       } catch (error) {
         console.error("Error fetching assessment details", error);
-        handleApiError(error, showSnackbar, "Failed to fetch grades", logout);
+        //handleApiError(error, showSnackbar, "Failed to fetch grades", logout);
       } finally {
         setIsLoading(false);
       }
@@ -92,10 +92,11 @@ export default function AssessmentResultView({
             padding: 12,
             backgroundColor: "#f9f9f9",
             borderRadius: 8,
+            elevation: 2,
           }}
         >
           <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
-            {index + 1}. {question.text} ({question.score} pts)
+            {index + 1}. {question.text} ({question.score}pts.)
           </Text>
 
           {/* Answers */}
@@ -103,29 +104,36 @@ export default function AssessmentResultView({
             <View key={answer.id} style={{ marginTop: 8 }}>
               {question.type === "WRITTEN_ANSWER" && (
                 <>
-                  <Text style={{ fontStyle: "italic", marginBottom: 12 }}>
-                    📝 Written Answer:
-                  </Text>
                   <Text style={{ marginBottom: 6 }}>{answer.answerText}</Text>
                 </>
               )}
 
               {question.type === "MULTIPLE_CHOICE" && (
                 <>
-                  <Text style={{ fontStyle: "italic", marginBottom: 4 }}>
-                    ✅ Multiple Choice:
-                  </Text>
                   {question.options.map((option: string, optIndex: number) => {
                     const isSelected = option === answer.selectedOption;
+                    const isCorrect = option === question.correctOption;
+                    let color = "#000";
+                    let icon = "";
+
+                    if (isCorrect) {
+                      color = "green";
+                      icon = "✓";
+                    } else if (isSelected && !isCorrect) {
+                      color = "red";
+                      icon = "✗";
+                    }
+
                     return (
                       <Text
                         key={optIndex}
                         style={{
-                          color: isSelected ? "#2563eb" : "#000",
-                          fontWeight: isSelected ? "bold" : "normal",
+                          color,
+                          fontWeight:
+                            isSelected || isCorrect ? "bold" : "normal",
                         }}
                       >
-                        {optIndex + 1}. {option} {isSelected ? "✓" : ""}
+                        {optIndex + 1}. {option} {icon}
                       </Text>
                     );
                   })}
@@ -134,14 +142,11 @@ export default function AssessmentResultView({
 
               {question.type === "FILE_ATTACHMENT" && (
                 <>
-                  <Text style={{ fontStyle: "italic", marginBottom: 4 }}>
-                    📎 File Attachment:
-                  </Text>
                   <TouchableOpacity
                     onPress={() => WebBrowser.openBrowserAsync(answer.filePath)}
                   >
                     <Text
-                      style={{ color: "blue", textDecorationLine: "underline" }}
+                      style={{ color: "blue", textDecorationLine: "underline", marginLeft: 6 }}
                     >
                       View File
                     </Text>
@@ -149,12 +154,21 @@ export default function AssessmentResultView({
                 </>
               )}
 
-              <Text style={{ marginTop: 8 }}>🏅 Score: {answer.score}</Text>
               {answer.comment && (
-                <Text style={{ color: "#555" }}>
-                  💬 Comment: {answer.comment}
+                <Text style={{ marginTop: 8 }}>
+                  {" "}
+                  <Icon source="comment-text-outline" size={16} color="#555" />
+                  Comment: {answer.comment}
                 </Text>
               )}
+              <Text style={{ marginTop: 8 }}>
+                {" "}
+                <Icon
+                  source="star-outline"
+                  size={18}
+                  color="#555"
+                /> Score: {answer.score}
+              </Text>
             </View>
           ))}
         </View>
@@ -170,13 +184,16 @@ export default function AssessmentResultView({
           }}
         >
           <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
-            💡 General Comment:
+            <Icon source="comment-text-outline" size={18} color="#555" />
+            General Comment:
           </Text>
           <Text>{assessment.generalComment}</Text>
         </View>
       )}
 
       <Text style={{ fontSize: 18, marginTop: 16, fontWeight: "bold" }}>
+        {" "}
+        <Icon source="star-outline" size={20} color="#555" />
         Total Score: {totalScore}
       </Text>
     </ScrollView>

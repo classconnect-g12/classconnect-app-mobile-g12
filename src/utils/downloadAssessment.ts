@@ -23,10 +23,22 @@ export async function handleDownload(
         .question-text { font-weight: bold; }
         .options { margin-left: 20px; margin-top: 5px; }
         .answer { margin-left: 20px; margin-top: 5px; color: #555; }
+        input[type="text"], textarea {
+          width: 100%;
+          padding: 5px;
+          margin-top: 3px;
+          border: 1px solid #aaa;
+          border-radius: 3px;
+          font-size: 14px;
+        }
+        textarea {
+          resize: vertical;
+          min-height: 50px;
+        }
       </style>
     </head>
     <body>
-      <h1>Assessment Review</h1>
+      <h1>Assessment Review Sheet</h1>
       
       <div class="section">
         <h2>Student Info</h2>
@@ -44,20 +56,20 @@ export async function handleDownload(
         <p><span class="label">Instructions:</span> ${
           assessment.instructions
         }</p>
-        <p><span class="label">Score:</span> ${assessment.score}</p>
         <p><span class="label">Submitted on:</span> ${new Date(
           assessment.submissionTime
         ).toLocaleString()}</p>
-        <p><span class="label">Status:</span> ${assessment.status}</p>
       </div>
 
       <div class="section">
         <h2>Questions</h2>
         ${assessment.questions
           .map(
-            (q: any) => `
+            (q: any, index: number) => `
           <div class="question">
-            <div class="question-text">${q.text} (Score: ${q.score})</div>
+            <div class="question-text">${index + 1}. ${q.text} (Max Score: ${
+              q.score
+            })</div>
             ${
               q.type === "MULTIPLE_CHOICE"
                 ? `
@@ -73,12 +85,6 @@ export async function handleDownload(
               <div class="answer"><span class="label">Student Answer:</span> ${q.answers
                 .map((a: any) => a.selectedOption || "No answer")
                 .join(", ")}</div>
-              <div class="answer"><span class="label">Score:</span> ${q.answers
-                .map((a: any) => a.score)
-                .join(", ")}</div>
-              <div class="answer"><span class="label">Comment:</span> ${q.answers
-                .map((a: any) => a.comment || "No comment")
-                .join(", ")}</div>
               `
                 : q.type === "WRITTEN_ANSWER"
                 ? `
@@ -88,15 +94,11 @@ export async function handleDownload(
               <div class="answer"><span class="label">Student Answer:</span> ${q.answers
                 .map((a: any) => a.answerText || "No answer")
                 .join(", ")}</div>
-              <div class="answer"><span class="label">Score:</span> ${q.answers
-                .map((a: any) => a.score)
-                .join(", ")}</div>
-              <div class="answer"><span class="label">Comment:</span> ${q.answers
-                .map((a: any) => a.comment || "No comment")
-                .join(", ")}</div>
               `
                 : ""
             }
+            <div class="answer"><span class="label">Score:</span><br/><input type="text"/></div>
+            <div class="answer"><span class="label">Comment:</span><br/><textarea></textarea></div>
           </div>
         `
           )

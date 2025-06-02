@@ -137,28 +137,47 @@ export default function AssessmentDetail({
               </Text>
             )}
 
-            <Button
-              onPress={() => handleDownload(sub.assessmentId, sub.studentId)}
-            >
-              Download assessment
-            </Button>
-
             {status === SUBMISSION_STATUS.PENDING_REVIEW && (
-              <View style={{ marginTop: 10 }}>
+              <View
+                style={{
+                  marginTop: 10,
+                  flexDirection: "row",
+                  overflow: "hidden",
+                }}
+              >
                 <Button
-                  style={{
-                    borderRadius: 6,
-                    backgroundColor: colors.primary,
-                    marginBottom: 8,
-                  }}
                   mode="contained"
+                  style={{
+                    flex: 1,
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                    borderRadius: 6,
+                    backgroundColor: "#2ECC71",
+                  }}
+                  labelStyle={{ color: "white" }}
+                  onPress={() =>
+                    handleDownload(sub.assessmentId, sub.studentId)
+                  }
+                >
+                  Download
+                </Button>
+                <Button
+                  mode="contained"
+                  style={{
+                    flex: 1,
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    borderRadius: 6,
+                    backgroundColor: colors.secondary,
+                  }}
+                  labelStyle={{ color: "white" }}
                   onPress={() => {
                     router.push(
                       `/course/${courseId}/${typeAssessment}/view/${sub.assessmentId}/${sub.studentId}`
                     );
                   }}
                 >
-                  Review Submission
+                  Review
                 </Button>
               </View>
             )}
@@ -166,13 +185,12 @@ export default function AssessmentDetail({
         );
       })}
       <Button
+        icon={isVisible ? "eye-off" : "eye"}
         style={{ borderRadius: 6, backgroundColor: colors.secondary }}
         mode="contained"
         onPress={() => {
           if (assessmentId) {
             handleToggleVisibility(assessmentId, isVisible);
-          } else {
-            Alert.alert("Error", "Assessment ID is not available.");
           }
         }}
       >

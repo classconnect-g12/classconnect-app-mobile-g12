@@ -50,9 +50,8 @@ export default function AssessmentReview({
         const data = await getUserAssessmentDetails(assessmentId, userId);
         setAssessment(data.assessment);
         setUserProfile(data.userProfile);
-
         const initialFeedback: any = {};
-        data.questions.forEach((q: any) => {
+        data.assessment.questions.forEach((q: any) => {
           q.answers?.forEach((a: any) => {
             initialFeedback[a.id] = {
               score: a.score?.toString() || "",
@@ -152,7 +151,8 @@ export default function AssessmentReview({
   return (
     <ScrollView style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
       <View style={{ marginBottom: 40 }}>
-        <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 4 }}>
+        <Text style={{ fontSize: 22, marginBottom: 4 }}>
+          <Text style={{ fontWeight: "bold" }}>Task: </Text>
           {assessment.title}
         </Text>
         <Text style={{ marginBottom: 4 }}>
@@ -163,7 +163,8 @@ export default function AssessmentReview({
         </Text>
 
         <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-          Student: {userProfile.first_name} {userProfile.last_name} ({userProfile.user_name})
+          Student: {userProfile.first_name} {userProfile.last_name} (
+          {userProfile.user_name})
         </Text>
 
         <Text
@@ -182,9 +183,9 @@ export default function AssessmentReview({
             key={question.id}
             style={{
               marginBottom: 24,
-              backgroundColor: "#f0f0f0",
+              backgroundColor: "#f2f2f2",
               padding: 12,
-              borderRadius: 8,
+              borderRadius: 6,
               elevation: 2,
             }}
           >
@@ -222,16 +223,19 @@ export default function AssessmentReview({
               </View>
             )}
 
-            {question.type === "WRITTEN_ANSWER" && (
-              <Text style={{ marginTop: 8 }}>
-                Example answer: {question.sampleAnswer}
-              </Text>
-            )}
+            {question.type === "WRITTEN_ANSWER" &&
+              !!question.sampleAnswer &&
+              question.sampleAnswer.trim().length > 0 && (
+                <Text style={{ marginTop: 8 }}>
+                  Example answer: {question.sampleAnswer}
+                </Text>
+              )}
 
             {question.answers.map((answer: any) => (
               <View
                 key={answer.id}
                 style={{
+                  marginTop: 10,
                   padding: 10,
                   backgroundColor: "#f2f2f2",
                   borderRadius: 8,
@@ -245,7 +249,7 @@ export default function AssessmentReview({
                 )}
                 {question.type === "MULTIPLE_CHOICE" && (
                   <Text>
-                    <Text style={{ fontWeight: "bold" }}>Selected:</Text>{" "}
+                    <Text style={{ fontWeight: "bold" }}>Selected answer:</Text>{" "}
                     {answer.selectedOption}
                   </Text>
                 )}

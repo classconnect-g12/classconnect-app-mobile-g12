@@ -82,7 +82,7 @@ export default function AssessmentSubmissionScreen({
         });
         setAnswers(initialAnswers);
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading assessment", logout);
+        //handleApiError(error, showSnackbar, "Error loading assessment", logout);
       } finally {
         setLoading(false);
       }
@@ -181,9 +181,19 @@ export default function AssessmentSubmissionScreen({
   if (loading) return <Spinner />;
   if (!assessment)
     return (
-      <Text>
-        The assignment or exam is not available yet.
-      </Text>
+      <View
+        style={{
+          alignItems: "center",
+          padding: 32,
+          backgroundColor: "white",
+          flex: 1,
+        }}
+      >
+        <Text style={{ fontSize: 24, marginBottom: 12 }}>🔒</Text>
+        <Text style={{ fontSize: 16, color: "#555", textAlign: "center" }}>
+          The assignment or exam is not available yet.
+        </Text>
+      </View>
     );
 
   return (
@@ -192,15 +202,10 @@ export default function AssessmentSubmissionScreen({
         <Text variant="titleLarge" style={styles.title}>
           {assessment.title}
         </Text>
-
+        <Text style={styles.label}>{assessment.description}</Text>
         <Text style={styles.text}>
           <Text style={styles.label}>Instructions:</Text>{" "}
           {assessment.instructions}
-        </Text>
-
-        <Text style={styles.text}>
-          <Text style={styles.label}>Start:</Text>{" "}
-          {new Date(assessment.startDate).toLocaleString()}
         </Text>
 
         <Text style={styles.timer}>
@@ -211,9 +216,14 @@ export default function AssessmentSubmissionScreen({
 
       {assessment.questions.map((question: any, index: number) => (
         <Card key={question.id} style={styles.questionCard}>
-          <Text style={styles.questionText}>
-            {index + 1}. {question.text}
-          </Text>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={styles.questionText}>
+              {index + 1}. {question.text}
+            </Text>
+            <Text style={styles.questionText}>{question.score} pts.</Text>
+          </View>
 
           {question.imageUrl && (
             <Image
@@ -271,7 +281,11 @@ export default function AssessmentSubmissionScreen({
               <Button
                 mode="outlined"
                 onPress={() => handleFilePick(question.id)}
-                style={{ marginTop: 8 }}
+                style={{
+                  marginTop: 12,
+                  borderRadius: 6,
+                  borderColor: colors.primary,
+                }}
               >
                 Select file
               </Button>
@@ -311,7 +325,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderRadius: 12,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "white",
     elevation: 2,
   },
   title: {
@@ -336,6 +350,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   questionCard: {
+    backgroundColor: "white",
+    borderRadius: 6,
     padding: 12,
     marginBottom: 16,
   },
@@ -348,6 +364,7 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   input: {
+    marginTop: 10,
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
