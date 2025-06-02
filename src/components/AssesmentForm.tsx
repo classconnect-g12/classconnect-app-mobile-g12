@@ -295,7 +295,11 @@ const AssessmentForm = ({
                               style={[styles.input, { flex: 1 }]}
                               theme={{ colors: { primary: colors.primary } }}
                             />
-                            <RadioButton value={i.toString()} />
+                            <RadioButton
+                              value={i.toString()}
+                              color={colors.primary}
+                              uncheckedColor="#ccc"
+                            />
                           </View>
                         );
                       })}

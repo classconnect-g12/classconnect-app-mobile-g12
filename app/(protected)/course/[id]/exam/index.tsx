@@ -184,13 +184,33 @@ export default function ExamsScreen() {
         </View>
 
         <Text style={styles.description}>{item.instructions}</Text>
-        <Text style={styles.orderDate}>
-          Start: {new Date(item.startDate).toLocaleString()}
-        </Text>
 
-        <Text style={{ marginTop: 4, fontWeight: "bold" }}>
-          Status: {formatStatus(item.status)}
-        </Text>
+        <View style={{ flexDirection: "row", marginTop: 8 }}>
+          <Text>Status: </Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              color:
+                item.status === "PENDING"
+                  ? "blue"
+                  : item.status === "IN_PROGRESS" || item.status === "COMPLETED"
+                  ? "green"
+                  : item.status === "FINISHED" || item.status === "OVERDUE"
+                  ? "red"
+                  : "black",
+            }}
+          >
+            {formatStatus(item.status)}
+          </Text>
+        </View>
+        <View>
+          <Text style={styles.order}>
+            Start: {new Date(item.startDate).toLocaleString()}
+          </Text>
+          <Text style={styles.order}>
+            Due: {new Date(item.endDate).toLocaleString()}
+          </Text>
+        </View>
 
         {(isTeacher ||
           hasPermission(EDIT_ASSESSMENT) ||
