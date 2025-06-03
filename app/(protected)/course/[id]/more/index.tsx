@@ -10,7 +10,9 @@ type IoniconName =
   | "document-text-outline"
   | "help-circle-outline"
   | "information-circle-outline"
-  | "settings-outline";
+  | "settings-outline"
+  | "people-circle-outline"
+  | "stats-chart-outline";
 
 export default function MoreScreen() {
   const router = useRouter();
@@ -27,6 +29,17 @@ export default function MoreScreen() {
     requiresTeacher?: boolean;
     requiresStudent?: boolean;
   }[] = [
+    {
+      title: "Forum",
+      route: `course/${courseId}/more/forum`,
+      icon: "people-circle-outline",
+    },
+    {
+      title: "Performance Stats",
+      route: `course/${courseId}/more/performanceStats`,
+      icon: "stats-chart-outline",
+      requiresTeacher: true,
+    },
     {
       title: "Feedback",
       route: `course/${courseId}/more/courseFeedback`,

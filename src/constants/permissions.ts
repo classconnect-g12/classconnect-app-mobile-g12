@@ -10,6 +10,10 @@ export const DELETE_RESOURCE = "DELETE_RESOURCE";
 export const EDIT_ASSESSMENT = "EDIT_ASSESSMENT";
 export const DELETE_ASSESSMENT = "DELETE_ASSESMENT";
 export const REVIEW_ASSESSMENT = "REVIEW_ASSESSMENT";
+export const FORUM_EDIT_QUESTION = "FORUM_EDIT_QUESTION";
+export const FORUM_DELETE_QUESTION = "FORUM_DELETE_QUESTION";
+export const FORUM_EDIT_ANSWER = "FORUM_EDIT_ANSWER";
+export const FORUM_DELETE_ANSWER = "FORUM_DELETE_ANSWER";
 
 export const ASSISTANT_PERMISSIONS = [
   CREATE_ASSESSMENT,
@@ -24,6 +28,10 @@ export const ASSISTANT_PERMISSIONS = [
   EDIT_ASSESSMENT,
   DELETE_ASSESSMENT,
   REVIEW_ASSESSMENT,
+  FORUM_EDIT_QUESTION,
+  FORUM_DELETE_QUESTION,
+  FORUM_EDIT_ANSWER,
+  FORUM_DELETE_ANSWER,
 ];
 
 export const PERMISSION_LABELS: Record<string, string> = {
@@ -39,4 +47,8 @@ export const PERMISSION_LABELS: Record<string, string> = {
   [EDIT_ASSESSMENT]: "Edit assignment or exam",
   [DELETE_ASSESSMENT]: "Delete assignment or exam",
   [REVIEW_ASSESSMENT]: "Grade exams",
+  [FORUM_EDIT_QUESTION]: "Edit forum question",
+  [FORUM_DELETE_QUESTION]: "Delete forum question",
+  [FORUM_EDIT_ANSWER]: "Edit forum answer",
+  [FORUM_DELETE_ANSWER]: "Delete forum answer",
 };
