@@ -176,22 +176,24 @@ const AssessmentForm = ({
             style={styles.input}
             theme={{ colors: { primary: colors.primary } }}
           />
-          <TextInput
-            label="Late delivery penalty (%)"
-            keyboardType="numeric"
-            value={latePenaltyPercentage}
-            onChangeText={setLatePenaltyPercentage}
-            style={styles.input}
-            theme={{ colors: { primary: colors.primary } }}
-          />
-          <View style={styles.switchRow}>
-            <Text>Allow late deliveries</Text>
-            <Switch
-              value={allowLateSubmission}
-              onValueChange={setAllowLateSubmission}
-              color={colors.primary}
+          {/*
+            <TextInput
+              label="Late delivery penalty (%)"
+              keyboardType="numeric"
+              value={latePenaltyPercentage}
+              onChangeText={setLatePenaltyPercentage}
+              style={styles.input}
+              theme={{ colors: { primary: colors.primary } }}
             />
-          </View>
+            <View style={styles.switchRow}>
+              <Text>Allow late deliveries</Text>
+              <Switch
+                value={allowLateSubmission}
+                onValueChange={setAllowLateSubmission}
+                color={colors.primary}
+              />
+            </View>
+            */}
 
           <Text>Start date:</Text>
           <Pressable

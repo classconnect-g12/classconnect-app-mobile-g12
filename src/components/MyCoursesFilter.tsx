@@ -46,7 +46,7 @@ const MyCourseFilter: React.FC<MyCourseFilterProps> = ({
         theme={{ colors: { primary: colors.primary } }}
       />
       <Text style={[styles.filterTitle, { marginTop: 10 }]}>
-        Filter by Date
+        Filter by State
       </Text>
       <Picker
         selectedValue={filters.state}

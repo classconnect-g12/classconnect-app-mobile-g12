@@ -24,7 +24,7 @@ export const handleApiError = (
     return;
   } else if (apiError.status === 423) {
     showSnackbar(
-      "Your session is locked. Please login again.",
+      "Your session is locked",
       SNACKBAR_VARIANTS.ERROR
     );
     setTimeout(() => logout(), 2000);
