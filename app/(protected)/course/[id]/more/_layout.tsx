@@ -53,6 +53,20 @@ export default function MoreLayout() {
           headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen
+        name="forum"
+        options={{
+          headerTitle: () => CustomTitle("Forum"),
+          headerTitleAlign: "center",
+        }}
+      />
+      <Stack.Screen
+        name="performanceStats"
+        options={{
+          headerTitle: () => CustomTitle("Performance Stats"),
+          headerTitleAlign: "center",
+        }}
+      />
     </Stack>
   );
 }
