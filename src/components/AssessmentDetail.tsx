@@ -137,7 +137,7 @@ export default function AssessmentDetail({
               </Text>
             )}
 
-            {status === SUBMISSION_STATUS.PENDING_REVIEW || status == SUBMISSION_STATUS.GRADED && (
+            {(status === SUBMISSION_STATUS.PENDING_REVIEW || status == SUBMISSION_STATUS.GRADED) && (
               <View
                 style={{
                   marginTop: 10,
