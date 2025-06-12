@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { fetchForumQuestions } from "../services/ForumService";
-import { ForumQuestionWithProfile } from "@src/types/forum"; // Usá el alias o la ruta relativa según tu tsconfig
+import { ForumQuestionWithProfile } from "@src/types/forum";
 
 // Context type
 type ForumQuestionsContextType = {
   questions: ForumQuestionWithProfile[];
   setQuestions: React.Dispatch<React.SetStateAction<ForumQuestionWithProfile[]>>;
-  refreshQuestions: (courseId: string) => Promise<void>;
+  refreshQuestions: (courseId?: string) => Promise<void>;
   loading: boolean;
 };
 
@@ -31,10 +31,29 @@ export const ForumQuestionsProvider = ({ courseId, children }: Props) => {
   const [questions, setQuestions] = useState<ForumQuestionWithProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchInitialQuestions = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchForumQuestions(courseId, 0, 10);
+        if (isMounted) setQuestions(data.questions || []);
+      } catch {
+        if (isMounted) setQuestions([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    if (courseId) fetchInitialQuestions();
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId]);
+
   const refreshQuestions = async (courseIdParam?: string) => {
     setLoading(true);
     try {
-      const data = await fetchForumQuestions(courseIdParam || courseId, 0, 50);
+      const data = await fetchForumQuestions(courseIdParam || courseId, 0, 10);
       setQuestions(data.questions || []);
     } catch {
       setQuestions([]);
@@ -42,13 +61,6 @@ export const ForumQuestionsProvider = ({ courseId, children }: Props) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (courseId) {
-      refreshQuestions(courseId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId]);
 
   return (
     <ForumQuestionsContext.Provider

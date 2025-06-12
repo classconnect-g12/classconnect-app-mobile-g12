@@ -201,6 +201,7 @@ export const ForumHeader: React.FC<Props> = ({
                   color: "#3b5bb6",
                   fontWeight: "bold",
                   fontSize: 15,
+                  lineHeight: 16,
                 }}
                 icon="tag"
                 compact

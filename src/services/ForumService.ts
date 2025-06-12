@@ -110,9 +110,9 @@ export async function fetchForumQuestions(
   return response.data;
 }
 
-export async function fetchForumTags(): Promise<ForumTagResponse[]> {
+export async function fetchForumTags(courseId: string): Promise<ForumTagResponse[]> {
   const response = await privateClient.get<ForumTagResponse[]>(
-    "/forums/tags"
+    `/forums/tags/by-course/${courseId}`
   );
   return response.data;
 }
