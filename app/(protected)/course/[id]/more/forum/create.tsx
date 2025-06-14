@@ -27,9 +27,9 @@ export default function CreateForumQuestion() {
   const [availableTags, setAvailableTags] = useState<ForumTagResponse[]>([]);
   const [loadingTags, setLoadingTags] = useState(false);
 
-  // For custom tag input
-  const [customTag, setCustomTag] = useState("");
-  const [customTagError, setCustomTagError] = useState<string | null>(null);
+  // Campo para nuevo tag
+  const [newTag, setNewTag] = useState("");
+  const [newTagError, setNewTagError] = useState<string | null>(null);
 
   // Field errors
   const [titleError, setTitleError] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export default function CreateForumQuestion() {
     const loadTags = async () => {
       setLoadingTags(true);
       try {
-        const tagList = await fetchForumTags();
+        const tagList = await fetchForumTags(String(courseId));
         setAvailableTags(tagList);
       } catch {
         setAvailableTags([]);
@@ -61,34 +61,55 @@ export default function CreateForumQuestion() {
       }
     };
     loadTags();
-  }, []);
+  }, [courseId]);
 
+  // Selección de tags existentes
   const toggleTag = (tag: string) => {
-    if (tags.includes(tag)) {
-      setTags((prev) => prev.filter((t) => t !== tag));
-    } else if (tags.length < MAX_TAGS) {
-      setTags((prev) => [...prev, tag]);
-    }
+    setTags((prev) => {
+      if (prev.includes(tag)) {
+        return prev.filter((t) => t !== tag);
+      } else if (prev.length < MAX_TAGS) {
+        return Array.from(new Set([...prev, tag]));
+      }
+      return prev;
+    });
   };
 
-  const handleAddCustomTag = () => {
-    const trimmed = customTag.trim();
-    if (!trimmed) return;
+  // Validaciones para nuevo tag
+  const handleAddNewTag = () => {
+    const trimmed = newTag.trim();
+    if (!trimmed) {
+      setNewTagError("Tag cannot be empty.");
+      return;
+    }
     if (trimmed.length > MAX_TAG_LENGTH) {
-      setCustomTagError(`Tag must be ${MAX_TAG_LENGTH} characters or less.`);
+      setNewTagError(`Tag must be ${MAX_TAG_LENGTH} characters or less.`);
+      return;
+    }
+    if (tags.includes(trimmed)) {
+      setNewTagError("Tag already added.");
+      return;
+    }
+    if (
+      availableTags.some(
+        (t) => t.name.toLowerCase() === trimmed.toLowerCase()
+      ) &&
+      tags.includes(
+        availableTags.find(
+          (t) => t.name.toLowerCase() === trimmed.toLowerCase()
+        )!.name
+      )
+    ) {
+      setNewTagError("Tag already added.");
       return;
     }
     if (tags.length >= MAX_TAGS) {
-      setCustomTagError(`You can select up to ${MAX_TAGS} tags.`);
-      return;
-    }
-    if (tags.includes(trimmed) || availableTags.some((t) => t.name === trimmed)) {
-      setCustomTagError("This tag already exists.");
+      setNewTagError(`You can select up to ${MAX_TAGS} tags.`);
       return;
     }
     setTags((prev) => [...prev, trimmed]);
-    setCustomTag("");
-    setCustomTagError(null);
+    setNewTag("");
+    setNewTagError(null);
   };
 
   // Validations for title and description
@@ -108,11 +129,6 @@ export default function CreateForumQuestion() {
     if (attachments.length > MAX_ATTACHMENTS) setAttachmentsError(`You can attach up to ${MAX_ATTACHMENTS} files.`);
     else setAttachmentsError(null);
   }, [attachments]);
-
-  // Clear custom tag error when typing
-  useEffect(() => {
-    setCustomTagError(null);
-  }, [customTag]);
 
   // Limitar la cantidad de archivos adjuntos
   const handleAddAttachment = async () => {
@@ -171,10 +187,7 @@ export default function CreateForumQuestion() {
     }
   };
 
-  const showNoTags =
-    !loadingTags &&
-    availableTags.length === 0 &&
-    tags.filter((tag) => !availableTags.some((t) => t.name === tag)).length === 0;
+  const showNoTags = !loadingTags && availableTags.length === 0;
 
   return (
     <KeyboardAvoidingView
@@ -244,9 +257,8 @@ export default function CreateForumQuestion() {
           <Text style={{ color: colors.error, marginBottom: 8, marginLeft: 4 }}>{descriptionError}</Text>
         )}
         <Text style={{ marginBottom: 8, fontWeight: "bold", color: colors.primary, fontSize: 16 }}>
-          Tags <Text style={{ color: colors.textMuted, fontWeight: "normal", fontSize: 13 }}>{`(max ${MAX_TAGS}, ${MAX_TAG_LENGTH} chars)`}</Text>
+          Tags <Text style={{ color: colors.textMuted, fontWeight: "normal", fontSize: 13 }}>{`(max ${MAX_TAGS})`}</Text>
         </Text>
-        {/* ...tags UI igual que antes... */}
         <View
           style={{
             flexDirection: "row",
@@ -294,93 +306,84 @@ export default function CreateForumQuestion() {
                     </Text>
                   </Chip>
                 ))}
-              {/* Custom tags */}
-              {tags
-                .filter((tag) => !availableTags.some((t) => t.name === tag))
-                .map((tag) => (
-                  <Chip
-                    key={tag}
-                    style={{
-                      marginRight: 8,
-                      marginBottom: 8,
-                      backgroundColor: colors.secondary,
-                      borderColor: colors.secondary,
-                      borderWidth: 1,
-                      alignSelf: "flex-start",
-                      minHeight: 36,
-                      paddingHorizontal: 12,
-                    }}
-                    textStyle={{
-                      color: colors.buttonText,
-                      fontWeight: "bold",
-                      fontSize: 15,
-                    }}
-                    onClose={() => setTags((prev) => prev.filter((t) => t !== tag))}
-                    closeIcon="close"
-                    closeIconAccessibilityLabel="Remove tag"
-                  >
-                    <Text
-                      style={{
-                        color: colors.buttonText,
-                        fontWeight: "bold",
-                        fontSize: 15,
-                      }}
-                    >
-                      {tag}
-                    </Text>
-                  </Chip>
-                ))}
               {showNoTags && (
                 <Text style={{ color: colors.textMuted, marginTop: 6 }}>No tags found.</Text>
               )}
             </>
           )}
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6, maxWidth: 320 }}>
+        {/* Campo para crear nuevo tag */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
           <TextInput
-            label="Add custom tag"
-            value={customTag}
-            onChangeText={setCustomTag}
+            label="Create new tag"
+            value={newTag}
+            onChangeText={(text) => {
+              setNewTag(text);
+              setNewTagError(null);
+            }}
             mode="outlined"
             style={{
               flex: 1,
               backgroundColor: colors.inputBackground,
-              marginRight: 8,
               fontSize: 15,
-              maxWidth: 200,
+              marginRight: 8,
             }}
-            onSubmitEditing={handleAddCustomTag}
-            error={!!customTagError}
-            maxLength={MAX_TAG_LENGTH}
             theme={{
               colors: {
                 background: colors.inputBackground,
                 primary: colors.primary,
                 text: colors.text,
                 placeholder: colors.textMuted,
-                error: colors.error,
               },
             }}
+            maxLength={MAX_TAG_LENGTH}
+            error={!!newTagError}
+            onSubmitEditing={handleAddNewTag}
+            returnKeyType="done"
+            placeholder="Add custom tag"
           />
           <Button
             mode="contained"
-            onPress={handleAddCustomTag}
-            disabled={!customTag.trim() || tags.length >= MAX_TAGS}
+            onPress={handleAddNewTag}
             buttonColor={colors.primary}
-            style={{
-              borderRadius: 8,
-              minWidth: 48,
-              height: 44,
-              justifyContent: "center",
-            }}
-            labelStyle={{ color: colors.buttonText, fontWeight: "bold", fontSize: 15 }}
+            style={{ borderRadius: 8, height: 44, justifyContent: "center" }}
+            labelStyle={{ color: colors.buttonText, fontWeight: "bold" }}
+            disabled={tags.length >= MAX_TAGS}
           >
             Add
           </Button>
         </View>
-        {customTagError && (
-          <Text style={{ color: colors.error, marginBottom: 8, marginLeft: 4 }}>{customTagError}</Text>
+        {newTagError && (
+          <Text style={{ color: colors.error, marginBottom: 8, marginLeft: 4 }}>{newTagError}</Text>
         )}
+        {/* Chips de tags seleccionados */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10, gap: 8 }}>
+          {tags.map((tag) => (
+            <Chip
+              key={tag}
+              selected
+              onClose={() => setTags((prev) => prev.filter((t) => t !== tag))}
+              style={{
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+                borderWidth: 1,
+                marginRight: 8,
+                marginBottom: 8,
+                alignSelf: "flex-start",
+                minHeight: 36,
+                paddingHorizontal: 12,
+              }}
+              textStyle={{
+                color: colors.buttonText,
+                fontWeight: "bold",
+                fontSize: 15,
+              }}
+              closeIcon="close"
+            >
+              {tag}
+            </Chip>
+          ))}
+        </View>
         <Text style={{ marginBottom: 8, fontWeight: "bold", color: colors.primary, fontSize: 16 }}>
           Attachments <Text style={{ color: colors.textMuted, fontWeight: "normal", fontSize: 13 }}>
             ({attachments.length}/{MAX_ATTACHMENTS})
@@ -440,7 +443,7 @@ export default function CreateForumQuestion() {
           Post Question
         </Button>
         <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 13 }}>
-          You can select up to 5 tags. Each tag must be 15 characters or less. Title: 1-100 chars. Description: 1-500 chars. Max 5 attachments.
+          You can select up to 5 tags. Title: 1-100 chars. Description: 1-500 chars. Max 5 attachments.
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

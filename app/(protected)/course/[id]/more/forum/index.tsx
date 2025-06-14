@@ -55,7 +55,7 @@ function ForumScreenInner() {
     const loadTags = async () => {
       setLoadingTags(true);
       try {
-        const tagList = await fetchForumTags();
+        const tagList = await fetchForumTags(String(courseId));
         setTags(tagList);
       } catch {
         setTags([]);
@@ -436,7 +436,7 @@ function ForumScreenInner() {
                     </View>
                     <View style={{ alignItems: "center" }}>
                       <MaterialCommunityIcons name="arrow-up-bold" size={14} color={colors.success} />
-                      <Text style={styles.voteCountSmall}>{item.upvotes}</Text>
+                      <Text style={styles.voteCountSmall}>{item.upvotes - item.downvotes}</Text>
                       <MaterialCommunityIcons name="arrow-down-bold" size={14} color={colors.error} />
                     </View>
                   </View>
