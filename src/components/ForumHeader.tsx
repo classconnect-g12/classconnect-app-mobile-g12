@@ -88,15 +88,15 @@ export const ForumHeader: React.FC<Props> = ({
             />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 18, color: colors.primary }}>{displayName}</Text>
+            <Text style={{ fontWeight: "bold", fontSize: 18, color: "black" }}>{displayName}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
               <MaterialCommunityIcons
                 name="clock-outline"
                 size={18}
-                color={colors.textMuted}
+                color="gray"
                 style={{ marginRight: 4 }}
               />
-              <Text style={{ color: colors.textMuted, fontSize: 15 }}>
+              <Text style={{ color: "gray", fontSize: 15 }}>
                 {formatDistanceToNow(new Date(question.createdAt), { addSuffix: true })}
               </Text>
             </View>
@@ -147,7 +147,7 @@ export const ForumHeader: React.FC<Props> = ({
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={{
             fontWeight: "bold",
-            fontSize: 26,
+            fontSize: 20,
             color: colors.text,
             marginBottom: 8,
             marginTop: 2,
@@ -184,6 +184,22 @@ export const ForumHeader: React.FC<Props> = ({
             </View>
           )}
         </View>
+        {/* Attachments */}
+        {Array.isArray(question.attachments) && question.attachments.length > 0 && (
+          <ScrollView horizontal style={{ marginTop: 10, marginBottom: 10 }}>
+            {question.attachments.map((att: ForumAttachment, idx: number) =>
+              renderAttachment(att, idx, question.attachments)
+            )}
+          </ScrollView>
+        )}
+        {/* Description */}
+        <Text style={{
+          fontSize: 18,
+          color: colors.text,
+          opacity: 0.97,
+          marginBottom: 8,
+        }}>{question.description}</Text>
+
         {/* Tags */}
         {question.tags.length > 0 && (
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8, gap: 6 }}>
@@ -211,24 +227,8 @@ export const ForumHeader: React.FC<Props> = ({
             ))}
           </View>
         )}
-        {/* Attachments */}
-        {Array.isArray(question.attachments) && question.attachments.length > 0 && (
-          <ScrollView horizontal style={{ marginTop: 10, marginBottom: 10 }}>
-            {question.attachments.map((att: ForumAttachment, idx: number) =>
-              renderAttachment(att, idx, question.attachments)
-            )}
-          </ScrollView>
-        )}
-        {/* Description */}
-        <Text style={{
-          fontSize: 18,
-          color: colors.text,
-          opacity: 0.97,
-          marginTop: 8,
-          marginBottom: 8,
-        }}>{question.description}</Text>
         {/* Status and answers */}
-        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginTop: 6, marginBottom: 2, gap: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginBottom: 2, gap: 10 }}>
           {question.answerCount > 0 && (
             <>
               <MaterialCommunityIcons
@@ -268,11 +268,11 @@ export const ForumHeader: React.FC<Props> = ({
           )}
         </View>
         {/* Votes */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 16, marginBottom: 2, gap: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 16, marginBottom: 2 }}>
           <TouchableOpacity
             onPress={onUpvote}
             style={[
-              { padding: 2 },
+              { padding: 0 },
               vote === 1 && { backgroundColor: colors.success, borderRadius: 20 },
             ]}
           >

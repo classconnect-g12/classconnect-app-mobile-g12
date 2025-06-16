@@ -61,9 +61,10 @@ export const AnswerItem: React.FC<Props> = ({
   return (
     <View key={answer.id} style={{
       marginBottom: 22,
-      backgroundColor: colors.inputBackground,
       borderRadius: 12,
       padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: "gray",
     }}>
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
         {avatarSource ? (
