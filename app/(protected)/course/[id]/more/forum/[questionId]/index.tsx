@@ -670,7 +670,7 @@ export default function ForumQuestionDetailScreen() {
             icon="plus"
             onPress={() => setShowAnswerInput(true)}
             buttonColor={colors.primary}
-            style={{ borderRadius: 24 }}
+            style={{ borderRadius: 6 }}
             labelStyle={{ fontSize: 16, color: colors.buttonText }}
           >
             Write answer
@@ -750,7 +750,7 @@ export default function ForumQuestionDetailScreen() {
             loading={postingAnswer}
             disabled={!answerText.trim() || postingAnswer}
             labelStyle={{ fontSize: 16, color: colors.buttonText }}
-            style={{ paddingVertical: 6 }}
+            style={{ paddingVertical: 0, marginTop: 10, borderRadius: 6 }}
           >
             Post answer
           </Button>

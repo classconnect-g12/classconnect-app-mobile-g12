@@ -320,13 +320,11 @@ function ForumScreenInner() {
           icon="plus"
           style={styles.newQuestionButton}
           onPress={() => router.push(`/(protected)/course/${courseId}/more/forum/create`)}
-          buttonColor={colors.secondary}
+          buttonColor={colors.primary}
           textColor={colors.buttonText}
-          labelStyle={{ fontWeight: "bold", fontSize: 20, letterSpacing: 0.5 }}
+          labelStyle={{ fontWeight: "bold", fontSize: 16, letterSpacing: 0.5 }}
           contentStyle={{
             flexDirection: "row-reverse",
-            height: 52,
-            paddingHorizontal: 25, 
             justifyContent: "center",
             alignItems: "center",
           }}
@@ -576,7 +574,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   newQuestionButton: {
-    borderRadius: 24,
+    borderRadius: 6,
     paddingHorizontal: 0,
     paddingVertical: 0,
     elevation: 2,
@@ -584,8 +582,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
-    minHeight: 52,
-    height: 52,
     justifyContent: "center",
     alignItems: "center",
   },

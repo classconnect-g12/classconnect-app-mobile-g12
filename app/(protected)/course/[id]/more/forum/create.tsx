@@ -203,7 +203,7 @@ export default function CreateForumQuestion() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={{ fontWeight: "bold", fontSize: 22, color: colors.primary, marginBottom: 20 }}>
+        <Text style={{ fontWeight: "bold", fontSize: 22, color: "black", marginBottom: 20 }}>
           New Question
         </Text>
         <TextInput
@@ -346,7 +346,7 @@ export default function CreateForumQuestion() {
             mode="contained"
             onPress={handleAddNewTag}
             buttonColor={colors.primary}
-            style={{ borderRadius: 8, height: 44, justifyContent: "center" }}
+            style={{ borderRadius: 8, height: 44, justifyContent: "center", marginTop: 8 }}
             labelStyle={{ color: colors.buttonText, fontWeight: "bold" }}
             disabled={tags.length >= MAX_TAGS}
           >
@@ -434,8 +434,7 @@ export default function CreateForumQuestion() {
             !!attachmentsError
           }
           style={{
-            borderRadius: 12,
-            paddingVertical: 10,
+            borderRadius: 6,
             marginTop: 10,
           }}
           labelStyle={{ fontWeight: "bold", fontSize: 17, color: colors.buttonText }}

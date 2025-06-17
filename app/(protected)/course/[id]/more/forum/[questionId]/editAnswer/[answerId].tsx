@@ -136,7 +136,7 @@ export default function EditForumAnswerScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <ScrollView contentContainerStyle={forumStyles.container}>
-        <Text style={[forumStyles.header, { color: colors.secondary }]}>Edit Answer</Text>
+        <Text style={[forumStyles.header, { color: "black" }]}>Edit Answer</Text>
         <TextInput
           label="Answer"
           value={text}
@@ -172,7 +172,7 @@ export default function EditForumAnswerScreen() {
           onPress={handleSave}
           loading={saving}
           disabled={saving}
-          style={[forumStyles.button, { backgroundColor: colors.primary }]}
+          style={[forumStyles.button, { backgroundColor: colors.primary, borderRadius: 6 }]}
         >
           Save
         </Button>
