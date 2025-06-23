@@ -20,6 +20,7 @@ import {
 import { useRouter } from "expo-router";
 import Spinner from "./Spinner";
 import { colors } from "@theme/colors";
+import { handleDownload } from "@utils/downloadAssessmentSolver";
 
 type Props = {
   courseId: string;
@@ -212,6 +213,20 @@ export default function AssessmentSubmissionScreen({
           ⏳ Time remaining: {timeLeft.minutes.toString().padStart(2, "0")}:
           {timeLeft.seconds.toString().padStart(2, "0")}
         </Text>
+
+        <Button
+          mode="contained"
+          style={{
+            marginTop: 12,
+            flex: 1,
+            borderRadius: 6,
+            backgroundColor: "#2ECC71",
+          }}
+          labelStyle={{ color: "white" }}
+          onPress={() => handleDownload(courseId, assessmentId)}
+        >
+          Download
+        </Button>
       </Card>
 
       {assessment.questions.map((question: any, index: number) => (
