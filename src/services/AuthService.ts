@@ -20,7 +20,8 @@ export const login = async (
 export const register = async (
   username: string,
   email: string,
-  password: string
+  password: string,
+  location: { latitude: number; longitude: number }
 ): Promise<string> => {
   try {
     const fcmToken = await messaging().getToken();
@@ -30,6 +31,7 @@ export const register = async (
       email,
       password,
       fcm_token: fcmToken,
+      location,
     });
 
     if (response.status === 201) {
@@ -50,38 +52,38 @@ export const register = async (
 export const loginWithGoogle = async (
   firebaseIdToken: string
 ): Promise<string> => {
-    const response = await publicClient.post(`/auth/google`, {
-      idToken: firebaseIdToken,
-    });
+  const response = await publicClient.post(`/auth/google`, {
+    idToken: firebaseIdToken,
+  });
 
-    if (response.status === 200) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
+  if (response.status === 200) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
+  }
 
-    return response.data
+  return response.data;
 };
 
 export const registerWithGoogle = async (
   firebaseIdToken: string,
   user_name: string
 ): Promise<string> => {
-    const fcmToken = await messaging().getToken();
+  const fcmToken = await messaging().getToken();
 
-    const response = await publicClient.post(`/auth/google-register`, {
-      idToken: firebaseIdToken,
-      user_name,
-      fcm_token: fcmToken,
-    });
+  const response = await publicClient.post(`/auth/google-register`, {
+    idToken: firebaseIdToken,
+    user_name,
+    fcm_token: fcmToken,
+  });
 
-    if (response.status === 201) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
+  if (response.status === 201) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
+  }
 
-    return response.data
+  return response.data;
 };
 
 export const resetPassword = async (email: string): Promise<string> => {
@@ -103,7 +105,6 @@ export const resetPasswordWithCode = async (
 
   return response.data.message || "Password reset successfully";
 };
-
 
 export const sendActivationPin = async ({
   email,
