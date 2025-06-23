@@ -93,4 +93,29 @@ export const feedbackStyles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
+  filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+    paddingHorizontal: 8,
+  },
+  picker: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  feedbackFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+    marginRight: 10,
+  },
+  sectionFilter: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
