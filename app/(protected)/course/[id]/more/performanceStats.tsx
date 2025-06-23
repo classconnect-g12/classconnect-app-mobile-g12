@@ -1,15 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { View, ScrollView, StyleSheet, Dimensions, Platform, ActivityIndicator } from "react-native";
-import { Text, Card, Button, Menu, Divider, IconButton } from "react-native-paper";
-import { colors } from "@theme/colors";
-import { LineChart } from "react-native-chart-kit";
-import * as FileSystem from "expo-file-system";
+import React, { useEffect, useState, useRef } from "react";
+import { View, ScrollView, StyleSheet, Dimensions, Platform, FlatList, Alert } from "react-native";
+import { Text, Card, Button, ActivityIndicator, IconButton, Menu, Divider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
+import { captureRef } from "react-native-view-shot";
+import { LineChart } from "react-native-chart-kit";
+import {colors} from "@theme/colors";
 import { getCoursePerformanceStats, getStudentPerformanceStats } from "@services/PerformanceStatsService";
 import { getAcceptedMembers } from "@services/EnrollmentService";
 import { useCourse } from "@context/CourseContext";
 
 const screenWidth = Dimensions.get("window").width;
+
+const MAX_GRAPH_POINTS = 10;
 
 type PerformanceTrendItem = {
   label: string;
@@ -53,6 +58,21 @@ export default function PerformanceStatsScreen() {
   const [studentStats, setStudentStats] = useState<StudentPerformanceStats | null>(null);
   const [loadingStudent, setLoadingStudent] = useState(false);
 
+  const STUDENTS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = Math.ceil(students.length / STUDENTS_PER_PAGE);
+  const paginatedStudents = students.slice(
+    currentPage * STUDENTS_PER_PAGE,
+    (currentPage + 1) * STUDENTS_PER_PAGE
+  );
+
+  const [graphPage, setGraphPage] = useState(0);
+  const graphTotalPages = courseStats
+    ? Math.ceil(courseStats.performanceTrend.length / MAX_GRAPH_POINTS)
+    : 1;
+
+  const chartRef = useRef<View>(null);
+
   useEffect(() => {
     if (!courseId) return;
     (async () => {
@@ -84,11 +104,12 @@ export default function PerformanceStatsScreen() {
     setLoading(true);
     getCoursePerformanceStats(
       courseId,
-      fromDate ? fromDate.toISOString().slice(0, 10) : undefined,
-      toDate ? toDate.toISOString().slice(0, 10) : undefined
+      fromDate ? fromDate.toISOString().slice(0, 19) : undefined,
+      toDate ? toDate.toISOString().slice(0, 19) : undefined
     )
       .then((stats) => {
         setCourseStats(stats);
+        setGraphPage(0); // Reinicia la paginación del gráfico al cambiar datos
       })
       .catch(() => setCourseStats(null))
       .finally(() => setLoading(false));
@@ -103,18 +124,109 @@ export default function PerformanceStatsScreen() {
     getStudentPerformanceStats(
       courseId,
       selectedStudentId,
-      fromDate ? fromDate.toISOString().slice(0, 10) : undefined,
-      toDate ? toDate.toISOString().slice(0, 10) : undefined
+      fromDate ? fromDate.toISOString().slice(0, 19) : undefined,
+      toDate ? toDate.toISOString().slice(0, 19) : undefined
     )
       .then(setStudentStats)
       .catch(() => setStudentStats(null))
       .finally(() => setLoadingStudent(false));
   }, [courseId, selectedStudentId, fromDate, toDate]);
 
-  // TODO Export functionality
-  const handleExport = async (type: "pdf" | "excel") => {
-    const fileUri = FileSystem.documentDirectory + `stats.${type}`;
-    await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(courseStats));
+  const handleExportPDF = async () => {
+    if (!courseStats) {
+      Alert.alert("No data", "No course statistics available to export.");
+      return;
+    }
+
+    try {
+      const chartImages: string[] = [];
+      for (let page = 0; page < graphTotalPages; page++) {
+        setGraphPage(page);
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        // eslint-disable-next-line no-await-in-loop
+        const chartUri = await captureRef(chartRef, {
+          format: "png",
+          quality: 1,
+        });
+        // eslint-disable-next-line no-await-in-loop
+        const chartBase64 = await FileSystem.readAsStringAsync(chartUri, { encoding: FileSystem.EncodingType.Base64 });
+        chartImages.push(chartBase64);
+      }
+      setGraphPage(0); 
+
+      const trendPages = [];
+      for (let page = 0; page < graphTotalPages; page++) {
+        const start = page * MAX_GRAPH_POINTS;
+        const end = start + MAX_GRAPH_POINTS;
+        const trendSlice = courseStats.performanceTrend.slice(start, end);
+        const trendRows = trendSlice
+          .map(
+            (t) => `
+            <tr>
+              <td>${new Date(t.date).toLocaleDateString()}</td>
+              <td>${t.label}</td>
+              <td>${t.completionRate?.toFixed(2)}%</td>
+              <td>${t.average?.toFixed(2)}</td>
+            </tr>
+          `
+          )
+          .join("");
+        trendPages.push(trendRows);
+      }
+
+      let html = `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
+              h2 { color: ${colors.primary}; }
+              table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+              th, td { border: 1px solid #b0b0b0; padding: 8px 10px; text-align: left; }
+              th { background: #eaf1fb; color: ${colors.primary}; }
+              .section-title { margin-top: 32px; margin-bottom: 8px; color: ${colors.secondary}; font-size: 18px; }
+              .summary-box { background: #eaf1fb; border-radius: 10px; padding: 10px 18px; margin-bottom: 18px; display: inline-block; }
+              .page-break { page-break-after: always; }
+            </style>
+          </head>
+          <body>
+            <h2>Student Performance Statistics</h2>
+            <div class="section-title">Global Overview</div>
+            <div class="summary-box">
+              <b>Average Score:</b> ${courseStats.averageScore?.toFixed(2)}<br/>
+              <b>Completion Rate:</b> ${courseStats.completionRate?.toFixed(2)}%
+            </div>
+      `;
+
+      for (let i = 0; i < chartImages.length; i++) {
+        html += `
+          <div class="section-title">Performance Trend Chart (${i + 1} / ${chartImages.length})</div>
+          <img src="data:image/png;base64,${chartImages[i]}" style="width:100%;max-width:600px;border-radius:12px;border:2px solid ${colors.primary};background:#fff;" />
+          <div class="section-title">Performance Trend Data (${i + 1} / ${chartImages.length})</div>
+          <table>
+            <tr>
+              <th>Date</th>
+              <th>Evaluation</th>
+              <th>Completion Rate</th>
+              <th>Average Score</th>
+            </tr>
+            ${trendPages[i]}
+          </table>
+          ${i < chartImages.length - 1 ? '<div class="page-break"></div>' : ""}
+        `;
+      }
+
+      html += `
+          </body>
+        </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri);
+    } catch (err) {
+      Alert.alert("Export failed", "There was an error exporting the PDF.");
+      console.error(err);
+    }
   };
 
   const formatDate = (date?: Date | null) =>
@@ -122,7 +234,7 @@ export default function PerformanceStatsScreen() {
 
   const formatNumber = (num?: number | null) => {
     if (typeof num !== "number" || isNaN(num)) return "-";
-    return num.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const getChartData = (trend: PerformanceTrendItem[] = []) => ({
@@ -141,6 +253,25 @@ export default function PerformanceStatsScreen() {
     ],
     legend: ["Average Score", "Completion Rate (%)"],
   });
+
+  const getStudentChartData = (trend: PerformanceTrendItem[] = []) => ({
+    labels: trend.map((t) => new Date(t.date).toLocaleDateString()),
+    datasets: [
+      {
+        data: trend.map((t) => t.average),
+        color: () => colors.primary,
+        strokeWidth: 3,
+      },
+    ],
+    legend: ["Average Score"],
+  });
+
+  const getPagedTrend = () => {
+    if (!courseStats) return [];
+    const start = graphPage * MAX_GRAPH_POINTS;
+    const end = start + MAX_GRAPH_POINTS;
+    return courseStats.performanceTrend.slice(start, end);
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -161,8 +292,7 @@ export default function PerformanceStatsScreen() {
           }
           contentStyle={styles.menuContent}
         >
-          <Menu.Item onPress={() => handleExport("pdf")} title="Export as PDF" />
-          <Menu.Item onPress={() => handleExport("excel")} title="Export as Excel" />
+          <Menu.Item onPress={() => { handleExportPDF(); setMenuVisible(false); }} title="Export as PDF" />
         </Menu>
       </View>
 
@@ -187,9 +317,7 @@ export default function PerformanceStatsScreen() {
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>Completion Rate</Text>
                 <Text style={styles.statValue}>
-                  {typeof courseStats.completionRate === "number"
-                    ? `${formatNumber(courseStats.completionRate)}%`
-                    : "-"}
+                  {formatNumber(courseStats.completionRate)}%
                 </Text>
               </View>
             </View>
@@ -241,7 +369,7 @@ export default function PerformanceStatsScreen() {
         />
       )}
 
-      {/* Performance Trend Chart */}
+      {/* Performance Trend Chart paginado */}
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.subtitle}>Performance Trend</Text>
@@ -257,48 +385,69 @@ export default function PerformanceStatsScreen() {
           ) : (
             <>
               <ScrollView horizontal contentContainerStyle={{ paddingLeft: 18, paddingRight: 18 }}>
-                <LineChart
-                  data={getChartData(courseStats.performanceTrend)}
-                  width={Math.max(screenWidth - 48, 90 * (courseStats.performanceTrend?.length || 1))}
-                  height={210}
-                  yAxisSuffix=""
-                  yAxisInterval={1}
-                  chartConfig={{
-                    backgroundColor: colors.cardBackground,
-                    backgroundGradientFrom: colors.cardBackground,
-                    backgroundGradientTo: colors.cardBackground,
-                    decimalPlaces: 2,
-                    color: (opacity = 1, idx?: number) =>
-                      idx === 1 ? colors.secondary : colors.primary,
-                    labelColor: (opacity = 1) => colors.text,
-                    propsForDots: {
-                      r: "6",
-                      strokeWidth: "2",
-                      stroke: colors.secondary,
-                    },
-                    propsForBackgroundLines: {
-                      stroke: colors.inputBackground,
-                    },
-                  }}
-                  bezier
-                  style={{
-                    borderRadius: 14,
-                    marginVertical: 8,
-                    marginLeft: 12,
-                    marginRight: 12,
-                  }}
-                  formatYLabel={(y) =>
-                    typeof y === "string"
-                      ? formatNumber(Number(y))
-                      : formatNumber(y)
-                  }
-                  fromZero
-                  segments={5}
-                  withInnerLines
-                  withOuterLines
-                  withVerticalLabels
-                />
+                <View ref={chartRef} collapsable={false}>
+                  <LineChart
+                    data={getChartData(getPagedTrend())}
+                    width={Math.max(screenWidth - 48, 90 * (getPagedTrend()?.length || 1))}
+                    height={210}
+                    yAxisSuffix=""
+                    yAxisInterval={1}
+                    chartConfig={{
+                      backgroundColor: colors.cardBackground,
+                      backgroundGradientFrom: colors.cardBackground,
+                      backgroundGradientTo: colors.cardBackground,
+                      decimalPlaces: 2,
+                      color: (opacity = 1, idx?: number) =>
+                        idx === 1 ? colors.secondary : colors.primary,
+                      labelColor: (opacity = 1) => colors.text,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: colors.secondary,
+                      },
+                      propsForBackgroundLines: {
+                        stroke: colors.inputBackground,
+                      },
+                    }}
+                    bezier
+                    style={{
+                      borderRadius: 14,
+                      marginVertical: 8,
+                      marginLeft: 12,
+                      marginRight: 12,
+                    }}
+                    formatYLabel={(y) =>
+                      typeof y === "string"
+                        ? formatNumber(Number(y))
+                        : formatNumber(y)
+                    }
+                    fromZero
+                    segments={5}
+                    withInnerLines
+                    withOuterLines
+                    withVerticalLabels
+                  />
+                </View>
               </ScrollView>
+              <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 8 }}>
+                <Button
+                  mode="text"
+                  disabled={graphPage === 0}
+                  onPress={() => setGraphPage((p) => Math.max(0, p - 1))}
+                >
+                  {"<"}
+                </Button>
+                <Text style={{ marginHorizontal: 8 }}>
+                  {graphPage + 1} / {graphTotalPages}
+                </Text>
+                <Button
+                  mode="text"
+                  disabled={graphPage >= graphTotalPages - 1}
+                  onPress={() => setGraphPage((p) => Math.min(graphTotalPages - 1, p + 1))}
+                >
+                  {">"}
+                </Button>
+              </View>
               <ScrollView
                 horizontal
                 contentContainerStyle={[
@@ -307,7 +456,7 @@ export default function PerformanceStatsScreen() {
                 ]}
                 showsHorizontalScrollIndicator={false}
               >
-                {courseStats.performanceTrend?.map((t, idx) => (
+                {getPagedTrend()?.map((t, idx) => (
                   <View key={idx} style={styles.chartLabelBox}>
                     <Text style={styles.chartLabelDate}>
                       {new Date(t.date).toLocaleDateString()}
@@ -315,6 +464,9 @@ export default function PerformanceStatsScreen() {
                     <Text style={styles.chartLabelEval}>{t.label}</Text>
                     <Text style={styles.chartLabelCompletion}>
                       {formatNumber(t.completionRate)}% completed
+                    </Text>
+                    <Text style={styles.chartLabelAvgScore}>
+                      Avg: {formatNumber(t.average)}
                     </Text>
                   </View>
                 ))}
@@ -336,25 +488,58 @@ export default function PerformanceStatsScreen() {
             </Text>
           ) : (
             <>
-              <View style={styles.studentsList}>
-                {students.map((student) => (
-                  <Button
-                    key={student.id}
-                    mode={selectedStudentId === student.id ? "contained" : "outlined"}
-                    onPress={() => setSelectedStudentId(student.id)}
-                    style={[
-                      styles.studentBtn,
-                      selectedStudentId === student.id && styles.studentBtnSelected,
-                    ]}
-                    labelStyle={[
-                      styles.studentBtnLabel,
-                      selectedStudentId === student.id && styles.studentBtnLabelSelected,
-                    ]}
-                  >
-                    {student.name}
-                  </Button>
-                ))}
+              {/* PAGINADOR HORIZONTAL DE ESTUDIANTES */}
+              <View style={{ marginVertical: 10 }}>
+                <FlatList
+                  data={paginatedStudents}
+                  keyExtractor={(item) => item.id.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item }) => (
+                    <Button
+                      key={item.id}
+                      mode={selectedStudentId === item.id ? "contained" : "outlined"}
+                      onPress={() => setSelectedStudentId(item.id)}
+                      style={[
+                        styles.studentBtnColumn,
+                        selectedStudentId === item.id && styles.studentBtnSelected,
+                      ]}
+                      labelStyle={[
+                        styles.studentBtnLabel,
+                        selectedStudentId === item.id && styles.studentBtnLabelSelected,
+                      ]}
+                      contentStyle={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: "bold" }}>{item.name}</Text>
+                    </Button>
+                  )}
+                  ListFooterComponent={
+                    totalPages > 1 ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 8 }}>
+                        <Button
+                          mode="text"
+                          disabled={currentPage === 0}
+                          onPress={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                        >
+                          {"<"}
+                        </Button>
+                        <Text style={{ marginHorizontal: 8 }}>
+                          {currentPage + 1} / {totalPages}
+                        </Text>
+                        <Button
+                          mode="text"
+                          disabled={currentPage >= totalPages - 1}
+                          onPress={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                        >
+                          {">"}
+                        </Button>
+                      </View>
+                    ) : null
+                  }
+                />
               </View>
+              {/* FIN PAGINADOR */}
+
               {selectedStudentId && (
                 <View style={styles.studentDetail}>
                   {loadingStudent ? (
@@ -392,7 +577,7 @@ export default function PerformanceStatsScreen() {
                             <View style={{ flex: 1, alignItems: "flex-end" }}>
                               <Text style={styles.gradeScore}>Score: {formatNumber(g.average)}</Text>
                               <Text style={{ color: colors.secondary, fontSize: 11 }}>
-                                {formatNumber(g.completionRate)}% completed
+                                {g.completionRate >= 100 ? "Completed" : "Not completed"}
                               </Text>
                             </View>
                           </View>
@@ -433,7 +618,7 @@ export default function PerformanceStatsScreen() {
                       ) : (
                         <ScrollView horizontal contentContainerStyle={{ paddingLeft: 0, paddingRight: 0 }}>
                           <LineChart
-                            data={getChartData(studentStats.performanceTrend)}
+                            data={getStudentChartData(studentStats.performanceTrend)}
                             width={Math.max(screenWidth - 48, 90 * (studentStats.performanceTrend?.length || 1))}
                             height={180}
                             yAxisSuffix=""
@@ -443,8 +628,7 @@ export default function PerformanceStatsScreen() {
                               backgroundGradientFrom: colors.cardBackground,
                               backgroundGradientTo: colors.cardBackground,
                               decimalPlaces: 2,
-                              color: (opacity = 1, idx?: number) =>
-                                idx === 1 ? colors.secondary : colors.primary,
+                              color: (opacity = 1) => colors.primary,
                               labelColor: (opacity = 1) => colors.text,
                               propsForDots: {
                                 r: "5",
@@ -610,9 +794,21 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     marginTop: 1,
   },
+  chartLabelAvgScore: {
+    fontSize: 11,
+    color: colors.primary,
+    marginTop: 1,
+    fontWeight: "bold",
+  },
   studentsList: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  studentsListColumn: {
+    flexDirection: "column",
     gap: 8,
     marginBottom: 8,
     marginTop: 2,
@@ -627,6 +823,18 @@ const styles = StyleSheet.create({
     minWidth: 120,
     height: 38,
     justifyContent: "center",
+  },
+  studentBtnColumn: {
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: colors.inputBackground,
+    borderColor: colors.primary,
+    borderWidth: 1,
+    minHeight: 48,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingLeft: 8,
+    marginRight: 8,
   },
   studentBtnSelected: {
     backgroundColor: colors.primary,
@@ -685,6 +893,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "bold",
     minWidth: 30,
+    textAlign: "right",
+  },
+  gradeCompletion: {
+    fontSize: 11,
+    color: colors.secondary,
+    marginTop: 1,
     textAlign: "right",
   },
   detailSummaryRow: {
