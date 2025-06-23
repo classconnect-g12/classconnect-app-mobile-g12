@@ -71,7 +71,13 @@ export default function NewExamScreen() {
   };
 
   const addQuestion = () => {
-    setQuestions([...questions, { ...defaultQuestion }]);
+    setQuestions([
+      ...questions,
+      {
+        ...defaultQuestion,
+        options: [...defaultQuestion.options],
+      },
+    ]);
     setQuestionImages([...questionImages, null]);
   };
 
@@ -167,6 +173,39 @@ export default function NewExamScreen() {
       (total, question) => total + question.score,
       0
     );
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+
+      if (q.type === "MULTIPLE_CHOICE") {
+        if (!q.options || q.options.length !== 4) {
+          showSnackbar(
+            `Question ${i + 1}: Multiple choice questions must have 4 options`,
+            SNACKBAR_VARIANTS.ERROR
+          );
+          return;
+        }
+
+        const emptyOptionIndex = q.options.findIndex(
+          (opt) => opt.trim() === ""
+        );
+        if (emptyOptionIndex !== -1) {
+          showSnackbar(
+            `Question ${i + 1}: Option ${emptyOptionIndex + 1} is empty`,
+            SNACKBAR_VARIANTS.ERROR
+          );
+          return;
+        }
+
+        if (!q.correctOption || !q.options.includes(q.correctOption)) {
+          showSnackbar(
+            `Question ${i + 1}: Correct option must match one of the choices`,
+            SNACKBAR_VARIANTS.ERROR
+          );
+          return;
+        }
+      }
+    }
 
     if (totalQuestionsScore !== parseInt(maxScore)) {
       showSnackbar(
