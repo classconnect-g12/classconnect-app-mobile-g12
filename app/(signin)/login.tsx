@@ -16,12 +16,13 @@ import ReactNativeBiometrics from "react-native-biometrics";
 import * as SecureStore from "expo-secure-store";
 import { GoogleRegisterPrompt } from "@components/GoogleRegisterPrompt";
 import { useLocalSearchParams } from "expo-router";
-import { useSnackbar } from "@context/SnackbarContext";
 
 export default function SignIn() {
   const login = useLogin();
 
-  const [loadingType, setLoadingType] = useState<null | "email" | "google" | "biometric">(null);
+  const [loadingType, setLoadingType] = useState<
+    null | "email" | "google" | "biometric"
+  >(null);
 
   const params = useLocalSearchParams();
   React.useEffect(() => {
@@ -30,7 +31,6 @@ export default function SignIn() {
       login.setShowVerifyModal(true);
     }
   }, [params]);
-
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -52,22 +52,24 @@ export default function SignIn() {
     setLoadingType("google");
     try {
       await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
       const userInfo: any = await GoogleSignin.signIn();
       const idToken = userInfo.idToken || userInfo.data?.idToken;
-      if (!idToken) throw new Error("Google Sign-In failed: no ID token returned.");
+      if (!idToken)
+        throw new Error("Google Sign-In failed: no ID token returned.");
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const userCredential = await auth().signInWithCredential(
+        googleCredential
+      );
       const firebaseIdToken = await userCredential.user.getIdToken();
 
-      const googleEmail = userCredential.user.email || login.email || userInfo.user?.email;
+      const googleEmail =
+        userCredential.user.email || login.email || userInfo.user?.email;
       await login.handleGoogleLogin(firebaseIdToken, googleEmail);
-
     } catch (error: any) {
-      login.showSnackbar(
-        error?.message || "Google Sign-In failed",
-        "error"
-      );
+      login.showSnackbar(error?.message || "Google Sign-In failed", "error");
     } finally {
       setLoadingType(null);
     }
@@ -82,7 +84,9 @@ export default function SignIn() {
         login.showSnackbar("Biometric authentication not available", "error");
         return;
       }
-      const { success } = await rnBiometrics.simplePrompt({ promptMessage: "Authenticate to sign in" });
+      const { success } = await rnBiometrics.simplePrompt({
+        promptMessage: "Authenticate to sign in",
+      });
       if (!success) {
         login.showSnackbar("Biometric authentication failed", "error");
         return;
@@ -90,19 +94,21 @@ export default function SignIn() {
 
       const email = await SecureStore.getItemAsync("biometric_email");
       const password = await SecureStore.getItemAsync("biometric_password");
-      const firebaseIdToken = await SecureStore.getItemAsync("biometric_firebase_token");
+      const firebaseIdToken = await SecureStore.getItemAsync(
+        "biometric_firebase_token"
+      );
       if (email && password) {
         await login.handleLogin(email, password);
       } else if (email && firebaseIdToken) {
         await login.handleGoogleLogin(firebaseIdToken, email);
       } else {
-        login.showSnackbar("No credentials saved for biometric login. Please sign in manually first.", "error");
+        login.showSnackbar(
+          "No credentials saved for biometric login. Please sign in manually first.",
+          "error"
+        );
       }
     } catch (error: any) {
-      login.showSnackbar(
-        error?.message || "Biometric login failed",
-        "error"
-      );
+      login.showSnackbar(error?.message || "Biometric login failed", "error");
     } finally {
       setLoadingType(null);
     }
@@ -171,7 +177,6 @@ export default function SignIn() {
         showSnackbar={login.showSnackbar}
         onVerified={login.handlePinVerified}
       />
-
     </View>
   );
 }

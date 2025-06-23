@@ -2,9 +2,19 @@ import { useState, useContext } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@context/authContext";
 import { useSnackbar } from "@context/SnackbarContext";
-import { login, loginWithGoogle, registerWithGoogle } from "@services/AuthService";
-import { getAllNotifications, getNotificationPreferences } from "@services/NotificationService";
-import { NotificationContext, defaultPreferences } from "@context/notificationContext";
+import {
+  login,
+  loginWithGoogle,
+  registerWithGoogle,
+} from "@services/AuthService";
+import {
+  getAllNotifications,
+  getNotificationPreferences,
+} from "@services/NotificationService";
+import {
+  NotificationContext,
+  defaultPreferences,
+} from "@context/notificationContext";
 import { PreferencesResponse, NotificationType } from "@src/types/notification";
 import { validateEmail, validatePasswordLength } from "@utils/validators";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
@@ -17,7 +27,9 @@ export function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [activationEmail, setActivationEmail] = useState("");
-  const [pendingLoginType, setPendingLoginType] = useState<LoginType | null>(null);
+  const [pendingLoginType, setPendingLoginType] = useState<LoginType | null>(
+    null
+  );
   const [pendingGoogleToken, setPendingGoogleToken] = useState<string>("");
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [pendingGoogleIdToken, setPendingGoogleIdToken] = useState<string>("");
@@ -41,7 +53,10 @@ export function useLogin() {
       await SecureStore.deleteItemAsync("biometric_firebase_token");
     } else if (firebaseIdToken) {
       await SecureStore.deleteItemAsync("biometric_password");
-      await SecureStore.setItemAsync("biometric_firebase_token", firebaseIdToken);
+      await SecureStore.setItemAsync(
+        "biometric_firebase_token",
+        firebaseIdToken
+      );
     } else {
       await SecureStore.deleteItemAsync("biometric_password");
       await SecureStore.deleteItemAsync("biometric_firebase_token");
@@ -77,10 +92,15 @@ export function useLogin() {
     const usedEmail = customEmail ?? email;
     const usedPassword = customPassword ?? password;
 
-    if (!usedEmail || !validateEmail(usedEmail))
-      return showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
-    if (!usedPassword || !validatePasswordLength(usedPassword))
-      return showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
+    if (!usedEmail || !validateEmail(usedEmail)) {
+      showSnackbar("Invalid email", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
+
+    if (!usedPassword || !validatePasswordLength(usedPassword)) {
+      showSnackbar("Invalid password", SNACKBAR_VARIANTS.ERROR);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -102,7 +122,10 @@ export function useLogin() {
     }
   };
 
-  const handleGoogleLogin = async (firebaseIdToken: string, googleEmail: string) => {
+  const handleGoogleLogin = async (
+    firebaseIdToken: string,
+    googleEmail: string
+  ) => {
     try {
       setIsLoading(true);
       const backendToken = await loginWithGoogle(firebaseIdToken);
@@ -146,11 +169,7 @@ export function useLogin() {
       setPendingGoogleToken(pendingGoogleIdToken);
       setShowVerifyModal(true);
     } catch (error: any) {
-
-      if (
-        error?.title === "Account Not Verified" ||
-        error?.status === 403
-      ) {
+      if (error?.title === "Account Not Verified" || error?.status === 403) {
         setShowUsernameInput(false);
         setGoogleUsername("");
         setActivationEmail(pendingGoogleEmail);
@@ -174,17 +193,26 @@ export function useLogin() {
         await saveCredentials(activationEmail, undefined, pendingGoogleToken);
         await syncUserData();
         router.replace("../home");
-        showSnackbar("Account verified and logged in!", SNACKBAR_VARIANTS.SUCCESS);
+        showSnackbar(
+          "Account verified and logged in!",
+          SNACKBAR_VARIANTS.SUCCESS
+        );
       } else {
         const token = await login(activationEmail, password);
         await authLogin(token);
         await saveCredentials(activationEmail, password);
         await syncUserData();
         router.replace("../home");
-        showSnackbar("Account verified and logged in!", SNACKBAR_VARIANTS.SUCCESS);
+        showSnackbar(
+          "Account verified and logged in!",
+          SNACKBAR_VARIANTS.SUCCESS
+        );
       }
     } catch (error: any) {
-      showSnackbar("Could not log in automatically. Please try manually.", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Could not log in automatically. Please try manually.",
+        SNACKBAR_VARIANTS.ERROR
+      );
       router.replace("/(signin)/login");
     } finally {
       setIsLoading(false);
