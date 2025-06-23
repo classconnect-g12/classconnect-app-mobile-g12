@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { View, ScrollView, Alert, KeyboardAvoidingView, Platform, TouchableOpacity, StyleSheet } from "react-native";
 import { Button, TextInput, Chip, Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { colors } from "@theme/colors";
@@ -8,6 +8,7 @@ import { useForumQuestions } from "@context/ForumQuestionsContext";
 import { useAttachments } from "@hooks/useAttachments";
 import { AttachmentList } from "@components/AttachmentList";
 import { getNameWithExtension } from "@utils/fileUtils";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const MAX_TAGS = 5;
 const MAX_TAG_LENGTH = 15;
@@ -203,7 +204,7 @@ export default function CreateForumQuestion() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={{ fontWeight: "bold", fontSize: 22, color: "black", marginBottom: 20 }}>
+        <Text style={{ fontWeight: "bold", fontSize: 22, color: colors.primary, marginBottom: 20 }}>
           New Question
         </Text>
         <TextInput
@@ -346,7 +347,7 @@ export default function CreateForumQuestion() {
             mode="contained"
             onPress={handleAddNewTag}
             buttonColor={colors.primary}
-            style={{ borderRadius: 8, height: 44, justifyContent: "center", marginTop: 8 }}
+            style={{ borderRadius: 8, height: 44, justifyContent: "center" }}
             labelStyle={{ color: colors.buttonText, fontWeight: "bold" }}
             disabled={tags.length >= MAX_TAGS}
           >
@@ -356,32 +357,19 @@ export default function CreateForumQuestion() {
         {newTagError && (
           <Text style={{ color: colors.error, marginBottom: 8, marginLeft: 4 }}>{newTagError}</Text>
         )}
-        {/* Chips de tags seleccionados */}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 10, gap: 8 }}>
-          {tags.map((tag) => (
-            <Chip
-              key={tag}
-              selected
-              onClose={() => setTags((prev) => prev.filter((t) => t !== tag))}
-              style={{
-                backgroundColor: colors.primary,
-                borderColor: colors.primary,
-                borderWidth: 1,
-                marginRight: 8,
-                marginBottom: 8,
-                alignSelf: "flex-start",
-                minHeight: 36,
-                paddingHorizontal: 12,
-              }}
-              textStyle={{
-                color: colors.buttonText,
-                fontWeight: "bold",
-                fontSize: 15,
-              }}
-              closeIcon="close"
-            >
-              {tag}
-            </Chip>
+        <View style={styles.tagsSelectedContainer}>
+          {tags.map((tag, idx) => (
+            <View key={tag + idx} style={styles.tag}>
+              <Text style={styles.tagText} numberOfLines={1} ellipsizeMode="tail">
+                {tag}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                style={styles.closeBtn}
+              >
+                <MaterialIcons name="close" size={16} color="#fff" />
+              </TouchableOpacity>
+            </View>
           ))}
         </View>
         <Text style={{ marginBottom: 8, fontWeight: "bold", color: colors.primary, fontSize: 16 }}>
@@ -434,7 +422,8 @@ export default function CreateForumQuestion() {
             !!attachmentsError
           }
           style={{
-            borderRadius: 6,
+            borderRadius: 12,
+            paddingVertical: 10,
             marginTop: 10,
           }}
           labelStyle={{ fontWeight: "bold", fontSize: 17, color: colors.buttonText }}
@@ -448,3 +437,40 @@ export default function CreateForumQuestion() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  tagsSelectedContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+    gap: 8,
+    minHeight: 36,
+  },
+  tag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginRight: 8,
+    marginBottom: 8,
+    maxWidth: 180,
+  },
+  tagText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
+    marginRight: 4,
+    flexShrink: 1,
+    maxWidth: 120,
+  },
+  closeBtn: {
+    marginLeft: 2,
+    backgroundColor: colors.secondary,
+    borderRadius: 10,
+    padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
