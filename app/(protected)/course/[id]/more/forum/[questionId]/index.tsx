@@ -31,6 +31,7 @@ import {
   deleteForumQuestion,
   deleteForumAnswer,
   ForumAttachment,
+  fetchForumQuestionFull
 } from "@services/ForumService";
 import { useForumQuestions } from "@context/ForumQuestionsContext";
 import { useCourse } from "@context/CourseContext";
@@ -106,7 +107,7 @@ export default function ForumQuestionDetailScreen() {
     id: string;
     questionId: string;
   }>();
-  const { questions, setQuestions } = useForumQuestions();
+  const { setQuestions } = useForumQuestions();
   const [answers, setAnswers] = useState<ForumAnswerWithProfile[]>([]);
   const [loadingAnswers, setLoadingAnswers] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -137,9 +138,28 @@ export default function ForumQuestionDetailScreen() {
 
   const [showAnswerInput, setShowAnswerInput] = useState(false);
 
-  const question: ForumQuestionWithProfile | undefined = questions?.find(
-    (q) => String(q.id) === String(questionId)
-  );
+  const [question, setQuestion] = useState<ForumQuestionWithProfile | null>(null);
+  const [loadingQuestion, setLoadingQuestion] = useState(true);
+
+  const loadQuestion = async () => {
+    setLoadingQuestion(true);
+    try {
+      const data = await fetchForumQuestionFull(String(questionId));
+      setQuestion(data);
+      setQuestions((prev) =>
+        prev.map((q) => (String(q.id) === String(questionId) ? data : q))
+      );
+    } catch {
+      setQuestion(null);
+    } finally {
+      setLoadingQuestion(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQuestion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId]);
 
   useEffect(() => {
     setQuestionVote(question?.userVote ?? null);
@@ -226,9 +246,18 @@ export default function ForumQuestionDetailScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    await loadQuestion();
     await fetchAnswersHandler({ reset: true, pageToFetch: 0 });
     setRefreshing(false);
   };
+
+  if (loadingQuestion) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   if (!question) {
     return (
@@ -454,6 +483,7 @@ export default function ForumQuestionDetailScreen() {
       Keyboard.dismiss();
       setShowAnswerInput(false);
       Alert.alert("Success", "Answer posted!");
+      await loadQuestion();
     } catch (e: any) {
       Alert.alert("Error", e?.message || "Could not post answer");
     } finally {
@@ -463,9 +493,24 @@ export default function ForumQuestionDetailScreen() {
 
   const handleUpvoteQuestion = async () => {
     setQuestionVote((prev) => (prev === 1 ? null : 1));
+    setQuestion((prev) =>
+      prev
+        ? {
+            ...prev,
+            upvotes:
+              questionVote === 1
+                ? prev.upvotes - 1
+                : questionVote === -1
+                ? prev.upvotes + 1
+                : prev.upvotes + 1,
+            downvotes: questionVote === -1 ? prev.downvotes - 1 : prev.downvotes,
+            userVote: questionVote === 1 ? null : 1,
+          }
+        : prev
+    );
     setQuestions((prev) =>
       prev.map((q) =>
-        q.id === question.id
+        q.id === question?.id
           ? {
               ...q,
               upvotes:
@@ -481,15 +526,30 @@ export default function ForumQuestionDetailScreen() {
       )
     );
     try {
-      await upvoteForumQuestion(question.id);
+      await upvoteForumQuestion(question!.id);
     } catch (e) {}
   };
 
   const handleDownvoteQuestion = async () => {
     setQuestionVote((prev) => (prev === -1 ? null : -1));
+    setQuestion((prev) =>
+      prev
+        ? {
+            ...prev,
+            downvotes:
+              questionVote === -1
+                ? prev.downvotes - 1
+                : questionVote === 1
+                ? prev.downvotes + 1
+                : prev.downvotes + 1,
+            upvotes: questionVote === 1 ? prev.upvotes - 1 : prev.upvotes,
+            userVote: questionVote === -1 ? null : -1,
+          }
+        : prev
+    );
     setQuestions((prev) =>
       prev.map((q) =>
-        q.id === question.id
+        q.id === question?.id
           ? {
               ...q,
               downvotes:
@@ -505,7 +565,7 @@ export default function ForumQuestionDetailScreen() {
       )
     );
     try {
-      await downvoteForumQuestion(question.id);
+      await downvoteForumQuestion(question!.id);
     } catch (e) {}
   };
 
@@ -581,6 +641,7 @@ export default function ForumQuestionDetailScreen() {
                 )
               );
               Alert.alert("Success", "Answer marked as accepted!");
+              await loadQuestion();
             } catch (e) {
               Alert.alert("Error", "Could not accept answer");
             }
