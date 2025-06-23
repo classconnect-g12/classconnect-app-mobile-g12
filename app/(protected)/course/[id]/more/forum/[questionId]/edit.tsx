@@ -3,7 +3,7 @@ import { View, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-n
 import { Text, TextInput, Button } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useForumQuestions } from "@context/ForumQuestionsContext";
-import { editForumQuestion } from "@services/ForumService";
+import { editForumQuestion, fetchForumQuestionFull } from "@services/ForumService";
 import { colors } from "@theme/colors";
 import { useAttachments } from "@hooks/useAttachments";
 import { AttachmentList } from "@components/AttachmentList";
@@ -101,22 +101,13 @@ export default function EditForumQuestionScreen() {
 
       await editForumQuestion(String(questionId), formData);
 
+      const updated = await fetchForumQuestionFull(String(questionId));
       setQuestions((prev) =>
         prev.map((q) =>
-          q.id === question.id
-            ? {
-                ...q,
-                title,
-                description,
-                isEdited: true,
-                attachments: attachments.map((a) => ({
-                  url: a.uri,
-                  mimeType: a.mimeType ?? "",
-                })),
-              }
-            : q
+          q.id === question.id ? updated : q
         )
       );
+
       Alert.alert("Success", "Question updated!");
       router.back();
     } catch (e: any) {
