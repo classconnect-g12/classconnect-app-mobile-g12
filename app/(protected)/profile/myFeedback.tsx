@@ -10,11 +10,14 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import { feedbackStyles } from "@styles/myFeedbackStyles";
 import Spinner from "@components/Spinner";
+import { Picker } from "@react-native-picker/picker";
+import { Switch } from "react-native";
 
 export default function MyFeedbackScreen() {
   const { showSnackbar } = useSnackbar();
   const { logout } = useAuth();
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [iaSummary, setIaSummary] = useState<null | {
     summary: string;
@@ -23,11 +26,15 @@ export default function MyFeedbackScreen() {
   }>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
 
+  const [selectedCourse, setSelectedCourse] = useState<string>("All");
+  const [sortByDate, setSortByDate] = useState<boolean>(false);
+
   useEffect(() => {
     async function fetchFeedbacks() {
       try {
         const feedbackData = await getStudentFeedbacks({ page: 0, size: 10 });
         setFeedbacks(feedbackData.feedbacks);
+        setFilteredFeedbacks(feedbackData.feedbacks);
       } catch (error) {
         handleApiError(error, showSnackbar, "Error fetching feedbacks", logout);
       } finally {
@@ -37,6 +44,23 @@ export default function MyFeedbackScreen() {
 
     fetchFeedbacks();
   }, []);
+
+  useEffect(() => {
+    let filtered = [...feedbacks];
+
+    if (selectedCourse !== "All") {
+      filtered = filtered.filter((f) => f.courseName === selectedCourse);
+    }
+
+    if (sortByDate) {
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+
+    setFilteredFeedbacks(filtered);
+  }, [selectedCourse, sortByDate, feedbacks]);
 
   const handleGenerateSummary = async () => {
     setLoadingSummary(true);
@@ -50,11 +74,12 @@ export default function MyFeedbackScreen() {
     }
   };
 
-  if (loading) {
-    return (
-        <Spinner />
-    );
-  }
+  const uniqueCourses = [
+    "All",
+    ...new Set(feedbacks.map((fb) => fb.courseName)),
+  ];
+
+  if (loading) return <Spinner />;
 
   return (
     <View style={feedbackStyles.container}>
@@ -94,16 +119,38 @@ export default function MyFeedbackScreen() {
           </Card>
         )}
 
+        <Text style={[feedbackStyles.sectionFilter, { marginTop: 24 }]}>
+          Filter Feedbacks
+        </Text>
+
+        <View style={feedbackStyles.filterRow}>
+          <Text style={feedbackStyles.filterLabel}>Course:</Text>
+          <Picker
+            selectedValue={selectedCourse}
+            onValueChange={(value) => setSelectedCourse(value)}
+            style={feedbackStyles.picker}
+          >
+            {uniqueCourses.map((course, idx) => (
+              <Picker.Item label={course} value={course} key={idx} />
+            ))}
+          </Picker>
+        </View>
+
+        <View style={feedbackStyles.filterRow}>
+          <Text style={feedbackStyles.filterLabel}>Sort by date:</Text>
+          <Switch value={sortByDate} onValueChange={setSortByDate} />
+        </View>
+
         <Text style={[feedbackStyles.sectionTitle, { marginTop: 24 }]}>
           Your Feedbacks
         </Text>
 
-        {feedbacks.length === 0 ? (
+        {filteredFeedbacks.length === 0 ? (
           <Text style={feedbackStyles.emptyMessage}>
-            You don't have any feedbacks yet.
+            No feedbacks found for selected filters.
           </Text>
         ) : (
-          feedbacks.map((fb) => (
+          filteredFeedbacks.map((fb) => (
             <Card key={fb.id} style={feedbackStyles.card}>
               <Card.Content>
                 <Text style={feedbackStyles.courseName}>{fb.courseName}</Text>
@@ -114,13 +161,7 @@ export default function MyFeedbackScreen() {
                     {"☆".repeat(5 - fb.rating)}
                   </Text>
                 </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
+                <View style={feedbackStyles.feedbackFooter}>
                   <Text style={feedbackStyles.author}>
                     Author: {fb.authorProfile?.user_name || "Anonymous"}
                   </Text>

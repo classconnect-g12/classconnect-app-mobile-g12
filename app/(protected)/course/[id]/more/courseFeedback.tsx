@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Switch, StyleSheet } from "react-native";
 import { Text, Card, Button } from "react-native-paper";
 import {
   getCourseFeedbacks,
@@ -10,6 +10,7 @@ import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
 import { feedbackStyles } from "@styles/myFeedbackStyles";
 import { useCourse } from "@context/CourseContext";
+import { Picker } from "@react-native-picker/picker";
 import Spinner from "@components/Spinner";
 
 export default function CourseFeedbackScreen() {
@@ -18,6 +19,7 @@ export default function CourseFeedbackScreen() {
   const { logout } = useAuth();
 
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [iaSummary, setIaSummary] = useState<null | {
     summary: string;
@@ -25,6 +27,9 @@ export default function CourseFeedbackScreen() {
     totalFeedbacks: number;
   }>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+
+  const [sortByDate, setSortByDate] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<number>(0);
 
   useEffect(() => {
     async function fetchFeedbacks() {
@@ -38,6 +43,7 @@ export default function CourseFeedbackScreen() {
           size: 10,
         });
         setFeedbacks(response.feedbacks);
+        setFilteredFeedbacks(response.feedbacks);
       } catch (error) {
         handleApiError(
           error,
@@ -53,6 +59,23 @@ export default function CourseFeedbackScreen() {
     fetchFeedbacks();
   }, [courseId]);
 
+  useEffect(() => {
+    let filtered = [...feedbacks];
+
+    if (selectedRating > 0) {
+      filtered = filtered.filter((fb) => fb.rating === selectedRating);
+    }
+
+    if (sortByDate) {
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+
+    setFilteredFeedbacks(filtered);
+  }, [feedbacks, sortByDate, selectedRating]);
+
   const handleGenerateSummary = async () => {
     if (!courseId) return;
     setLoadingSummary(true);
@@ -67,9 +90,7 @@ export default function CourseFeedbackScreen() {
   };
 
   if (loading) {
-    return (
-        <Spinner />
-    );
+    return <Spinner />;
   }
 
   return (
@@ -110,16 +131,40 @@ export default function CourseFeedbackScreen() {
           </Card>
         )}
 
+        <Text style={[feedbackStyles.sectionFilter, { marginTop: 24 }]}>
+          Filter Feedbacks
+        </Text>
+        <View style={feedbackStyles.filterRow}>
+          <Text style={feedbackStyles.filterLabel}>Rating:</Text>
+          <Picker
+            selectedValue={selectedRating}
+            onValueChange={(value) => setSelectedRating(value)}
+            style={feedbackStyles.picker}
+          >
+            <Picker.Item label="All" value={0} />
+            <Picker.Item label="⭐ (1)" value={1} />
+            <Picker.Item label="⭐⭐ (2)" value={2} />
+            <Picker.Item label="⭐⭐⭐ (3)" value={3} />
+            <Picker.Item label="⭐⭐⭐⭐ (4)" value={4} />
+            <Picker.Item label="⭐⭐⭐⭐⭐ (5)" value={5} />
+          </Picker>
+        </View>
+
+        <View style={feedbackStyles.filterRow}>
+          <Text style={feedbackStyles.filterLabel}>Sort by date:</Text>
+          <Switch value={sortByDate} onValueChange={setSortByDate} />
+        </View>
+
         <Text style={[feedbackStyles.sectionTitle, { marginTop: 24 }]}>
           Course Feedbacks
         </Text>
 
-        {feedbacks.length === 0 ? (
+        {filteredFeedbacks.length === 0 ? (
           <Text style={feedbackStyles.emptyMessage}>
-            No feedbacks available for this course.
+            No feedbacks match the selected filters.
           </Text>
         ) : (
-          feedbacks.map((fb) => (
+          filteredFeedbacks.map((fb) => (
             <Card key={fb.id} style={feedbackStyles.card}>
               <Card.Content>
                 <Text style={feedbackStyles.comment}>{fb.comment}</Text>
