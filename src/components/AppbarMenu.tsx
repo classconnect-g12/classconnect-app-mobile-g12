@@ -151,7 +151,7 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
             borderColor: "gray",
           }}
         >
-          <View style={{borderBottomWidth: 1, borderColor: "gray"}}>
+          <View style={{ borderBottomWidth: 1, borderColor: "gray" }}>
             <Text style={appbarMenuStyles.titleAccount}>User space</Text>
           </View>
 
@@ -184,6 +184,17 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
             }}
             title="Courses"
             leadingIcon="book-open-page-variant"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/chat/myChats");
+            }}
+            title="Chat assistant"
+            leadingIcon="robot-outline"
             titleStyle={{ fontWeight: "bold" }}
             contentStyle={{ borderColor: "gray" }}
           />
