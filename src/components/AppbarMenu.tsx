@@ -169,10 +169,10 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
-              router.push("/profile/myFeedback");
+              router.push("/course/myCourses");
             }}
-            title="Feedback"
-            leadingIcon="comment-outline"
+            title="Courses"
+            leadingIcon="book-open-page-variant"
             titleStyle={{ fontWeight: "bold" }}
             contentStyle={{ borderColor: "gray" }}
           />
@@ -180,10 +180,10 @@ const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
           <Menu.Item
             onPress={() => {
               setMenuVisible(false);
-              router.push("/course/myCourses");
+              router.push("/profile/myFeedback");
             }}
-            title="Courses"
-            leadingIcon="book-open-page-variant"
+            title="Feedback"
+            leadingIcon="comment-outline"
             titleStyle={{ fontWeight: "bold" }}
             contentStyle={{ borderColor: "gray" }}
           />

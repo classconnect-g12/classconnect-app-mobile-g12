@@ -48,7 +48,7 @@ export default function ChatListScreen() {
   };
 
   useEffect(() => {
-    //fetchChats();
+    fetchChats();
   }, []);
 
   const handleCreateChat = async () => {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
 
   cancelButton: {
-    backgroundColor: "#E94E4E",
+    backgroundColor: "white",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
 
   cancelButtonText: {
-    color: "white",
+    color: "black",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",

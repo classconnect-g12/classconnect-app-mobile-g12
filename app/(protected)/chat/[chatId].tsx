@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import {
   getMessagesByChatId,
@@ -18,6 +19,7 @@ import {
 } from "@services/ChatService";
 import { useLocalSearchParams } from "expo-router";
 import { colors } from "@theme/colors";
+import Markdown from "react-native-markdown-display";
 
 type Message = {
   id: string;
@@ -29,11 +31,19 @@ type Message = {
 
 export default function ChatDetailScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [messageRatings, setMessageRatings] = useState<{
+    [messageId: string]: "like" | "dislike";
+  }>({});
 
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const scrollToBottom = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
 
   const fetchAllMessages = async () => {
     if (!chatId) return;
@@ -59,26 +69,34 @@ export default function ChatDetailScreen() {
   };
 
   useEffect(() => {
-    fetchAllMessages();
+    fetchAllMessages().then(() => {
+      setTimeout(scrollToBottom, 1000);
+    });
   }, [chatId]);
 
   const handleLike = (messageId: string) => {
     calificateMessage(chatId, messageId, true);
-    console.log("Liked message", messageId);
+    setMessageRatings((prev) => ({ ...prev, [messageId]: "like" }));
   };
 
   const handleDislike = (messageId: string) => {
     calificateMessage(chatId, messageId, false);
-    console.log("Disliked message", messageId);
+    setMessageRatings((prev) => ({ ...prev, [messageId]: "dislike" }));
   };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !chatId) return;
 
-    const response = await createMessage(chatId, newMessage);
-    await askIa(chatId, response.data.id);
-    setNewMessage("");
-    fetchAllMessages();
+    setSending(true);
+    try {
+      const response = await createMessage(chatId, newMessage);
+      await askIa(chatId, response.data.id);
+      setNewMessage("");
+      await fetchAllMessages();
+      scrollToBottom();
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -89,6 +107,8 @@ export default function ChatDetailScreen() {
     >
       <View style={styles.container}>
         <ScrollView
+          ref={scrollViewRef}
+          onContentSizeChange={scrollToBottom}
           contentContainerStyle={{
             paddingBottom: 80,
             paddingHorizontal: 20,
@@ -106,7 +126,9 @@ export default function ChatDetailScreen() {
                   item.user_id === 0 ? styles.messageAI : styles.messageUser,
                 ]}
               >
-                <Text style={styles.content}>{item.content}</Text>
+                <Markdown style={{ body: styles.content }}>
+                  {item.content}
+                </Markdown>
                 <Text style={styles.timestamp}>
                   {new Date(item.created_at).toLocaleTimeString()}
                 </Text>
@@ -117,18 +139,55 @@ export default function ChatDetailScreen() {
                       ¿Qué te pareció la respuesta?
                     </Text>
                     <View style={styles.feedbackButtons}>
-                      <TouchableOpacity
-                        onPress={() => handleLike(item.id)}
-                        style={styles.iconButton}
-                      >
-                        <Text style={styles.iconText}>👍</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => handleDislike(item.id)}
-                        style={styles.iconButton}
-                      >
-                        <Text style={styles.iconText}>👎</Text>
-                      </TouchableOpacity>
+                      {messageRatings[item.id] !== "dislike" && (
+                        <TouchableOpacity
+                          onPress={() => handleLike(item.id)}
+                          disabled={!!messageRatings[item.id]}
+                          style={[
+                            styles.iconButton,
+                            messageRatings[item.id] === "like" &&
+                              styles.activeIconButton,
+                            messageRatings[item.id] && styles.disabledButton,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.iconText,
+                              messageRatings[item.id] === "like" &&
+                                styles.activeIconText,
+                              messageRatings[item.id] &&
+                                styles.disabledIconText,
+                            ]}
+                          >
+                            👍
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {messageRatings[item.id] !== "like" && (
+                        <TouchableOpacity
+                          onPress={() => handleDislike(item.id)}
+                          disabled={!!messageRatings[item.id]}
+                          style={[
+                            styles.iconButton,
+                            messageRatings[item.id] === "dislike" &&
+                              styles.activeIconButton,
+                            messageRatings[item.id] && styles.disabledButton,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.iconText,
+                              messageRatings[item.id] === "dislike" &&
+                                styles.activeIconText,
+                              messageRatings[item.id] &&
+                                styles.disabledIconText,
+                            ]}
+                          >
+                            👎
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                 )}
@@ -142,12 +201,21 @@ export default function ChatDetailScreen() {
             onChangeText={setNewMessage}
             placeholder="Type a message"
             style={styles.input}
+            editable={!sending}
           />
-          <Button
-            color={colors.primary}
-            title="Send"
-            onPress={handleSendMessage}
-          />
+          {sending ? (
+            <ActivityIndicator
+              color={colors.primary}
+              style={{ marginLeft: 10 }}
+            />
+          ) : (
+            <Button
+              color={colors.primary}
+              title="Send"
+              onPress={handleSendMessage}
+              disabled={sending}
+            />
+          )}
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -180,7 +248,7 @@ const styles = StyleSheet.create({
   },
   content: {
     color: "white",
-    fontSize: 20,
+    fontSize: 16,
   },
   inputContainer: {
     position: "absolute",
@@ -223,5 +291,20 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     marginBottom: 4,
+  },
+  activeIconButton: {
+    backgroundColor: colors.primary,
+  },
+
+  activeIconText: {
+    color: colors.secondary,
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    opacity: 1,
+  },
+
+  disabledIconText: {
+    opacity: 1,
   },
 });
