@@ -84,6 +84,7 @@ export type ForumAnswerListResponse = {
 };
 
 
+
 // --- Services ---
 
 export async function fetchForumQuestions(
@@ -213,4 +214,11 @@ export async function editForumAnswer(
       "Content-Type": "multipart/form-data",
     },
   });
+}
+
+export async function fetchForumQuestionFull(questionId: string): Promise<ForumQuestionWithProfile> {
+  const response = await privateClient.get<ForumQuestionWithProfile>(
+    `/forums/questions/${questionId}/full`
+  );
+  return response.data;
 }
