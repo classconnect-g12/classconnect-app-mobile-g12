@@ -3,17 +3,17 @@ import {
   Text,
   Modal,
   TextInput,
-  Button,
   FlatList,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { moduleDetailStyle } from "@styles/moduleDetailStyle";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useCourse } from "@context/CourseContext";
-import { AnimatedFAB, RadioButton } from "react-native-paper";
+import { AnimatedFAB, Button } from "react-native-paper";
 import { colors } from "@theme/colors";
 import * as DocumentPicker from "expo-document-picker";
 import * as WebBrowser from "expo-web-browser";
@@ -29,19 +29,14 @@ import {
   Module,
 } from "@services/ModuleService";
 import { handleApiError } from "@utils/handleApiError";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { useAuth } from "@context/authContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useModule } from "@context/ModuleContext";
 
 export default function ModulePage() {
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
   const { id, moduleId } = useLocalSearchParams<{
     id: string;
     moduleId: string;
@@ -50,6 +45,7 @@ export default function ModulePage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [formData, setFormData] = useState({
     title: "",
+    instruction: "",
     order: "1",
     file: null as DocumentPicker.DocumentPickerResult | null,
   });
@@ -71,7 +67,9 @@ export default function ModulePage() {
   const [isSavingModule, setIsSavingModule] = useState(false);
 
   const isTeacher = useCourse().isTeacher;
-
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
+  const moduleTitle = useModule().moduleTitle;
   const { logout } = useAuth();
 
   useEffect(() => {
@@ -82,18 +80,13 @@ export default function ModulePage() {
     try {
       const fetchedResources = await fetchResources(id, moduleId);
       setResources(fetchedResources);
-
-      if (fetchedResources.length === 0) {
-        showSnackbar("No resources available", SNACKBAR_VARIANTS.INFO);
-      }
     } catch (error) {
-      handleApiError(error, showSnackbar, "Error fetching resources", logout);
+      setResources([]);
+      console.error("Error fetching resources:", error);
     }
   };
 
-  useEffect(() => {
-    loadResources();
-  }, [id, moduleId]);
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   // Manejar la selección de archivo
   const pickFile = async () => {
@@ -111,7 +104,12 @@ export default function ModulePage() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.order || !formData.file) {
+    if (
+      !formData.title ||
+      !formData.order ||
+      !formData.file ||
+      !formData.instruction
+    ) {
       showSnackbar("Complete all the required fields", SNACKBAR_VARIANTS.ERROR);
       return;
     }
@@ -131,6 +129,7 @@ export default function ModulePage() {
         id,
         moduleId,
         formData.title,
+        formData.instruction,
         formData.order,
         formData.file
       );
@@ -144,6 +143,7 @@ export default function ModulePage() {
       setModalVisible(false);
       setFormData({
         title: "",
+        instruction: "",
         order: "1",
         file: null,
       });
@@ -213,7 +213,6 @@ export default function ModulePage() {
             showSnackbar("Failed to open document", SNACKBAR_VARIANTS.ERROR);
           }
           break;
-
         case "AUDIO":
           try {
             if (sound) {
@@ -235,41 +234,65 @@ export default function ModulePage() {
       }
     };
 
+    const getIconName = () => {
+      switch (item.resourceType) {
+        case "IMAGE":
+          return "image";
+        case "VIDEO":
+          return "video";
+        case "DOCUMENT":
+          return "file-document";
+        case "AUDIO":
+          return "music";
+        default:
+          return "file";
+      }
+    };
+
     return (
-      <TouchableOpacity
-        style={moduleDetailStyle.resourceItem}
-        onPress={handlePress}
-      >
-        <View style={moduleDetailStyle.resourceHeader}>
-          <Text style={moduleDetailStyle.resourceTitle}>
-            {item.order}. {item.title}
-          </Text>
+      <TouchableOpacity onPress={handlePress} style={moduleDetailStyle.card}>
+        <View style={moduleDetailStyle.header}>
+          <View style={moduleDetailStyle.iconWrapper}>
+            <MaterialCommunityIcons
+              name={getIconName()}
+              size={18}
+              color="#fff"
+            />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={moduleDetailStyle.title}>{item.title}</Text>
+            <Text style={moduleDetailStyle.typeText}>{item.resourceType}</Text>
+          </View>
         </View>
-        <Text style={moduleDetailStyle.resourceType}>{item.resourceType}</Text>
+        <Text style={{ textDecorationLine: "underline", fontSize: 16 }}>
+          Instructions:
+        </Text>
+        {item.instruction ? (
+          <Text style={moduleDetailStyle.instruction}>{item.instruction}</Text>
+        ) : null}
 
         {item.resourceType === "IMAGE" && (
           <Image
             source={{ uri: item.url }}
-            style={{
-              width: "100%",
-              height: 200,
-              marginTop: 10,
-              borderRadius: 8,
-            }}
+            style={moduleDetailStyle.image}
             resizeMode={ResizeMode.CONTAIN}
           />
         )}
 
         {item.resourceType === "AUDIO" &&
           playingAudio === item.resourceId.toString() && (
-            <Text>Playing audio...</Text>
+            <Text style={moduleDetailStyle.audioText}>Playing audio...</Text>
           )}
+
+        <Text style={moduleDetailStyle.footer}>{item.order}</Text>
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={viewModulesStyles.container}>
+      <Text style={viewModulesStyles.heading}>{moduleTitle}</Text>
+
       {/* Lista de recursos */}
       {resources.length > 0 ? (
         <FlatList
@@ -294,15 +317,25 @@ export default function ModulePage() {
         <View style={moduleDetailStyle.modalContainer}>
           <View style={moduleDetailStyle.modalContent}>
             <Text style={moduleDetailStyle.modalTitle}>
-              Create new resource
+              Create a new resource
             </Text>
 
             {/* Campo: Título */}
             <TextInput
               style={moduleDetailStyle.input}
-              placeholder="Resource Title"
+              placeholder="Title"
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
+            />
+
+            {/* Campo: Instruction */}
+            <TextInput
+              style={moduleDetailStyle.input}
+              placeholder="Instructions"
+              value={formData.instruction}
+              onChangeText={(text) =>
+                setFormData({ ...formData, instruction: text })
+              }
             />
 
             {/* Campo: Orden */}
@@ -315,19 +348,30 @@ export default function ModulePage() {
             />
 
             {/* Campo: Archivo */}
-            <Button title="Select File" onPress={pickFile} />
+            <Button
+              style={moduleDetailStyle.buttons}
+              labelStyle={{ fontWeight: "bold", color: "white" }}
+              onPress={pickFile}
+            >
+              Select File
+            </Button>
             {formData.file &&
               "canceled" in formData.file &&
               !formData.file.canceled && (
-                <Text>Selected file: {formData.file.assets[0].name}</Text>
+                <Text style={{ marginBottom: 10, marginTop: 10 }}>
+                  Selected file: {formData.file.assets[0].name}
+                </Text>
               )}
 
             <View style={moduleDetailStyle.modalButtons}>
               <Button
-                title="Cancel"
+                style={moduleDetailStyle.buttons}
+                labelStyle={{ fontWeight: "bold", color: "white" }}
                 onPress={() => setModalVisible(false)}
                 disabled={isSubmitting}
-              />
+              >
+                Cancel
+              </Button>
               {isSubmitting ? (
                 <ActivityIndicator
                   size="small"
@@ -335,64 +379,70 @@ export default function ModulePage() {
                   style={{ marginTop: 10 }}
                 />
               ) : (
-                <Button title="Create" onPress={handleSubmit} />
+                <Button
+                  style={moduleDetailStyle.buttons}
+                  labelStyle={{ fontWeight: "bold", color: "white" }}
+                  onPress={handleSubmit}
+                >
+                  Create
+                </Button>
               )}
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Botones FAB visibles solo para docentes */}
-      {isTeacher && (
+      {/* Botones FAB visibles solo si tiene permisos */}
+      {(isTeacher ||
+        hasPermission("CREATE_RESOURCE") ||
+        hasPermission("EDIT_MODULE")) && (
         <>
-          <AnimatedFAB
-            icon="plus"
-            label=""
-            extended={false}
-            onPress={() => setModalVisible(true)}
-            style={viewModulesStyles.fab}
-            visible
-            animateFrom="right"
-            color={colors.buttonText}
-          />
+          {hasPermission("CREATE_RESOURCE") && (
+            <AnimatedFAB
+              icon="plus"
+              label=""
+              extended={false}
+              onPress={() => setModalVisible(true)}
+              style={viewModulesStyles.fab}
+              visible
+              animateFrom="right"
+              color={colors.buttonText}
+            />
+          )}
 
-          <AnimatedFAB
-            icon="pencil"
-            label=""
-            extended={false}
-            onPress={async () => {
-              try {
-                const module = await fetchModuleById(id, moduleId);
-                setModuleData(module);
-                const initialEditedResources = resources.map((res) => ({
-                  ID: res.resourceId,
-                  order: res.order,
-                }));
-                setEditedResources(initialEditedResources);
-                setEditModalVisible(true);
-              } catch (e) {
-                handleApiError(
-                  e,
-                  showSnackbar,
-                  "Error loading module info",
-                  logout
-                );
-              }
-            }}
-            style={[viewModulesStyles.fab, { right: 80 }]}
-            visible
-            animateFrom="right"
-            color={colors.buttonText}
-          />
+          {(hasPermission("EDIT_MODULE") && hasPermission("EDIT_RESOURCE")) && (
+            <AnimatedFAB
+              icon="pencil"
+              label=""
+              extended={false}
+              onPress={async () => {
+                try {
+                  const module = await fetchModuleById(id, moduleId);
+                  setModuleData(module);
+                  const initialEditedResources = resources.map((res) => ({
+                    ID: res.resourceId,
+                    order: res.order,
+                  }));
+                  setEditedResources(initialEditedResources);
+                  setEditModalVisible(true);
+                } catch (e) {
+                  handleApiError(
+                    e,
+                    showSnackbar,
+                    "Error loading module info",
+                    logout
+                  );
+                }
+              }}
+              style={[viewModulesStyles.fab, { right: 80 }]}
+              visible
+              animateFrom="right"
+              color={colors.buttonText}
+            />
+          )}
         </>
       )}
 
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
       {/* Modal de imagen */}
       <Modal
         visible={!!selectedImage}
@@ -440,7 +490,6 @@ export default function ModulePage() {
           </TouchableOpacity>
         </View>
       </Modal>
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -449,7 +498,7 @@ export default function ModulePage() {
       >
         <View style={moduleDetailStyle.modalContainer}>
           <View style={moduleDetailStyle.modalContent}>
-            <Text style={moduleDetailStyle.modalTitle}>Edit Module</Text>
+            <Text style={moduleDetailStyle.modalTitle}>Edit module</Text>
 
             {moduleData && (
               <>
@@ -488,38 +537,57 @@ export default function ModulePage() {
                 />
 
                 {/* Orden de recursos */}
-                <Text style={{ marginTop: 10 }}>Edit Resources Order</Text>
-                {editedResources.map((res, index) => (
-                  <View
-                    key={res.ID}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    <Text style={{ flex: 1 }}>
-                      {resources.find((r) => r.resourceId === res.ID)?.title}
-                    </Text>
-                    <TextInput
-                      style={[moduleDetailStyle.input, { width: 60 }]}
-                      keyboardType="numeric"
-                      value={res.order.toString()}
-                      onChangeText={(text) => {
-                        const updated = [...editedResources];
-                        updated[index].order = parseInt(text, 10) || 0;
-                        setEditedResources(updated);
-                      }}
-                    />
-                  </View>
-                ))}
+                <Text style={{ marginTop: 10, marginBottom: 10, fontSize: 16 }}>
+                  Edit resources order
+                </Text>
+
+                <View style={moduleDetailStyle.resourceOrderContainer}>
+                  <ScrollView>
+                    {editedResources.map((res, index) => (
+                      <View
+                        key={res.ID}
+                        style={{
+                          borderColor: "gray",
+                          borderBottomWidth: 1,
+                          paddingLeft: 8,
+                          paddingRight: 8,
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          alignItems: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Text style={{ flex: 1 }}>
+                          {
+                            resources.find((r) => r.resourceId === res.ID)
+                              ?.title
+                          }
+                        </Text>
+                        <TextInput
+                          style={[moduleDetailStyle.input, { width: 40 }]}
+                          keyboardType="numeric"
+                          value={res.order.toString()}
+                          onChangeText={(text) => {
+                            const updated = [...editedResources];
+                            updated[index].order = parseInt(text, 10) || 0;
+                            setEditedResources(updated);
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+
                 <View style={moduleDetailStyle.modalButtons}>
                   <Button
-                    title="Cancel"
+                    style={moduleDetailStyle.buttons}
+                    labelStyle={{ fontWeight: "bold", color: "white" }}
                     onPress={() => setEditModalVisible(false)}
                     disabled={isSavingModule}
-                  />
+                  >
+                    Cancel
+                  </Button>
                   {isSavingModule ? (
                     <ActivityIndicator
                       size="small"
@@ -527,7 +595,13 @@ export default function ModulePage() {
                       style={{ marginTop: 10 }}
                     />
                   ) : (
-                    <Button title="Save" onPress={handleEditSubmit} />
+                    <Button
+                      style={moduleDetailStyle.buttons}
+                      labelStyle={{ fontWeight: "bold", color: "white" }}
+                      onPress={handleEditSubmit}
+                    >
+                      Save
+                    </Button>
                   )}
                 </View>
               </>

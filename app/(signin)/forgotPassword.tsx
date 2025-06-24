@@ -1,32 +1,26 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TextInput } from "react-native-paper";
-
 import { forgotPasswordStyles as styles } from "@styles/forgotPasswordStyles";
 import { colors } from "@theme/colors";
 import { validateEmail } from "@utils/validators";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
-import { resetPassword, resetPasswordWithCode } from "@services/AuthService"; 
+import { resetPassword, resetPasswordWithCode } from "@services/AuthService";
 import { useRouter } from "expo-router";
 import { handleApiError } from "@utils/handleApiError";
+import { useAuth } from "@context/authContext";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [step, setStep] = useState("email"); 
+  const [step, setStep] = useState("email");
   const router = useRouter();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
+  const { logout } = useAuth();
 
   const handleSubmitEmail = async () => {
     if (!email) {
@@ -34,7 +28,10 @@ export default function ForgotPassword() {
       return;
     }
     if (!validateEmail(email)) {
-      showSnackbar("Please enter a valid email address", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Please enter a valid email address",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
 
@@ -43,7 +40,7 @@ export default function ForgotPassword() {
       showSnackbar(message, SNACKBAR_VARIANTS.INFO);
       setStep("code");
     } catch (error: any) {
-      handleApiError(error, showSnackbar, "Error resetting password");
+      handleApiError(error, showSnackbar, "Error resetting password", logout);
     }
   };
 
@@ -53,7 +50,10 @@ export default function ForgotPassword() {
       return;
     }
     if (!newPassword || !confirmPassword) {
-      showSnackbar("Please enter and confirm your new password", SNACKBAR_VARIANTS.ERROR);
+      showSnackbar(
+        "Please enter and confirm your new password",
+        SNACKBAR_VARIANTS.ERROR
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -62,11 +62,15 @@ export default function ForgotPassword() {
     }
 
     try {
-      const message = await resetPasswordWithCode(email, resetCode, newPassword);
+      const message = await resetPasswordWithCode(
+        email,
+        resetCode,
+        newPassword
+      );
       showSnackbar(message, SNACKBAR_VARIANTS.SUCCESS);
       router.replace("/(signin)/login");
     } catch (error: any) {
-      handleApiError(error, showSnackbar, "Error resetting password");
+      handleApiError(error, showSnackbar, "Error resetting password", logout);
     }
   };
 
@@ -76,7 +80,9 @@ export default function ForgotPassword() {
 
       {step === "email" ? (
         <>
-          <Text style={styles.subtitle}>Enter your email to reset your password</Text>
+          <Text style={styles.subtitle}>
+            Enter your email to reset your password
+          </Text>
           <TextInput
             style={styles.input}
             label="Email"
@@ -127,13 +133,12 @@ export default function ForgotPassword() {
           </TouchableOpacity>
         </>
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
+      <Text style={styles.footerText}>
+        Already have an account?{" "}
+        <Text onPress={router.back} style={styles.footerLink}>
+          Go back
+        </Text>
+      </Text>
     </View>
   );
 }

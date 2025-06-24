@@ -1,4 +1,4 @@
-import { privateClient, publicClient } from "@utils/apiClient";
+import { publicClient } from "@utils/apiClient";
 import { storeToken } from "@utils/tokenUtils";
 import messaging from "@react-native-firebase/messaging";
 
@@ -20,7 +20,8 @@ export const login = async (
 export const register = async (
   username: string,
   email: string,
-  password: string
+  password: string,
+  location: { latitude: number; longitude: number }
 ): Promise<string> => {
   try {
     const fcmToken = await messaging().getToken();
@@ -30,6 +31,7 @@ export const register = async (
       email,
       password,
       fcm_token: fcmToken,
+      location,
     });
 
     if (response.status === 201) {
@@ -42,62 +44,47 @@ export const register = async (
       `Error ${response.status}: ${JSON.stringify(response.data)}`
     );
   } catch (error: any) {
-    console.error("Register error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Registration failed" };
+    console.error("Register error:", error);
+    throw error;
   }
 };
 
 export const loginWithGoogle = async (
   firebaseIdToken: string
 ): Promise<string> => {
-  try {
-    const response = await publicClient.post(`/auth/google`, {
-      idToken: firebaseIdToken,
-    });
+  const response = await publicClient.post(`/auth/google`, {
+    idToken: firebaseIdToken,
+  });
 
-    if (response.status === 200) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
-
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Google login error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Google login failed" };
+  if (response.status === 200) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
   }
+
+  return response.data;
 };
 
 export const registerWithGoogle = async (
   firebaseIdToken: string,
   user_name: string
 ): Promise<string> => {
-  try {
-    const fcmToken = await messaging().getToken();
+  const fcmToken = await messaging().getToken();
 
-    const response = await publicClient.post(`/auth/google-register`, {
-      idToken: firebaseIdToken,
-      user_name,
-      fcm_token: fcmToken,
-    });
+  const response = await publicClient.post(`/auth/google-register`, {
+    idToken: firebaseIdToken,
+    user_name,
+    fcm_token: fcmToken,
+  });
 
-    if (response.status === 201) {
-      const token = response.data.token;
-      await storeToken(token);
-      return token;
-    }
-
-    throw new Error(
-      `Error ${response.status}: ${JSON.stringify(response.data)}`
-    );
-  } catch (error: any) {
-    console.error("Google registration error:", error?.response?.data || error.message);
-    throw error?.response?.data || { message: "Google registration failed" };
+  if (response.status === 201) {
+    const token = response.data.token;
+    await storeToken(token);
+    return token;
   }
-};
 
+  return response.data;
+};
 
 export const resetPassword = async (email: string): Promise<string> => {
   const response = await publicClient.post("/auth/reset-password", { email });
@@ -117,4 +104,31 @@ export const resetPasswordWithCode = async (
   });
 
   return response.data.message || "Password reset successfully";
+};
+
+export const sendActivationPin = async ({
+  email,
+  phone,
+  method,
+}: {
+  email: string;
+  phone: string;
+  method: "email" | "sms";
+}): Promise<void> => {
+  const data = {
+    type: method.toUpperCase(),
+    email: email ?? "",
+    phone: phone ?? "",
+  };
+  await publicClient.post("/auth/send-pin", data);
+};
+
+export const verifyActivationPin = async (
+  email: string,
+  pin: string
+): Promise<void> => {
+  await publicClient.post("/auth/verify-pin", {
+    email,
+    pin,
+  });
 };

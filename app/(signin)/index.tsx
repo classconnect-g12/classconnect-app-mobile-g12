@@ -1,9 +1,20 @@
-import { Link } from "expo-router";
-import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useEffect } from "react";
+import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
 import { colors } from "@theme/colors";
 import { images } from "@assets/images";
 
 export default function Index() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace("/login");
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image source={images.logo} style={styles.logo} resizeMode="contain" />
@@ -11,11 +22,11 @@ export default function Index() {
         Helping educators and students communicate, save time, and stay
         organized.
       </Text>
-      <TouchableOpacity style={styles.button}>
-        <Link href="/login">
-          <Text style={styles.buttonText}>Start</Text>
-        </Link>
-      </TouchableOpacity>
+      <ActivityIndicator
+        size="large"
+        color={colors.primary}
+        style={styles.spinner}
+      />
     </View>
   );
 }
@@ -33,24 +44,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.text,
     marginBottom: 20,
-    fontFamily: "System",
-  },
-  button: {
-    width: "30%",
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonText: {
-    color: colors.background,
-    fontSize: 16,
-    fontWeight: "600",
   },
   logo: {
     width: 800,
     height: 140,
     marginBottom: 20,
+  },
+  spinner: {
+    marginTop: 20,
   },
 });

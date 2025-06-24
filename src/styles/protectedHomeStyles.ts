@@ -14,14 +14,14 @@ export const protectedHomeStyles = StyleSheet.create({
     padding: 20,
   },
   welcome: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 5,
     textAlign: "center",
     color: colors.text,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
     color: colors.text,
     opacity: 0.7,
@@ -59,6 +59,7 @@ export const protectedHomeStyles = StyleSheet.create({
     borderRadius: 10,
   },
   booksContainer: {
+    marginTop: 50,
     alignItems: "center",
     marginVertical: 20,
   },
@@ -67,11 +68,15 @@ export const protectedHomeStyles = StyleSheet.create({
     height: 150,
   },
   joinSection: {
+    marginTop: 40,
     alignItems: "center",
-    backgroundColor: colors.cardBackground,
-    padding: 20,
     borderRadius: 15,
-    marginTop: 20,
+  },
+  joinSectionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 15,
+    gap: 10,
   },
   joinTitle: {
     fontSize: 22,
@@ -86,9 +91,8 @@ export const protectedHomeStyles = StyleSheet.create({
     marginBottom: 15,
   },
   joinButton: {
+    maxWidth: 170,
     backgroundColor: colors.primary,
-    paddingHorizontal: 30,
-    paddingVertical: 5,
     borderRadius: 10,
   },
   fab: {
@@ -96,5 +100,26 @@ export const protectedHomeStyles = StyleSheet.create({
     right: 16,
     bottom: 16,
     backgroundColor: colors.primary,
+  },
+  fabHintContainer: {
+    position: "absolute",
+    bottom: 80,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  fabHintText: {
+    marginBottom: 22,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  fabHintIcon: {
+    margin: 0,
+    backgroundColor: "transparent",
   },
 });

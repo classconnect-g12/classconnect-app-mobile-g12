@@ -7,7 +7,13 @@ export const appbarMenuStyles = StyleSheet.create({
     elevation: 4,
   },
   title: {
-    opacity: 0.6,
+    opacity: 0.8,
+  },
+  titleAccount: {
+    paddingBottom: 5,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   notificationContainer: {
     position: "relative",
@@ -15,8 +21,8 @@ export const appbarMenuStyles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: 0,
-    right: 0,
+    top: 10,
+    right: 10,
     backgroundColor: "red",
   },
   modalContainer: {
@@ -80,5 +86,21 @@ export const appbarMenuStyles = StyleSheet.create({
     color: colors.text,
     marginTop: 20,
     marginBottom: 20,
+  },
+  secondHeaderStyle: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    backgroundColor: colors.background,
+    borderTopWidth: 0.5,
+    borderTopColor: "#e0e0e0",
+    borderBottomWidth: 1.5,
+    borderBottomColor: "#b0b0b0",
+    paddingVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

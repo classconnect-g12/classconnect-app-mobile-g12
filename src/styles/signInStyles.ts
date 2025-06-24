@@ -16,6 +16,7 @@ export const signInStyles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
+    fontWeight: "bold",
     marginBottom: 30,
     color: colors.text,
   },
@@ -31,17 +32,31 @@ export const signInStyles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
+    buttonGoogle: {
+    width: "80%",
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    marginTop: 10,
+  },
   buttonText: {
     color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },
   footerText: {
+    fontSize: 16,
     marginTop: 20,
     color: colors.text,
   },
   footerLink: {
     color: colors.primary,
     fontWeight: "bold",
+  },
+    logo: {
+    width: 800,
+    height: 140,
+    marginBottom: 20,
   },
 });

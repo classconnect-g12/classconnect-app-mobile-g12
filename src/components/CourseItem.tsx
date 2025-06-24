@@ -1,10 +1,16 @@
 import React from "react";
-import { TouchableWithoutFeedback, View, Text } from "react-native";
+import {
+  TouchableWithoutFeedback,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { Card, Button } from "react-native-paper";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
 import { ApiCourse } from "@src/types/course";
 import { Router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 interface CourseItemProps {
   item: ApiCourse;
@@ -13,6 +19,8 @@ interface CourseItemProps {
   showActions?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 const CourseItem: React.FC<CourseItemProps> = ({
@@ -22,14 +30,18 @@ const CourseItem: React.FC<CourseItemProps> = ({
   showActions = false,
   onEdit,
   onDelete,
+  isFavorite,
+  onToggleFavorite,
 }) => {
   const isLimitedCapacity = item.capacity <= 5;
   const now = new Date();
   const startDate = new Date(item.startDate);
+  const endDate = new Date(item.endDate);
   const daysUntilStart =
     (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
   const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
   const hasStarted = startDate < now;
+  const hasEnded = endDate < now;
 
   const handlePress = () => {
     router.push(`/course/${item.id}`);
@@ -37,28 +49,60 @@ const CourseItem: React.FC<CourseItemProps> = ({
 
   return (
     <TouchableWithoutFeedback onPress={handlePress}>
-      <View>
+      <View style={{ marginBottom: 14 }}>
         <Card style={styles.courseCard}>
           <Card.Content>
-            <Text style={styles.courseName}>{item.title}</Text>
-            <Text style={styles.courseDescription}>{item.description}</Text>
-            <Text style={styles.courseDetails}>
-              Starts: {new Date(item.startDate).toLocaleDateString()} | Ends:{" "}
-              {new Date(item.endDate).toLocaleDateString()}
-            </Text>
-            {isLimitedCapacity && (
-              <Text style={styles.availabilityIndicator}>Cupos limitados</Text>
-            )}
-            {isStartingSoon && (
-              <Text style={styles.availabilityIndicator}>
-                Últimos días para inscribirse
-              </Text>
-            )}
-            {hasStarted && (
-              <Text style={styles.alreadyStartedIndicator}>
-                Already started
-              </Text>
-            )}
+            <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.courseName}>{item.title}</Text>
+                <Text style={styles.courseDescription}>{item.description}</Text>
+                <Text style={styles.courseDetails}>
+                  Starts: {new Date(item.startDate).toLocaleDateString()} |
+                  Ends: {new Date(item.endDate).toLocaleDateString()}
+                </Text>
+                {isLimitedCapacity && (
+                  <Text style={styles.availabilityIndicator}>
+                    Limited spots
+                  </Text>
+                )}
+                {isStartingSoon && (
+                  <Text style={styles.availabilityIndicator}>
+                    Last days to enroll
+                  </Text>
+                )}
+                {hasEnded ? (
+                  <Text style={styles.alreadyStartedIndicator}>Finished</Text>
+                ) : hasStarted ? (
+                  <Text style={styles.availabilityIndicator}>
+                    Already started
+                  </Text>
+                ) : null}
+              </View>
+              {tab === "enrolled" && (
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite?.();
+                  }}
+                  style={{
+                    marginLeft: 8,
+                    marginTop: 2,
+                    backgroundColor: "#fff",
+                    borderRadius: 16,
+                    padding: 4,
+                    elevation: 2,
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons
+                    name={isFavorite ? "star" : "star-outline"}
+                    size={30}
+                    color={isFavorite ? "#1976D2" : "#888"}
+                    style={{ opacity: isFavorite ? 1 : 0.5 }}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </Card.Content>
           <Card.Actions style={{ gap: 8, flexWrap: "wrap" }}>
             <Button
@@ -70,7 +114,7 @@ const CourseItem: React.FC<CourseItemProps> = ({
               style={styles.joinButton}
               labelStyle={{ color: colors.buttonText }}
             >
-              {tab === "created" ? "View Course" : "Go to Course"}
+              {tab === "created" ? "View course" : "Go to course"}
             </Button>
 
             {showActions && (
@@ -81,10 +125,14 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onEdit?.();
                   }}
-                  style={{ borderColor: colors.primary }}
-                  labelStyle={{ color: colors.primary }}
+                  style={{
+                    borderColor: colors.primary,
+                    borderRadius: 6,
+                    backgroundColor: colors.secondary,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
-                  Editar
+                  Edit
                 </Button>
                 <Button
                   mode="outlined"
@@ -92,10 +140,14 @@ const CourseItem: React.FC<CourseItemProps> = ({
                     e.stopPropagation();
                     onDelete?.();
                   }}
-                  style={{ borderColor: colors.error }}
-                  labelStyle={{ color: colors.error }}
+                  style={{
+                    borderColor: colors.error,
+                    borderRadius: 6,
+                    backgroundColor: colors.error,
+                  }}
+                  labelStyle={{ color: "#fff" }}
                 >
-                  Eliminar
+                  Delete
                 </Button>
               </View>
             )}

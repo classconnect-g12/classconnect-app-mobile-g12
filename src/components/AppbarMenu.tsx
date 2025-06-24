@@ -1,59 +1,87 @@
 import React, { useState, useContext } from "react";
 import { View, FlatList } from "react-native";
-import { Appbar, Menu, IconButton, Portal, Modal, Text, Card, Button, Badge } from "react-native-paper";
+import {
+  Appbar,
+  Menu,
+  IconButton,
+  Portal,
+  Modal,
+  Text,
+  Card,
+  Button,
+  Badge,
+} from "react-native-paper";
 import { RelativePathString, useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/authContext";
 import { colors } from "@theme/colors";
-import { NotificationContext } from "../context/notificationContext"; 
-import { deleteNotification, updateNotificationPreferences } from "@services/NotificationService";
+import { NotificationContext } from "../context/notificationContext";
+import {
+  deleteNotification,
+  updateNotificationPreferences,
+} from "@services/NotificationService";
 import { NotificationType, PreferencesResponse } from "@src/types/notification";
 import { appbarMenuStyles } from "@styles/appBarMenuStyles";
+import { formatDistanceToNow } from "date-fns";
 
 const getDaysAgo = (createdAt: string) => {
-  let cleanedDate = createdAt;
-  if (createdAt.includes("UTC")) {
-    cleanedDate = createdAt.split(" ")[0] + "T" + createdAt.split(" ")[1] + "Z";
-  }
-  const notificationDate = new Date(cleanedDate);
-  if (isNaN(notificationDate.getTime())) {
-    console.warn("⚠️ Fecha inválida después de limpiar:", cleanedDate);
+  try {
+    let cleanedDate = createdAt;
+    if (createdAt.includes("UTC")) {
+      const [date, time] = createdAt.split(" ");
+      cleanedDate = `${date}T${time}Z`;
+    }
+
+    const parsedDate = new Date(cleanedDate);
+
+    if (isNaN(parsedDate.getTime())) {
+      console.warn("⚠️ Fecha inválida:", createdAt);
+      return "Unknown";
+    }
+
+    return formatDistanceToNow(parsedDate, { addSuffix: true });
+  } catch (error) {
+    console.error("⚠️ Error parsing createdAt:", error);
     return "Unknown";
   }
-  const today = new Date();
-  const differenceInTime = today.getTime() - notificationDate.getTime();
-  const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
-  return differenceInDays === 0 ? "Today" : `${differenceInDays} days ago`;
 };
 
-const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
+const AppbarMenu: React.FC<{ title: string; viewNavigation: boolean }> = ({
+  title,
+  viewNavigation,
+}) => {
   const { logout } = useAuth();
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
+  const navigation = useNavigation();
+
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("NotificationContext debe estar dentro de un NotificationProvider");
+    throw new Error(
+      "NotificationContext debe estar dentro de un NotificationProvider"
+    );
   }
-  const { 
-    hasNewNotifications, 
-    setHasNewNotifications, 
-    notifications, 
-    setNotifications, 
-    notificationPreferences, 
-    setNotificationPreferences 
+  const {
+    hasNewNotifications,
+    setHasNewNotifications,
+    notifications,
+    setNotifications,
+    notificationPreferences,
+    setNotificationPreferences,
   } = context;
 
   const savePreferences = async () => {
     try {
-      const selectedPrefs: NotificationType[] = Object.keys(notificationPreferences).filter(
-        (key) => notificationPreferences[key]
-      ) as NotificationType[];
-  
+      const selectedPrefs: NotificationType[] = Object.keys(
+        notificationPreferences
+      ).filter((key) => notificationPreferences[key]) as NotificationType[];
+
       const preferencesPayload = { preferences: selectedPrefs };
       await updateNotificationPreferences(preferencesPayload);
-  
+
       setNotificationPreferences((prev) => {
         const updatedPrefs = selectedPrefs.reduce((acc, type) => {
           acc[type] = true;
@@ -61,7 +89,7 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
         }, {} as { [key: string]: boolean });
         return { ...prev, ...updatedPrefs };
       });
-  
+
       setSettingsModalVisible(false);
       console.log("✅ Preferences updated successfully!");
     } catch (error) {
@@ -92,10 +120,18 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
   return (
     <>
       <Appbar.Header style={appbarMenuStyles.header}>
-        <Appbar.Content title={title} titleStyle={appbarMenuStyles.title} />
+        <Appbar.Action
+          icon="home-outline"
+          onPress={() => router.push("/home")}
+          iconColor="black"
+        />
+        <Appbar.Content
+          title={"ClassConnect"}
+          titleStyle={appbarMenuStyles.title}
+        />
         <View style={appbarMenuStyles.notificationContainer}>
           <IconButton
-            icon={hasNewNotifications ? "bell-badge" : "bell-outline"}
+            icon={hasNewNotifications ? "bell" : "bell-outline"}
             size={24}
             onPress={handleNotifications}
           />
@@ -106,13 +142,104 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
-          anchor={<Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />}
+          anchor={
+            <Appbar.Action icon="menu" onPress={() => setMenuVisible(true)} />
+          }
+          contentStyle={{
+            backgroundColor: "white",
+            borderWidth: 1,
+            borderColor: "gray",
+          }}
         >
-          <Menu.Item onPress={() => router.push("/profile/profileEdit")} title="My Profile" titleStyle={{ fontWeight: "bold" }} />
-          <Menu.Item onPress={() => router.push("/course/myCourses")} title="My Courses" titleStyle={{ fontWeight: "bold" }} />
-          <Menu.Item onPress={logout} title="Log out" titleStyle={{ fontWeight: "bold", color: "#d9534f" }} />
+          <View style={{ borderBottomWidth: 1, borderColor: "gray" }}>
+            <Text style={appbarMenuStyles.titleAccount}>User space</Text>
+          </View>
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/profile/profileEdit");
+            }}
+            title="Profile"
+            leadingIcon="account-circle"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/course/myCourses");
+            }}
+            title="Courses"
+            leadingIcon="book-open-page-variant"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/profile/myFeedback");
+            }}
+            title="Feedback"
+            leadingIcon="comment-outline"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              router.push("/chat/myChats");
+            }}
+            title="Chat assistant"
+            leadingIcon="robot-outline"
+            titleStyle={{ fontWeight: "bold" }}
+            contentStyle={{ borderColor: "gray" }}
+          />
+
+          <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              logout();
+            }}
+            title="Log out"
+            leadingIcon="exit-to-app"
+            titleStyle={{
+              fontWeight: "bold",
+              color: "#d9534f",
+            }}
+          />
         </Menu>
       </Appbar.Header>
+
+      {navigation.canGoBack() && viewNavigation && (
+        <View
+          style={[
+            appbarMenuStyles.secondHeaderStyle,
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 10,
+            },
+          ]}
+        >
+          <IconButton
+            icon="arrow-left"
+            size={24}
+            iconColor="black"
+            onPress={() => navigation.goBack()}
+            style={{ position: "absolute", left: 5 }}
+          />
+          <Text
+            style={{ fontSize: 20, fontWeight: "bold", textAlign: "center" }}
+          >
+            {title}
+          </Text>
+        </View>
+      )}
 
       <Portal>
         {/* Modal de Notificaciones */}
@@ -122,7 +249,9 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           contentContainerStyle={appbarMenuStyles.modalContainer}
         >
           <View style={appbarMenuStyles.modalHeader}>
-            <Text variant="headlineSmall" style={appbarMenuStyles.modalTitle}>Notifications</Text>
+            <Text variant="headlineSmall" style={appbarMenuStyles.modalTitle}>
+              Notifications
+            </Text>
             <IconButton
               icon="cog-outline"
               size={24}
@@ -135,7 +264,7 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
             <FlatList
               data={notifications}
               keyExtractor={(item) => item.id}
-              style={{ maxHeight: "80%" }} 
+              style={{ maxHeight: "80%" }}
               renderItem={({ item }) => (
                 <Card
                   style={appbarMenuStyles.card}
@@ -149,9 +278,21 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
                   }}
                 >
                   <Card.Content>
-                    <Text variant="titleMedium" style={appbarMenuStyles.cardTitle}>{item.title}</Text>
-                    <Text variant="bodyMedium" style={appbarMenuStyles.cardBody}>{item.body}</Text>
-                    <Text style={appbarMenuStyles.cardDate}>{getDaysAgo(item.createdAt)}</Text>
+                    <Text
+                      variant="titleMedium"
+                      style={appbarMenuStyles.cardTitle}
+                    >
+                      {item.title}
+                    </Text>
+                    <Text
+                      variant="bodyMedium"
+                      style={appbarMenuStyles.cardBody}
+                    >
+                      {item.body}
+                    </Text>
+                    <Text style={appbarMenuStyles.cardDate}>
+                      {getDaysAgo(item.createdAt)}
+                    </Text>
                   </Card.Content>
                   <Card.Actions>
                     <IconButton
@@ -165,7 +306,9 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
               )}
             />
           ) : (
-            <Text style={appbarMenuStyles.noNotificationsText}>No notifications available.</Text>
+            <Text style={appbarMenuStyles.noNotificationsText}>
+              No notifications available.
+            </Text>
           )}
           <Button
             onPress={() => setModalVisible(false)}
@@ -183,10 +326,17 @@ const AppbarMenu: React.FC<{ title: string }> = ({ title }) => {
           onDismiss={() => setSettingsModalVisible(false)}
           contentContainerStyle={appbarMenuStyles.modalContainer}
         >
-          <Text variant="headlineSmall" style={appbarMenuStyles.settingsModalTitle}>Notification Settings</Text>
+          <Text
+            variant="headlineSmall"
+            style={appbarMenuStyles.settingsModalTitle}
+          >
+            Notification Settings
+          </Text>
           {Object.entries(notificationPreferences).map(([type, isEnabled]) => (
             <View key={type} style={appbarMenuStyles.settingsItem}>
-              <Text style={appbarMenuStyles.settingsText}>{type.replace(/_/g, " ")}</Text>
+              <Text style={appbarMenuStyles.settingsText}>
+                {type.replace(/_/g, " ")}
+              </Text>
               <IconButton
                 icon={isEnabled ? "toggle-switch" : "toggle-switch-off"}
                 size={70}

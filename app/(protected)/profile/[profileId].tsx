@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, ScrollView } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
 import {
   getUserProfileByUsername,
@@ -8,10 +7,23 @@ import {
 } from "@services/ProfileService";
 import { profileIdStyles as styles } from "@styles/profileIdStyles";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "../../../src/hooks/useSnackbar";
-import { AxiosError } from "axios";
-import { ApiError } from "@src/types/apiError";
+import { useSnackbar } from "@context/SnackbarContext";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
+
+const formatJoinDate = (isoDate?: string | null): string => {
+  if (!isoDate) return "Date not available";
+
+  const date = new Date(isoDate);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  return date.toLocaleDateString("en-US", options);
+};
 
 const UserProfile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
@@ -27,42 +39,15 @@ const UserProfile: React.FC = () => {
         const data = await getUserProfileByUsername(profileId as string);
         setProfile(data);
       } catch (error) {
-        const axiosError = error as AxiosError<ApiError>;
-
-        const status = axiosError.response?.status;
-
-        if (status === 404) {
-          handleApiError(axiosError, showSnackbar, "Profile not found", logout);
-        } else if (status === 401) {
-          handleApiError(
-            axiosError,
-            showSnackbar,
-            "Unauthorized. Please log in.",
-            logout
-          );
-        } else {
-          handleApiError(
-            axiosError,
-            showSnackbar,
-            "Error loading profile",
-            logout
-          );
-        }
+        handleApiError(error, showSnackbar, "Error fetching profile", logout);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfile();
   }, [profileId]);
 
-  if (loading)
-    return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
+  if (loading) return <Spinner />;
 
   if (!profile) {
     return (
@@ -74,32 +59,26 @@ const UserProfile: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.userName}>{profile.user_name}</Text>
-
       <View style={styles.header}>
         <Image source={{ uri: profile.banner }} style={styles.avatar} />
-      </View>
-
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Description</Text>
-        <Text style={styles.readOnlyText}>
-          {profile.description || "No description provided."}
+        <Text style={styles.userName}>
+          {profile.user_name || "Username not provided"}
+        </Text>
+        <Text style={styles.fullName}>
+          {profile.first_name || profile.last_name
+            ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
+            : "Full name not provided"}
+        </Text>
+        <Text style={styles.joinDate}>
+          Joined on {formatJoinDate(profile.created_at)}
         </Text>
       </View>
 
       <View style={styles.inputCard}>
-        <Text style={styles.label}>First Name</Text>
-        <Text style={styles.readOnlyText}>{profile.first_name}</Text>
-      </View>
-
-      <View style={styles.inputCard}>
-        <Text style={styles.label}>Last Name</Text>
-        <Text style={styles.readOnlyText}>{profile.last_name}</Text>
-      </View>
-
-      <View style={{ width: "100%" }}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.email}>{profile.email}</Text>
+        <Text style={styles.label}>Bio</Text>
+        <Text style={styles.readOnlyText}>
+          {profile.description || "No description provided."}
+        </Text>
       </View>
     </ScrollView>
   );

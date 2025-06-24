@@ -1,3 +1,4 @@
+import { colors } from "@theme/colors";
 import { StyleSheet } from "react-native";
 
 export const moduleDetailStyle = StyleSheet.create({
@@ -8,7 +9,7 @@ export const moduleDetailStyle = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: "80%",
+    width: "90%",
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
@@ -64,5 +65,73 @@ export const moduleDetailStyle = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    padding: 16,
+    paddingBottom: 32,
+    marginBottom: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  iconWrapper: {
+    backgroundColor: "gray",
+    padding: 10,
+    borderRadius: 24,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  typeText: {
+    fontSize: 13,
+    color: "#6b7280",
+    marginTop: 2,
+  },
+  instruction: {
+    fontSize: 14,
+    color: "#374151",
+    marginTop: 8,
+    textAlign: "justify",
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    marginTop: 12,
+    borderRadius: 8,
+  },
+  audioText: {
+    marginTop: 10,
+    fontStyle: "italic",
+    color: "#4b5563",
+  },
+  footer: {
+    textAlign: "right",
+    marginTop: 16,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "gray"
+  },
+  buttons:{
+    marginTop: 10,
+    borderRadius: 6,
+    backgroundColor: colors.primary,
+  },
+    resourceOrderContainer: {
+    maxHeight: 150,
+    width: "100%",
+    marginBottom: 10,
   },
 });

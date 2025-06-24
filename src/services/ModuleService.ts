@@ -11,6 +11,7 @@ export interface Module {
 export interface Resource {
   resourceId: number;
   title: string;
+  instruction: string;
   resourceType: "DOCUMENT" | "VIDEO" | "IMAGE" | "AUDIO";
   url: string;
   order: number;
@@ -54,6 +55,7 @@ export async function createResource(
   courseId: string,
   moduleId: string,
   title: string,
+  instruction: string,
   order: string,
   file: DocumentPickerResult
 ) {
@@ -85,6 +87,7 @@ export async function createResource(
 
   const formData = new FormData();
   formData.append("title", title);
+  formData.append("instruction", instruction);
   formData.append("resource_type", resourceType);
   formData.append("order", order.toString());
   formData.append("file", {
@@ -111,8 +114,6 @@ export async function fetchResources(
   const response = await privateClient.get<Resource[]>(
     `/course/${courseId}/modules/${moduleId}/resources`
   );
-  console.log(response.data);
-
   return response.data.sort((a, b) => a.order - b.order);
 }
 

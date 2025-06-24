@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
-import { AppSnackbar } from "@components/AppSnackbar";
 import { validateCourse } from "@utils/validators";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { createCourse, getMyCourses } from "@services/CourseService";
 import { handleApiError } from "@utils/handleApiError";
@@ -27,13 +26,7 @@ export default function CreateCourse() {
 
   const { logout } = useAuth();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const fetchCourses = async (query = "") => {
     try {
@@ -49,7 +42,7 @@ export default function CreateCourse() {
   }, []);
 
   const handleCreateCourse = async () => {
-    if (isLoading) return; // Evita spameo
+    if (isLoading) return;
 
     const error = validateCourse(courseName);
     if (error) {
@@ -57,9 +50,9 @@ export default function CreateCourse() {
       return;
     }
 
-    if (description.length < 50 || description.length > 255) {
+    if (description.length > 255) {
       showSnackbar(
-        "Description must be between 50 and 255 characters",
+        "Description must be at most 255 characters",
         SNACKBAR_VARIANTS.ERROR
       );
       return;
@@ -96,14 +89,14 @@ export default function CreateCourse() {
 
     try {
       setIsLoading(true);
-      await createCourse(courseData);
+      const response = await createCourse(courseData);
       showSnackbar("Course created successfully!", SNACKBAR_VARIANTS.SUCCESS);
       setTimeout(() => {
-        router.back();
+        router.replace(`/(protected)/course/${response.id}`);
+        setIsLoading(false);
       }, 1500);
     } catch (error) {
       handleApiError(error, showSnackbar, "Error creating the course", logout);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -137,12 +130,6 @@ export default function CreateCourse() {
         isLoading={isLoading}
         buttonMessageActive={"Creating..."}
         buttonMessageInactive={"Create Course"}
-      />
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
       />
     </>
   );

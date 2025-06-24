@@ -10,16 +10,16 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Snackbar } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator } from "react-native-paper";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { colors } from "@theme/colors";
 import { profileEditStyles as styles } from "@styles/profileEditStyles";
 import { getUserProfile, updateUserProfile } from "@services/ProfileService";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
 import { handleApiError } from "@utils/handleApiError";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 export default function ProfileScreen() {
   const { profileId } = useLocalSearchParams();
@@ -37,13 +37,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const { logout } = useAuth();
 
@@ -113,61 +107,70 @@ export default function ProfileScreen() {
     }
   };
 
-  if (loading)
-    return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color={colors.text} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
+  if (loading) return <Spinner />;
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.userName}>{profile.user_name}</Text>
-
         <View style={styles.header}>
           <Image source={{ uri: profile.banner }} style={styles.avatar} />
+          <Text style={styles.userName}>{profile.user_name}</Text>
           <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
             <Ionicons name="camera" size={20} color={colors.buttonText} />
-            <Text style={styles.iconButtonText}>Change Photo</Text>
+            <Text style={styles.iconButtonText}>
+              <Feather
+                name="refresh-ccw"
+                size={20}
+                color="white"
+                style={styles.icon}
+              />
+            </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.inputCard}>
           <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={styles.input}
-            value={profile.description}
-            onChangeText={(text) => handleChange("description", text)}
-            placeholder="Write a short bio..."
-            multiline
-          />
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={profile.description}
+              onChangeText={(text) => handleChange("description", text)}
+              placeholder="Write a short bio..."
+              multiline
+            />
+            <Feather name="edit" size={20} color="#888" style={styles.icon} />
+          </View>
         </View>
 
         <View style={styles.inputCard}>
           <Text style={styles.label}>First Name</Text>
-          <TextInput
-            style={styles.input}
-            value={profile.first_name}
-            onChangeText={(text) => handleChange("first_name", text)}
-            placeholder="First Name"
-          />
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={profile.first_name}
+              onChangeText={(text) => handleChange("first_name", text)}
+              placeholder="First Name"
+            />
+            <Feather name="edit" size={20} color="#888" style={styles.icon} />
+          </View>
+
+          <Text style={styles.label}>Last Name</Text>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              value={profile.last_name}
+              onChangeText={(text) => handleChange("last_name", text)}
+              placeholder="Last Name"
+            />
+            <Feather name="edit" size={20} color="#888" style={styles.icon} />
+          </View>
         </View>
 
         <View style={styles.inputCard}>
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            value={profile.last_name}
-            onChangeText={(text) => handleChange("last_name", text)}
-            placeholder="Last Name"
-          />
-        </View>
-
-        <View style={{ width: "100%" }}>
           <Text style={styles.label}>Email</Text>
-          <Text style={styles.email}>{profile.email}</Text>
+          <View style={styles.inputRow}>
+            <Text style={styles.email}>{profile.email}</Text>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -181,13 +184,6 @@ export default function ProfileScreen() {
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
         </TouchableOpacity>
-
-        <AppSnackbar
-          visible={snackbarVisible}
-          message={snackbarMessage}
-          onDismiss={hideSnackbar}
-          variant={snackbarVariant}
-        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

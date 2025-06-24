@@ -5,22 +5,20 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
-  ActivityIndicator,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import { TextInput, Button, Card } from "react-native-paper";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { findCourseStyles as styles } from "@styles/findCourseStyles";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useSnackbar } from "@context/SnackbarContext";
 import { fetchCourses } from "@services/CourseService";
 import { ApiCourse } from "@src/types/course";
 import { handleApiError } from "@utils/handleApiError";
 import CourseFilter from "@components/CourseFilter";
-import { enrollInCourse } from "@services/EnrollmentService";
 import { useAuth } from "@context/authContext";
+import Spinner from "@components/Spinner";
 
 export default function FindCourse() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,13 +34,7 @@ export default function FindCourse() {
 
   const { logout } = useAuth();
 
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
+  const { showSnackbar } = useSnackbar();
 
   const loadCourses = async (pageNumber = 0, reset = false) => {
     if (reset) {
@@ -123,34 +115,18 @@ export default function FindCourse() {
     }
   };
 
-  const handleJoinCourse = async (courseId: string) => {
-    try {
-      await enrollInCourse(courseId);
-      showSnackbar(
-        "Successfully joined the course!",
-        SNACKBAR_VARIANTS.SUCCESS
-      );
-    } catch (error) {
-      handleApiError(
-        error,
-        showSnackbar,
-        "There was a problem joinin the course",
-        logout
-      );
-    }
-  };
-
   const renderCourse = ({ item }: { item: ApiCourse }) => {
     // Check for limited capacity (5 or fewer spots)
     const isLimitedCapacity = item.capacity <= 5;
     // Check if course is about to start (within 3 days)
     const now = new Date();
     const startDate = new Date(item.startDate);
+    const endDate = new Date(item.endDate);
     const daysUntilStart =
       (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     const isStartingSoon = daysUntilStart <= 3 && daysUntilStart >= 0;
-    // Check if course has already started
     const hasStarted = startDate < now;
+    const hasEnded = endDate < now;
 
     return (
       <TouchableWithoutFeedback
@@ -166,32 +142,34 @@ export default function FindCourse() {
                 {new Date(item.endDate).toLocaleDateString()}
               </Text>
               {isLimitedCapacity && (
-                <Text style={styles.availabilityIndicator}>
+                <Text style={styles.limitIndicator}>
                   Limited spots remaining
                 </Text>
               )}
               {isStartingSoon && (
-                <Text style={styles.availabilityIndicator}>
+                <Text style={styles.limitIndicator}>
                   Last days to register
                 </Text>
               )}
-              {hasStarted && (
-                <Text style={styles.alreadyStartedIndicator}>
+              {hasEnded ? (
+                <Text style={styles.finishIndicator}>Finished</Text>
+              ) : hasStarted ? (
+                <Text style={styles.availabilityIndicator}>
                   Already started
                 </Text>
-              )}
+              ) : null}
             </Card.Content>
             <Card.Actions>
               <Button
                 mode="contained"
                 onPress={(e) => {
                   e.stopPropagation();
-                  handleJoinCourse(item.id);
+                  router.push(`/course/${item.id}` as any);
                 }}
                 style={styles.joinButton}
                 labelStyle={{ color: colors.buttonText }}
               >
-                Join Course
+                View course
               </Button>
             </Card.Actions>
           </Card>
@@ -201,16 +179,7 @@ export default function FindCourse() {
   };
 
   if (isLoadingInitial) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <Spinner />;
   }
 
   return (
@@ -218,8 +187,7 @@ export default function FindCourse() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Find a Course</Text>
+      <View>
         <Text style={styles.subtitle}>Search for courses to join</Text>
       </View>
 
@@ -263,13 +231,6 @@ export default function FindCourse() {
               : "Search for courses to join"}
           </Text>
         )}
-      />
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
       />
     </KeyboardAvoidingView>
   );

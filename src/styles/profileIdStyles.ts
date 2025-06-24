@@ -2,10 +2,10 @@ import { StyleSheet } from "react-native";
 
 export const profileIdStyles = StyleSheet.create({
   scrollContainer: {
-    padding: 20,
+    paddingHorizontal: 20,
     alignItems: "center",
-    backgroundColor: "#f4f6f8",
-    flexGrow: 1,
+    backgroundColor: "white",
+    flex: 1,
   },
   centeredContainer: {
     flex: 1,
@@ -18,6 +18,7 @@ export const profileIdStyles = StyleSheet.create({
     marginVertical: 20,
   },
   avatar: {
+    marginBottom: 12,
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -30,10 +31,16 @@ export const profileIdStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
+  fullName: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#555",
+    marginTop: 4,
+  },
   inputCard: {
     width: "100%",
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 6,
     marginBottom: 15,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -49,6 +56,7 @@ export const profileIdStyles = StyleSheet.create({
     fontWeight: "500",
   },
   readOnlyText: {
+    textAlign: "justify",
     fontSize: 16,
     color: "#333",
   },
@@ -73,5 +81,11 @@ export const profileIdStyles = StyleSheet.create({
     color: "red",
     textAlign: "center",
     paddingHorizontal: 30,
+  },
+  joinDate: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 6,
+    fontStyle: "italic",
   },
 });

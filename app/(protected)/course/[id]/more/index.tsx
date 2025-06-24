@@ -1,0 +1,111 @@
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { moreStyles } from "@styles/moreStyles";
+import { useCourse } from "@context/CourseContext";
+
+type IoniconName =
+  | "chatbubble-ellipses-outline"
+  | "document-text-outline"
+  | "help-circle-outline"
+  | "information-circle-outline"
+  | "settings-outline"
+  | "people-circle-outline"
+  | "stats-chart-outline";
+
+export default function MoreScreen() {
+  const router = useRouter();
+  const { courseId, isTeacher, courseDetail } = useCourse();
+  const { course } = courseDetail;
+  const { permissions } = course;
+
+  const hasPermissions = permissions.length > 0;
+
+  const allOptions: {
+    title: string;
+    route: string;
+    icon: IoniconName;
+    requiresTeacher?: boolean;
+    requiresStudent?: boolean;
+  }[] = [
+    {
+      title: "Forum",
+      route: `course/${courseId}/more/forum`,
+      icon: "people-circle-outline",
+    },
+    {
+      title: "Performance Stats",
+      route: `course/${courseId}/more/performanceStats`,
+      icon: "stats-chart-outline",
+      requiresTeacher: true,
+    },
+    {
+      title: "Feedback",
+      route: `course/${courseId}/more/courseFeedback`,
+      icon: "chatbubble-ellipses-outline",
+      requiresTeacher: true,
+    },
+    {
+      title: "My notes",
+      route: `course/${courseId}/more/myNotes`,
+      icon: "chatbubble-ellipses-outline",
+      requiresStudent: true,
+    },
+    {
+      title: "Activity",
+      route: `course/${courseId}/more/activity`,
+      icon: "help-circle-outline",
+      requiresTeacher: true,
+    },
+    {
+      title: "My permissions",
+      route: `course/${courseId}/more/myPermissions`,
+      icon: "information-circle-outline",
+    },
+    {
+      title: "Settings",
+      route: `course/${courseId}/more/settings`,
+      icon: "settings-outline",
+    },
+    {
+      title: "Help",
+      route: `course/${courseId}/more/help`,
+      icon: "help-circle-outline",
+    },
+  ];
+
+  const visibleOptions = allOptions.filter((item) => {
+    if (item.requiresTeacher && !isTeacher) return false;
+    if (item.requiresStudent && isTeacher) return false;
+    if (
+      (item.title === "Settings" || item.title === "My permissions") &&
+      !hasPermissions
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  return (
+    <ScrollView contentContainerStyle={moreStyles.container}>
+      {visibleOptions.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          style={moreStyles.button}
+          onPress={() => router.push(item.route as any)}
+        >
+          <View style={moreStyles.buttonContent}>
+            <Ionicons
+              name={item.icon}
+              size={20}
+              color="black"
+              style={{ marginRight: 10 }}
+            />
+            <Text style={moreStyles.buttonText}>{item.title}</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+}

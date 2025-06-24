@@ -3,31 +3,29 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { Chip } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { fetchModules, createModule, Module } from "@services/ModuleService";
 import { useCourse } from "@context/CourseContext";
 import { viewModulesStyles } from "@styles/viewModulesStyles";
 import { handleApiError } from "@utils/handleApiError";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { AppSnackbar } from "@components/AppSnackbar";
+import { useSnackbar } from "@context/SnackbarContext";
 import { colors } from "@theme/colors";
-import { AnimatedFAB, Button, Modal, TextInput } from "react-native-paper";
+import { AnimatedFAB } from "react-native-paper";
 import { CreateModuleModal } from "@components/CreateModuleModal";
 import { useAuth } from "@context/authContext";
+import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useModule } from "@context/ModuleContext";
+import Spinner from "@components/Spinner";
+import { CREATE_MODULE } from "@constants/permissions";
 
 const CourseModulesScreen = () => {
   const router = useRouter();
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
-  const { courseId, isTeacher } = useCourse();
+  const { showSnackbar } = useSnackbar();
+  const { courseId, isTeacher, courseTitle } = useCourse();
 
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +36,10 @@ const CourseModulesScreen = () => {
 
   const [creating, setCreating] = useState(false);
 
+  const { courseDetail } = useCourse();
+  const { course } = courseDetail;
   const { logout } = useAuth();
+  const { setModuleTitle } = useModule();
 
   useEffect(() => {
     const loadModules = async () => {
@@ -49,7 +50,7 @@ const CourseModulesScreen = () => {
           setModules(data);
         }
       } catch (error) {
-        handleApiError(error, showSnackbar, "Error loading modules", logout);
+        console.error("Error fetching modules:", error);
         setModules([]);
       } finally {
         setLoading(false);
@@ -58,6 +59,8 @@ const CourseModulesScreen = () => {
 
     loadModules();
   }, [courseId]);
+
+  const hasPermission = (perm: string) => course.permissions.includes(perm);
 
   const handleAddModule = async () => {
     if (!title.trim()) {
@@ -70,11 +73,8 @@ const CourseModulesScreen = () => {
       return;
     }
 
-    if (description.length < 55 || description.length > 255) {
-      showSnackbar(
-        "Description must be between 55 and 255 characters",
-        "error"
-      );
+    if (description.length > 255) {
+      showSnackbar("Description must be at most 255 characters", "error");
       return;
     }
 
@@ -104,29 +104,35 @@ const CourseModulesScreen = () => {
 
   const renderItem = ({ item }: { item: Module }) => (
     <TouchableOpacity
-      onPress={() => router.push(`/course/${courseId}/module/${item.moduleId}`)}
+      onPress={() => {
+        setModuleTitle(item.title);
+        router.push(`/course/${courseId}/module/${item.moduleId}`);
+      }}
     >
       <View style={viewModulesStyles.moduleCard}>
-        <Text style={viewModulesStyles.title}>{item.title}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialCommunityIcons
+            name="book-open-page-variant"
+            size={24}
+            color={colors.primary}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={viewModulesStyles.title}>{item.title}</Text>
+        </View>
         <Text style={viewModulesStyles.description}>{item.description}</Text>
-        <Text style={viewModulesStyles.order}>Orden: {item.order}</Text>
+        <Chip style={viewModulesStyles.order}>{item.order}</Chip>
       </View>
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <ActivityIndicator
-        size="large"
-        color="#0000ff"
-        style={viewModulesStyles.loader}
-      />
+        <Spinner />
     );
   }
 
   return (
     <View style={viewModulesStyles.container}>
-      <Text style={viewModulesStyles.heading}>Modules</Text>
       <FlatList
         data={modules}
         keyExtractor={(item) => item.moduleId.toString()}
@@ -149,7 +155,7 @@ const CourseModulesScreen = () => {
         loading={creating}
       />
 
-      {isTeacher && (
+      {(isTeacher || hasPermission(CREATE_MODULE)) && (
         <AnimatedFAB
           icon="plus"
           label=""
@@ -161,13 +167,6 @@ const CourseModulesScreen = () => {
           color={colors.buttonText}
         />
       )}
-
-      <AppSnackbar
-        visible={snackbarVisible}
-        message={snackbarMessage}
-        onDismiss={hideSnackbar}
-        variant={snackbarVariant}
-      />
     </View>
   );
 };

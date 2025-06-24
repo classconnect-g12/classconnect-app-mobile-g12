@@ -40,9 +40,11 @@ export const forgotPasswordStyles = StyleSheet.create({
   footerText: {
     marginTop: 20,
     color: colors.text,
+    fontSize: 16,
   },
   footerLink: {
     color: colors.primary,
     fontWeight: "bold",
+    fontSize: 16,
   },
 });

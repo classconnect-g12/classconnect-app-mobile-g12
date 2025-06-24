@@ -129,9 +129,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
   return (
     <KeyboardAvoidingView style={styles.container} behavior="height">
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Create New Course</Text>
-        <Text style={styles.subtitle}>Fill in the course details</Text>
-
         <View style={styles.inputContainer}>
           <TextInput
             label="Course Name"

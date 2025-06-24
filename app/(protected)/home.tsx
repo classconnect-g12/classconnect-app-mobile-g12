@@ -1,93 +1,51 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
-  TextInput,
   ImageBackground,
   TouchableWithoutFeedback,
   Keyboard,
   Image,
 } from "react-native";
-import { AnimatedFAB, Button, Snackbar } from "react-native-paper";
+import { AnimatedFAB, Button, IconButton } from "react-native-paper";
 import AppbarMenu from "@components/AppbarMenu";
 import { router } from "expo-router";
 import { colors } from "@theme/colors";
 import { images } from "@assets/images";
 import { protectedHomeStyles as styles } from "@styles/protectedHomeStyles";
-import { AppSnackbar } from "@components/AppSnackbar";
-import { validateUsername } from "@utils/validators";
-import { useSnackbar } from "@hooks/useSnackbar";
-import { SNACKBAR_VARIANTS } from "@constants/snackbarVariants";
+import { useAuth } from "@context/authContext";
 
 export default function HomeScreen() {
-  const [search, setSearch] = useState("");
-
-  const {
-    snackbarVisible,
-    snackbarMessage,
-    snackbarVariant,
-    showSnackbar,
-    hideSnackbar,
-  } = useSnackbar();
-
-  const handleSearch = () => {
-    const validationError = validateUsername(search);
-    if (validationError) {
-      showSnackbar(validationError, SNACKBAR_VARIANTS.INFO);
-      return;
-    }
-
-    router.push(`/profile/${search}`);
-  };
+  const { username } = useAuth();
 
   const handleAddCourse = () => {
-    // TODO: implement
     router.push("/(protected)/course/createCourse");
   };
 
   const handleJoinClass = () => {
-    // TODO: implement
     router.push("/(protected)/course/findCourse");
+  };
+
+  const handleMyCourses = () => {
+    router.push("/(protected)/course/myCourses");
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ImageBackground style={styles.background} resizeMode="cover">
         <View style={styles.overlay}>
-          <AppbarMenu title="ClassConnect" />
+          <AppbarMenu title="ClassConnect" viewNavigation={false} />
 
           <View style={styles.content}>
-            <Text style={styles.welcome}>Welcome</Text>
+            <Text style={styles.welcome}>
+              Welcome to ClassConnect{username ? ` ${username}` : ""}!
+            </Text>
+
             <Text style={styles.subtitle}>
               Connect with teachers and students
             </Text>
 
             <View style={styles.mainContent}>
-              <View style={styles.searchSection}>
-                <Text style={styles.sectionLabel}>Find a User</Text>
-                <View style={styles.searchContainer}>
-                  <TextInput
-                    placeholder="Enter username"
-                    value={search}
-                    onChangeText={setSearch}
-                    style={styles.searchInput}
-                    placeholderTextColor={colors.text}
-                  />
-                  <Button
-                    mode="contained"
-                    onPress={handleSearch}
-                    style={styles.searchButton}
-                    icon="magnify"
-                    labelStyle={{
-                      fontWeight: "bold",
-                      color: colors.buttonText,
-                    }}
-                  >
-                    Search
-                  </Button>
-                </View>
-              </View>
-
               <View style={styles.booksContainer}>
                 <Image
                   source={images.book}
@@ -95,23 +53,54 @@ export default function HomeScreen() {
                   resizeMode="contain"
                 />
               </View>
-
               <View style={styles.joinSection}>
-                <Text style={styles.joinTitle}>Ready to Learn?</Text>
-                <Text style={styles.joinSubtitle}>
-                  Join a class to get started
+                <Text style={styles.joinTitle}>
+                  What would you like to do today?
                 </Text>
-                <Button
-                  mode="contained"
-                  onPress={handleJoinClass}
-                  style={styles.joinButton}
-                  labelStyle={{ fontWeight: "bold", color: colors.buttonText }}
-                  icon="school"
-                >
-                  Join a Class
-                </Button>
+                <Text style={styles.joinSubtitle}>
+                  Choose an option below to get started
+                </Text>
+                <View style={styles.joinSectionButtons}>
+                  <Button
+                    mode="contained"
+                    onPress={handleJoinClass}
+                    style={styles.joinButton}
+                    labelStyle={{
+                      fontWeight: "bold",
+                      color: colors.buttonText,
+                    }}
+                    icon="school"
+                  >
+                    Join a course
+                  </Button>
+
+                  <Button
+                    mode="contained"
+                    onPress={handleMyCourses}
+                    style={styles.joinButton}
+                    labelStyle={{
+                      fontWeight: "bold",
+                      color: colors.buttonText,
+                    }}
+                    icon="book"
+                  >
+                    View my courses
+                  </Button>
+                </View>
               </View>
             </View>
+
+            <Text style={{ color: "gray" }}>classconnect-g-12</Text>
+          </View>
+
+          <View style={styles.fabHintContainer}>
+            <Text style={styles.fabHintText}>Create a course</Text>
+            <IconButton
+              icon="arrow-down-right"
+              size={32}
+              style={styles.fabHintIcon}
+              iconColor="black"
+            />
           </View>
 
           <AnimatedFAB
@@ -120,16 +109,9 @@ export default function HomeScreen() {
             extended={false}
             onPress={handleAddCourse}
             style={styles.fab}
-            visible
+            visible={true}
             animateFrom="right"
             color={colors.buttonText}
-          />
-
-          <AppSnackbar
-            visible={snackbarVisible}
-            message={snackbarMessage}
-            onDismiss={hideSnackbar}
-            variant={snackbarVariant}
           />
         </View>
       </ImageBackground>

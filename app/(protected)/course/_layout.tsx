@@ -1,3 +1,4 @@
+import AppbarMenu from "@components/AppbarMenu";
 import { Stack } from "expo-router";
 
 export default function CourseLayout() {
@@ -13,26 +14,31 @@ export default function CourseLayout() {
       <Stack.Screen
         name="createCourse"
         options={{
-          headerTitle: "Create course",
+          header: () => <AppbarMenu title="Create a course" viewNavigation={true} />,
         }}
       />
       <Stack.Screen
         name="findCourse"
         options={{
-          headerTitle: "Search course",
+          header: () => <AppbarMenu title="Find a course" viewNavigation={true}/>,
         }}
       />
-      <Stack.Screen name="[id]" options={{ headerTitle: "Course Details" }} />
+      <Stack.Screen
+        name="[id]"
+        options={{
+          header: () => <AppbarMenu title="Course" viewNavigation={true}/>,
+        }}
+      />
       <Stack.Screen
         name="myCourses"
         options={{
-          headerTitle: "My Courses",
+          header: () => <AppbarMenu title="My courses" viewNavigation={true}/>,
         }}
       />
       <Stack.Screen
         name="editCourse/[id]"
         options={{
-          headerTitle: "Edit course",
+          header: () => <AppbarMenu title="Edit course" viewNavigation={true}/>,
         }}
       />
     </Stack>
